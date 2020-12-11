@@ -10,23 +10,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: develop
-      - name: Get artifactory credentials from Vault
-        id: vault-secret-step
-        run: |
-          ARTIFACTORY_USERNAME=$(docker run --rm --cap-add IPC_LOCK \
-            -e "VAULT_TOKEN=${{ steps.vault-token-step.outputs.vault-token }}" \
-            -e "VAULT_ADDR=${VAULT_ADDR}" \
-            vault:1.1.0 \
-            vault read -field username ${ARTIFACTORY_ACCOUNT_PATH})
-          ARTIFACTORY_PASSWORD=$(docker run --rm --cap-add IPC_LOCK \
-            -e "VAULT_TOKEN=${{ steps.vault-token-step.outputs.vault-token }}" \
-            -e "VAULT_ADDR=${VAULT_ADDR}" \
-            vault:1.1.0 \
-            vault read -field password ${ARTIFACTORY_ACCOUNT_PATH})
-          echo ::set-output name=artifactory-username::$ARTIFACTORY_USERNAME
-          echo ::add-mask::$ARTIFACTORY_USERNAME
-          echo ::set-output name=artifactory-password::$ARTIFACTORY_PASSWORD
-          echo ::add-mask::$ARTIFACTORY_PASSWORD
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
@@ -56,8 +39,10 @@ jobs:
           VERSION_LINE_MATCH: ^version
           VERSION_SUFFIX: SNAPSHOT
       - name: "Publish to Artifactory"
-        run: ./gradlew artifactoryPublish
+        uses: broadinstitute/gradle-command-action@v1
+        with:
+          arguments: artifactoryPublish
         env:
-          ARTIFACTORY_USERNAME: ${{ steps.vault-secret-step.outputs.artifactory-username }}
-          ARTIFACTORY_PASSWORD: ${{ steps.vault-secret-step.outputs.artifactory-password }}
+          ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
           ARTIFACTORY_REPO_KEY: "libs-release-local"
