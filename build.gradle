@@ -51,7 +51,7 @@ spotless {
     }
 }
 
-build.dependsOn spotlessApply
+compileJava.dependsOn spotlessApply
 
 // Static analysis
 spotbugs {
