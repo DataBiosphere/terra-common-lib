@@ -41,14 +41,13 @@ jobs:
       - name: Run integration tests
         id: integration-test
         run: ./gradlew integrationTest --scan
-      - name: Upload Test Reports
-        # TODO(yonghao): Switch to always once we have test
-        #if: always()
-        if: failure()
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test Reports
-          path: build/reports/tests
+#      TODO(yonghao): add this back once we have test
+#      - name: Upload Test Reports
+#        if: always()
+#        uses: actions/upload-artifact@v1
+#        with:
+#          name: Test Reports
+#          path: build/reports/tests
       - name: "Bump the tag to a new version"
         uses: databiosphere/github-actions/actions/bumper@v0.0.3
         env:
