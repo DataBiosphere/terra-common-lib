@@ -6,10 +6,7 @@ name: development version bump
 on: [push]
 jobs:
   publish_snapshot:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -45,7 +42,9 @@ jobs:
         id: integration-test
         run: ./gradlew integrationTest --scan
       - name: Upload Test Reports
-        if: always()
+        # TODO(yonghao): Switch to always once we have test
+        #if: always()
+        if: failure()
         uses: actions/upload-artifact@v1
         with:
           name: Test Reports
