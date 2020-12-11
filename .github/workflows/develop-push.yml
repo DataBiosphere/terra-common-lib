@@ -1,9 +1,8 @@
 name: development version bump
-#on:
-#  push:
-#    branches:
-#      - develop
-on: [push]
+on:
+  push:
+    branches:
+      - develop
 env:
   VAULT_ADDR: https://clotho.broadinstitute.org:8200
   ARTIFACTORY_ACCOUNT_PATH: secret/dsp/accts/artifactory/dsdejenkins
