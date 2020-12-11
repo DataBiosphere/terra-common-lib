@@ -4,6 +4,9 @@ name: development version bump
 #    branches:
 #      - develop
 on: [push]
+env:
+  VAULT_ADDR: https://clotho.broadinstitute.org:8200
+  ARTIFACTORY_ACCOUNT_PATH: secret/dsp/accts/artifactory/dsdejenkins
 jobs:
   publish_snapshot:
     runs-on: ubuntu-latest

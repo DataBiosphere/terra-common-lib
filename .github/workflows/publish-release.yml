@@ -2,6 +2,9 @@ name: Publish package to Release Artifactory
 on:
   release:
     types: [created]
+env:
+  VAULT_ADDR: https://clotho.broadinstitute.org:8200
+  ARTIFACTORY_ACCOUNT_PATH: secret/dsp/accts/artifactory/dsdejenkins
 jobs:
   publish_release:
     runs-on: ubuntu-latest
