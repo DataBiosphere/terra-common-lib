@@ -50,19 +50,6 @@ jobs:
           echo ::add-mask::$ARTIFACTORY_PASSWORD
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-#      TODO(yonghao): add this back once we have test
-#     - name: Run unit tests
-#        id: unit-test
-#        run: ./gradlew unitTest --scan
-#      - name: Run integration tests
-#        id: integration-test
-#        run: ./gradlew integrationTest --scan
-#      - name: Upload Test Reports
-#        if: always()
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: Test Reports
-#          path: build/reports/tests
       - name: "Bump the tag to a new version"
         uses: databiosphere/github-actions/actions/bumper@v0.0.3
         env:
@@ -71,7 +58,6 @@ jobs:
           RELEASE_BRANCHES: master,develop
           VERSION_FILE_PATH: build.gradle
           VERSION_LINE_MATCH: ^version
-          VERSION_SUFFIX: SNAPSHOT
       - name: "Publish to Artifactory"
         run: ./gradlew artifactoryPublish
         env:
