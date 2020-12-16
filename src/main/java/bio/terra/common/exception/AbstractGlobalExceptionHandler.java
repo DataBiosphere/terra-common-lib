@@ -13,9 +13,9 @@ import java.util.List;
 /**
  * This module provides an abstract as a top-level exception handler for controllers. All exceptions that rise
  * through the controllers are caught in this handler. It converts the exceptions into standard
- * ErrorReport responses.
+ * ErrorReport responses. The ErrorReport is defined in each server's openapi yaml file. To use this class, extern this
+ * and implement generateErrorReport method. Sample code:
  *
- * Example of usage:
  * <pre>
  * @RestControllerAdvice
  * public class GlobalExceptionHandler extends AbstractGlobalExceptionHandler<ErrorReport> {
@@ -26,7 +26,7 @@ import java.util.List;
  * }
  * </pre>
  */
-abstract class AbstractGlobalExceptionHandler <T>{
+abstract class AbstractGlobalExceptionHandler<T> {
   private final Logger logger = LoggerFactory.getLogger(AbstractGlobalExceptionHandler.class);
 
   // -- Error Report - one of our exceptions --

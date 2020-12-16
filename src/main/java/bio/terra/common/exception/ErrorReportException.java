@@ -45,11 +45,6 @@ public abstract class ErrorReportException extends RuntimeException {
     this.statusCode = statusCode;
   }
 
-  public ErrorReportException(String message, Throwable cause, List<String> causes) {
-    super(message, cause);
-    this.causes = causes;
-  }
-
   public List<String> getCauses() {
     return causes;
   }
