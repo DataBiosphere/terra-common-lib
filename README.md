@@ -5,4 +5,5 @@ The library version number is the `version` in [build.gradle](build.gradle). We 
 
 The publishing procedure is:
 1. Automatically after PR is merged to develop branch: bump version number and publish to [lib-snapshot-local](https://broadinstitute.jfrog.io/ui/repos/tree/General/libs-snapshot-local)
-2. Manually create a release: bump version number and publish to [lib-snapshot-release](https://broadinstitute.jfrog.io/ui/repos/tree/General/libs-release-local)
+2. Manually create a release: bump version number and publish to [lib-snapshot-release](https://broadinstitute.jfrog.io/ui/repos/tree/General/libs-release-local).
+To bump major version, we need manually update version value first before create the release. 
