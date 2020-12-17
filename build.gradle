@@ -8,6 +8,7 @@ plugins {
     id 'com.diffplug.gradle.spotless' version '3.27.2'
     id 'com.jfrog.artifactory' version '4.13.0'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'org.springframework.boot' version '2.3.1.RELEASE'
 }
 
 repositories {
@@ -43,6 +44,16 @@ dependencies {
 
 dependencyLocking {
     lockAllConfigurations() // see https://docs.gradle.org/current/userguide/dependency_locking.html
+}
+
+// We use Spring Boot gradle plugin to help us manage Spring Boot dependency.
+// Disable bootJar and enable jar task task since this is actually not a Spring Boot app.
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
 }
 
 // for scans
