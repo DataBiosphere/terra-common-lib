@@ -30,13 +30,13 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 abstract class AbstractGlobalExceptionHandler<T> {
   private final Logger logger = LoggerFactory.getLogger(AbstractGlobalExceptionHandler.class);
 
-  /** -- Error Report - one of our exceptions. */
+  /** Error Report - one of our exceptions. */
   @ExceptionHandler(ErrorReportException.class)
   public ResponseEntity<T> errorReportHandler(ErrorReportException ex) {
     return buildErrorReport(ex, ex.getStatusCode(), ex.getCauses());
   }
 
-  /** -- validation exceptions - we don't control the exception raised. */
+  /** validation exceptions - we don't control the exception raised. */
   @ExceptionHandler({
     MethodArgumentNotValidException.class,
     IllegalArgumentException.class,
@@ -46,7 +46,7 @@ abstract class AbstractGlobalExceptionHandler<T> {
     return buildErrorReport(ex, HttpStatus.BAD_REQUEST, null);
   }
 
-  /** -- catchall - log so we can understand what we have missed in the handlers above. */
+  /** catchall - log so we can understand what we have missed in the handlers above. */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<T> catchallHandler(Exception ex) {
     logger.error("Exception caught by catchall hander", ex);
