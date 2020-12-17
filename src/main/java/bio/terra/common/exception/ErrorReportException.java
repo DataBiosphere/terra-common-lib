@@ -1,14 +1,13 @@
 package bio.terra.common.exception;
 
+import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpStatus;
 
-import java.util.List;
-
 /**
  * This base class has data that corresponds to the ErrorReport model generated from the OpenAPI
- * yaml. The global exception handler auto-magically converts exceptions of this base class into the
- * appropriate ErrorReport REST response.
+ * yaml. {@link AbstractGlobalExceptionHandler} uses this class to build appropriate ErrorReport
+ * REST response.
  */
 public abstract class ErrorReportException extends RuntimeException {
   private final List<String> causes;

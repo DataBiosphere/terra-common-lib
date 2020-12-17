@@ -1,10 +1,9 @@
 package bio.terra.common.exception;
 
+import java.util.List;
 import org.springframework.http.HttpStatus;
 
-import java.util.List;
-
-/** Exception caused by authorization error. */
+/** This exception returns {@code UNAUTHORIZED} status in REST response. */
 public class UnauthorizedException extends ErrorReportException {
   private static final HttpStatus thisStatus = HttpStatus.UNAUTHORIZED;
 
