@@ -46,7 +46,7 @@ dependencyLocking {
     lockAllConfigurations() // see https://docs.gradle.org/current/userguide/dependency_locking.html
 }
 
-// We use Spring Boot gradle plugin to help us manage Spring Boot dependency.
+// We use Spring Boot gradle plugin in a non-Spring Boot environment to manage Spring Boot dependency.
 // Disable bootJar and enable jar task task since this is actually not a Spring Boot app.
 bootJar {
     enabled = false
