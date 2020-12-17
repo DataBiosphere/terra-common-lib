@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 /** Test for {@link AbstractGlobalExceptionHandler} */
 @Tag("unit")
 public class AbstractGlobalExceptionHandlerTest {
-  TestExceptionHandler exceptionHandler = new TestExceptionHandler();
+  private TestExceptionHandler exceptionHandler = new TestExceptionHandler();
 
   @Test
   public void internalErrorException() throws Exception {
@@ -43,14 +43,14 @@ public class AbstractGlobalExceptionHandlerTest {
         exceptionHandler.errorReportHandler(new UnauthorizedException("test")).getStatusCode());
   }
 
-  static class TestExceptionHandler extends AbstractGlobalExceptionHandler<ErrorReport> {
+  private static class TestExceptionHandler extends AbstractGlobalExceptionHandler<ErrorReport> {
     @Override
     ErrorReport generateErrorReport(Throwable ex, HttpStatus statusCode, List causes) {
       return new ErrorReport(statusCode);
     }
   }
 
-  static class ErrorReport {
+  private static class ErrorReport {
     private final HttpStatus statusCode;
 
     ErrorReport(HttpStatus statusCode) {

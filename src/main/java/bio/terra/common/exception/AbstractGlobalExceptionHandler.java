@@ -13,7 +13,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
  * This class binds exception classes with Spring HTTP {@link ResponseEntity} by using {@link
  * ExceptionHandler}. Subclasses implements {@link #generateErrorReport} to use their own
  * ErrorReport defined in server's openapi yaml file, then HTTP responses can have the expected HTTP
- * status code in defined in each exception classes.
+ * status code as defined in each exception classes.
  *
  * <p>Sample code:
  *
