@@ -46,6 +46,16 @@ dependencyLocking {
     lockAllConfigurations() // see https://docs.gradle.org/current/userguide/dependency_locking.html
 }
 
+// We use Spring Boot gradle plugin in a non-Spring Boot environment to manage Spring Boot dependency.
+// Disable bootJar and enable jar task back since this is actually not a Spring Boot app.
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
 // for scans
 if (hasProperty('buildScan')) {
     buildScan {
@@ -112,6 +122,10 @@ task unitTest(type: Test) {
     }
 }
 
+java {
+    withJavadocJar()
+}
+
 def artifactory_repo_key = System.getenv("ARTIFACTORY_REPO_KEY") != null ? System.getenv("ARTIFACTORY_REPO_KEY") : 'libs-snapshot-local'
 def artifactory_username = System.getenv('ARTIFACTORY_USERNAME')
 def artifactory_password = System.getenv('ARTIFACTORY_PASSWORD')
@@ -139,4 +153,3 @@ artifactory {
         }
     }
 }
-
