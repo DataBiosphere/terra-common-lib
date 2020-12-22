@@ -20,6 +20,27 @@ public class DatabaseRetryUtilsTest {
       mock(DatabaseRetryUtils.DatabaseExecute.class);
 
   @Test
+  public void succeedAfterRetry() throws Exception {
+    // Throw retryable exception 3 times then succeed.
+    when(mockDatabaseExecute.execute())
+            .thenThrow(RETRY_EXCEPTION)
+            .thenThrow(RETRY_EXCEPTION)
+            .thenThrow(RETRY_EXCEPTION)
+            .thenReturn(true);
+    assertTrue(
+            () -> {
+              try {
+                return DatabaseRetryUtils.executeAndRetry(
+                        mockDatabaseExecute, Duration.ofMillis(1), 10);
+              } catch (InterruptedException e) {
+                fail("Should not throw exception");
+                return false;
+              }
+            });
+    verify(mockDatabaseExecute, times(4)).execute();
+  }
+
+  @Test
   public void exceedMaxRetry() throws Exception {
     when(mockDatabaseExecute.execute()).thenThrow(RETRY_EXCEPTION);
     InterruptedException finalException =
@@ -28,27 +49,6 @@ public class DatabaseRetryUtilsTest {
             () -> DatabaseRetryUtils.executeAndRetry(mockDatabaseExecute, Duration.ofMillis(1), 3));
     verify(mockDatabaseExecute, times(3)).execute();
     assertEquals("Exceeds maximum number of retries.", finalException.getMessage());
-  }
-
-  @Test
-  public void successAfterRetry() throws Exception {
-    // Throw retryable exception 3 times then succeed.
-    when(mockDatabaseExecute.execute())
-        .thenThrow(RETRY_EXCEPTION)
-        .thenThrow(RETRY_EXCEPTION)
-        .thenThrow(RETRY_EXCEPTION)
-        .thenReturn(true);
-    assertTrue(
-        () -> {
-          try {
-            return DatabaseRetryUtils.executeAndRetry(
-                mockDatabaseExecute, Duration.ofMillis(1), 10);
-          } catch (InterruptedException e) {
-            fail("Should not throw exception");
-            return false;
-          }
-        });
-    verify(mockDatabaseExecute, times(4)).execute();
   }
 
   @Test
