@@ -13,35 +13,37 @@ import org.springframework.dao.TransientDataAccessException;
 public class DatabaseRetryUtils {
   private static final Logger logger = LoggerFactory.getLogger(DatabaseRetryUtils.class);
 
+  private DatabaseRetryUtils() {}
+
   /** Executes a database operation and retries if retryable. */
   public static <T> T executeAndRetry(
-      DatabaseExecute<T> execute, Duration retrySleep, int maxNumRetries)
+      DatabaseOperation<T> execute, Duration retrySleep, int maxNumAttempts)
       throws InterruptedException {
-    int numRetries = 0;
-    while (numRetries < maxNumRetries) {
+    int numAttempts = 1;
+    while (numAttempts <= maxNumAttempts) {
       try {
         return execute.execute();
       } catch (DataAccessException e) {
-        if (!retryQuery(e)) {
+        if (!shouldRetryQuery(e)) {
           throw e;
         }
-        logger.info("Retrying time: {}", numRetries, e);
+        logger.info("Caught exception, retrying DB operation. Attempts so far: {}", numAttempts, e);
       }
-      ++numRetries;
+      ++numAttempts;
       TimeUnit.MILLISECONDS.sleep(retrySleep.toMillis());
     }
     throw new InterruptedException("Exceeds maximum number of retries.");
   }
 
   /** Returns {@code true} if that is retryable {@link DataAccessException}. */
-  public static boolean retryQuery(DataAccessException dataAccessException) {
+  public static boolean shouldRetryQuery(DataAccessException dataAccessException) {
     return ExceptionUtils.hasCause(dataAccessException, RecoverableDataAccessException.class)
         || ExceptionUtils.hasCause(dataAccessException, TransientDataAccessException.class);
   }
 
   /** How to execute this database operation. */
   @FunctionalInterface
-  public interface DatabaseExecute<T> {
+  public interface DatabaseOperation<T> {
     T execute();
   }
 }
