@@ -18,9 +18,8 @@ import org.springframework.web.servlet.NoHandlerFoundException;
  * <p>Sample code:
  *
  * <pre>
- * public class GlobalExceptionHandler extends AbstractGlobalExceptionHandler<T> {
- *   @Override
- *   T generateErrorReport(Throwable ex, HttpStatus statusCode, List<String> causes) {
+ * public class GlobalExceptionHandler extends AbstractGlobalExceptionHandler {
+ *  ErrorReport generateErrorReport(Throwable ex, HttpStatus statusCode, List<String> causes) {
  *     return new ErrorReport().message(ex.getMessage()).statusCode(statusCode.value()).causes(causes);
  *   }
  * }
