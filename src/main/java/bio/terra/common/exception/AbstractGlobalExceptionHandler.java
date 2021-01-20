@@ -27,7 +27,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
  * }
  * </pre>
  */
-abstract class AbstractGlobalExceptionHandler<T> {
+public abstract class AbstractGlobalExceptionHandler<T> {
   private final Logger logger = LoggerFactory.getLogger(AbstractGlobalExceptionHandler.class);
 
   /** Error Report - one of our exceptions. */
