@@ -8,7 +8,6 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +30,28 @@ public class OpenCensusTracingHook implements StairwayHook {
   }
 
   @Override
+  public HookAction startFlight(FlightContext context) throws InterruptedException {
+    SpanContext parentLinkContext = getOrCreateParentContext(context);
+    Link parentLink = Link.fromSpanContext(parentLinkContext, Link.Type.PARENT_LINKED_SPAN);
+    /// TODO stairway flight/span standard prefixes?
+    Span flightSpan = Tracing.getTracer().spanBuilder(context.getFlightClassName()).startSpan();
+    flightSpan.addLink(parentLink);
+    flightSpan.putAttribute("flightId", AttributeValue.stringAttributeValue(context.getFlightId()));
+    flightSpan.putAttribute(
+        "flightClass", AttributeValue.stringAttributeValue(context.getFlightClassName()));
+    flightSpans.put(context.getFlightId(), flightSpan);
+    return HookAction.CONTINUE;
+  }
+
+  @Override
+  public HookAction endFlight(FlightContext context) throws InterruptedException {
+    Span flightSpan = flightSpans.remove(context.getFlightId());
+    flightSpan.end();
+    // TODO DO NOT SUBMIT make sure stairway always ends flights or the span will dangle.
+    return HookAction.CONTINUE;
+  }
+
+  @Override
   public Optional<StepHook> stepFactory(FlightContext context) {
     return Optional.of(new TraceStepHook());
   }
@@ -41,11 +62,12 @@ public class OpenCensusTracingHook implements StairwayHook {
 
     @Override
     public HookAction startStep(FlightContext flightContext) {
-      SpanContext parentLinkContext = getOrCreateParentContext(flightContext);
-      Link parentLink = Link.fromSpanContext(parentLinkContext, Link.Type.PARENT_LINKED_SPAN);
+      Span flightSpan = flightSpans.get(flightContext.getFlightId());
 
-      stepSpan = Tracing.getTracer().spanBuilder(flightContext.getStepClassName()).startSpan();
-      stepSpan.addLink(parentLink);
+      stepSpan =
+          Tracing.getTracer()
+              .spanBuilderWithExplicitParent(flightContext.getStepClassName(), flightSpan)
+              .startSpan();
       stepSpan.putAttribute(
           "flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
       stepSpan.putAttribute(
@@ -55,9 +77,9 @@ public class OpenCensusTracingHook implements StairwayHook {
 
       stepScope = tracer.withSpan(stepSpan);
       logger.info(
-          "start step. flight id {}\n parent context {}\n span context {}",
+          "start step. flight id {}\n flight span context {}\nstep span context {}",
           flightContext.getFlightId(),
-          parentLinkContext.toString(),
+          flightSpan.getContext().toString(),
           stepSpan.getContext().toString());
       return HookAction.CONTINUE;
     }
