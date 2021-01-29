@@ -63,9 +63,7 @@ public class TracingHook implements StairwayHook {
 
   /** Store the current Span's {@link SpanContext} as the submission Span. */
   public static void storeCurrentContextAsSubmission(FlightMap inputMap) {
-    inputMap.put(
-        SUBMISSION_SPAN_CONTEXT_MAP_KEY,
-        encodeContext(Tracing.getTracer().getCurrentSpan().getContext()));
+    inputMap.put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, serializedCurrentContext());
   }
 
   /**
@@ -77,12 +75,15 @@ public class TracingHook implements StairwayHook {
     SpanContext submissionContext = getOrSubmissionContext(context);
     // Start the Flight Span. We must remember to close the Flight Span at the end of the Flight's
     // current run.
+    // We do not currently change the scope to use the Flight Span as the current span. We mostly
+    // only care that the code executed within a step is within the scope of one of our spans.
     Span flightSpan =
         Tracing.getTracer()
             .spanBuilder(FLIGHT_NAME_PREFIX + context.getFlightClassName())
             .startSpan();
     flightSpan.addLink(Link.fromSpanContext(submissionContext, Link.Type.PARENT_LINKED_SPAN));
-    flightSpan.putAttribute("stairway/flightId", AttributeValue.stringAttributeValue(context.getFlightId()));
+    flightSpan.putAttribute(
+        "stairway/flightId", AttributeValue.stringAttributeValue(context.getFlightId()));
     flightSpan.putAttribute(
         "stairway/flightClass", AttributeValue.stringAttributeValue(context.getFlightClassName()));
     flightSpans.put(context.getFlightId(), flightSpan);
@@ -100,18 +101,21 @@ public class TracingHook implements StairwayHook {
 
   @Override
   public Optional<StepHook> stepFactory(FlightContext context) {
-    return Optional.of(new TraceStepHook());
+    return Optional.of(new TraceStepHook(flightSpans.get(context.getFlightId())));
   }
 
   /** A {@link StepHook} for creating Spans for each Step execution. */
   private class TraceStepHook implements StepHook {
+    private final Span flightSpan;
     private Span stepSpan = null;
     private Scope stepScope = null;
 
+    public TraceStepHook(Span flightSpan) {
+      this.flightSpan = flightSpan;
+    }
+
     @Override
     public HookAction startStep(FlightContext flightContext) {
-      Span flightSpan = flightSpans.get(flightContext.getFlightId());
-
       // Start the Step Span. We must remember to close the Span at the end of the Step.
       stepSpan =
           Tracing.getTracer()
@@ -121,12 +125,16 @@ public class TracingHook implements StairwayHook {
       stepSpan.putAttribute(
           "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
       stepSpan.putAttribute(
-          "stairway/flightClass", AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
+          "stairway/flightClass",
+          AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
       stepSpan.putAttribute(
-          "stairway/stepClass", AttributeValue.stringAttributeValue(flightContext.getStepClassName()));
-      stepSpan.putAttribute("stairway/direction", AttributeValue.stringAttributeValue(flightContext.getDirection().toString()));
-      // Start the Scope of the Step Span's execution. We must remember to close the Scope at the
-      // end of the Step.
+          "stairway/stepClass",
+          AttributeValue.stringAttributeValue(flightContext.getStepClassName()));
+      stepSpan.putAttribute(
+          "stairway/direction",
+          AttributeValue.stringAttributeValue(flightContext.getDirection().toString()));
+      // Start the Scope of the Step Span's execution so that the step execution has a relevant
+      // current span. We must remember to close the Scope at the end of the Step.
       stepScope = tracer.withSpan(stepSpan);
       return HookAction.CONTINUE;
     }
@@ -165,7 +173,8 @@ public class TracingHook implements StairwayHook {
     submissionSpan.putAttribute(
         "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
     submissionSpan.putAttribute(
-        "stairway/flightClass", AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
+        "stairway/flightClass",
+        AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
 
     SpanContext flightSpanContext = submissionSpan.getContext();
     // Store the submission span so that there is only one of these per Flight ID.
