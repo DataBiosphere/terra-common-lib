@@ -82,9 +82,9 @@ public class TracingHook implements StairwayHook {
             .spanBuilder(FLIGHT_NAME_PREFIX + context.getFlightClassName())
             .startSpan();
     flightSpan.addLink(Link.fromSpanContext(submissionContext, Link.Type.PARENT_LINKED_SPAN));
-    flightSpan.putAttribute("flightId", AttributeValue.stringAttributeValue(context.getFlightId()));
+    flightSpan.putAttribute("stairway/flightId", AttributeValue.stringAttributeValue(context.getFlightId()));
     flightSpan.putAttribute(
-        "flightClass", AttributeValue.stringAttributeValue(context.getFlightClassName()));
+        "stairway/flightClass", AttributeValue.stringAttributeValue(context.getFlightClassName()));
     flightSpans.put(context.getFlightId(), flightSpan);
     return HookAction.CONTINUE;
   }
@@ -119,11 +119,12 @@ public class TracingHook implements StairwayHook {
                   STEP_NAME_PREFIX + flightContext.getStepClassName(), flightSpan)
               .startSpan();
       stepSpan.putAttribute(
-          "flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
+          "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
       stepSpan.putAttribute(
-          "flightClass", AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
+          "stairway/flightClass", AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
       stepSpan.putAttribute(
-          "stepClass", AttributeValue.stringAttributeValue(flightContext.getStepClassName()));
+          "stairway/stepClass", AttributeValue.stringAttributeValue(flightContext.getStepClassName()));
+      stepSpan.putAttribute("stairway/direction", AttributeValue.stringAttributeValue(flightContext.getDirection().toString()));
       // Start the Scope of the Step Span's execution. We must remember to close the Scope at the
       // end of the Step.
       stepScope = tracer.withSpan(stepSpan);
@@ -162,9 +163,9 @@ public class TracingHook implements StairwayHook {
                 SUBMISSION_NAME_PREFIX + flightContext.getFlightClassName(), null)
             .startSpan();
     submissionSpan.putAttribute(
-        "flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
+        "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
     submissionSpan.putAttribute(
-        "flightClass", AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
+        "stairway/flightClass", AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
 
     SpanContext flightSpanContext = submissionSpan.getContext();
     // Store the submission span so that there is only one of these per Flight ID.
