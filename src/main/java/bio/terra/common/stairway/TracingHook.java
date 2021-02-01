@@ -1,4 +1,4 @@
-package bio.terra.common.tracing;
+package bio.terra.common.stairway;
 
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightContext;
