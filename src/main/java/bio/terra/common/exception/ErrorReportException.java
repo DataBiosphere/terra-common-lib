@@ -1,5 +1,6 @@
 package bio.terra.common.exception;
 
+import com.google.common.html.HtmlEscapers;
 import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpStatus;
@@ -14,13 +15,13 @@ public abstract class ErrorReportException extends RuntimeException {
   private final HttpStatus statusCode;
 
   public ErrorReportException(String message) {
-    super(message);
+    super(encodeMessage(message));
     this.causes = null;
     this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
   public ErrorReportException(String message, Throwable cause) {
-    super(message, cause);
+    super(encodeMessage(message), cause);
     this.causes = null;
     this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
@@ -31,15 +32,21 @@ public abstract class ErrorReportException extends RuntimeException {
     this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
+  public ErrorReportException(Throwable cause, HttpStatus statusCode) {
+    super(cause);
+    this.causes = null;
+    this.statusCode = statusCode;
+  }
+
   public ErrorReportException(String message, List<String> causes, HttpStatus statusCode) {
-    super(message);
+    super(encodeMessage(message));
     this.causes = causes;
     this.statusCode = statusCode;
   }
 
   public ErrorReportException(
       String message, Throwable cause, List<String> causes, HttpStatus statusCode) {
-    super(message, cause);
+    super(encodeMessage(message), cause);
     this.causes = causes;
     this.statusCode = statusCode;
   }
@@ -58,5 +65,9 @@ public abstract class ErrorReportException extends RuntimeException {
         .append("causes", causes)
         .append("statusCode", statusCode)
         .toString();
+  }
+
+  private static String encodeMessage(String message) {
+    return HtmlEscapers.htmlEscaper().escape(message);
   }
 }
