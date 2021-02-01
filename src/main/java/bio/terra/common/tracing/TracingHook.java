@@ -1,13 +1,25 @@
 package bio.terra.common.tracing;
 
-import bio.terra.stairway.*;
+import bio.terra.stairway.Flight;
+import bio.terra.stairway.FlightContext;
+import bio.terra.stairway.FlightMap;
+import bio.terra.stairway.HookAction;
+import bio.terra.stairway.StairwayHook;
+import bio.terra.stairway.Step;
+import bio.terra.stairway.StepHook;
 import io.opencensus.common.Scope;
-import io.opencensus.trace.*;
+import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.Link;
+import io.opencensus.trace.Span;
+import io.opencensus.trace.SpanContext;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 import io.opencensus.trace.propagation.SpanContextParseException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +38,7 @@ import org.slf4j.LoggerFactory;
  *     The submission span is used to correlate all of the Flight Spans together. The submission
  *     Span may be created outside of the context of this hook and passed in with the input
  *     FlightMap; this allows all of the Flight Spans to be linked to the request Span that
- *     initiated the Flight. See {@link #serializedCurrentContext()} {@link
+ *     initiated the Flight. See {@link #serializeCurrentTracingContext()} {@link
  *     #SUBMISSION_SPAN_CONTEXT_MAP_KEY}. If no submission Span is passed into the Flight, a dummy
  *     Submission span is created by this hook so that all Flight Spans are still correlated.
  *
@@ -57,13 +69,13 @@ public class TracingHook implements StairwayHook {
    * Serialize the current Span's {@link SpanContext}. To be used to store a submission Span for the
    * Flight with {@link #SUBMISSION_SPAN_CONTEXT_MAP_KEY}.
    */
-  public static Object serializedCurrentContext() {
+  public static Object serializeCurrentTracingContext() {
     return encodeContext(Tracing.getTracer().getCurrentSpan().getContext());
   }
 
   /** Store the current Span's {@link SpanContext} as the submission Span. */
   public static void storeCurrentContextAsSubmission(FlightMap inputMap) {
-    inputMap.put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, serializedCurrentContext());
+    inputMap.put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, serializeCurrentTracingContext());
   }
 
   /**
@@ -75,11 +87,12 @@ public class TracingHook implements StairwayHook {
     SpanContext submissionContext = getOrSubmissionContext(context);
     // Start the Flight Span. We must remember to close the Flight Span at the end of the Flight's
     // current run.
-    // We do not currently change the scope to use the Flight Span as the current span. We mostly
-    // only care that the code executed within a step is within the scope of one of our spans.
+    // Rather than use OpenCensus' scope-based span linkage, we manually attach step spans to this
+    // parent span via the stepFactory method."
     Span flightSpan =
         Tracing.getTracer()
-            .spanBuilder(FLIGHT_NAME_PREFIX + context.getFlightClassName())
+            .spanBuilder(
+                FLIGHT_NAME_PREFIX + ClassUtils.getShortClassName(context.getFlightClassName()))
             .startSpan();
     flightSpan.addLink(Link.fromSpanContext(submissionContext, Link.Type.PARENT_LINKED_SPAN));
     flightSpan.putAttribute(
@@ -94,6 +107,8 @@ public class TracingHook implements StairwayHook {
   @Override
   public HookAction endFlight(FlightContext context) {
     Span flightSpan = flightSpans.remove(context.getFlightId());
+    flightSpan.putAttribute(
+        "flightStatus", AttributeValue.stringAttributeValue(context.getFlightStatus().toString()));
     // End the Flight Span for the current run.
     flightSpan.end();
     return HookAction.CONTINUE;
@@ -120,7 +135,8 @@ public class TracingHook implements StairwayHook {
       stepSpan =
           Tracing.getTracer()
               .spanBuilderWithExplicitParent(
-                  STEP_NAME_PREFIX + flightContext.getStepClassName(), flightSpan)
+                  STEP_NAME_PREFIX + ClassUtils.getShortClassName(flightContext.getStepClassName()),
+                  flightSpan)
               .startSpan();
       stepSpan.putAttribute(
           "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
@@ -130,6 +146,8 @@ public class TracingHook implements StairwayHook {
       stepSpan.putAttribute(
           "stairway/stepClass",
           AttributeValue.stringAttributeValue(flightContext.getStepClassName()));
+      stepSpan.putAttribute(
+          "stairway/stepIndex", AttributeValue.longAttributeValue(flightContext.getStepIndex()));
       stepSpan.putAttribute(
           "stairway/direction",
           AttributeValue.stringAttributeValue(flightContext.getDirection().toString()));
@@ -168,7 +186,9 @@ public class TracingHook implements StairwayHook {
     Span submissionSpan =
         tracer
             .spanBuilderWithExplicitParent(
-                SUBMISSION_NAME_PREFIX + flightContext.getFlightClassName(), null)
+                SUBMISSION_NAME_PREFIX
+                    + ClassUtils.getShortClassName(flightContext.getFlightClassName()),
+                null)
             .startSpan();
     submissionSpan.putAttribute(
         "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
