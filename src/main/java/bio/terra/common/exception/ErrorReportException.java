@@ -32,6 +32,12 @@ public abstract class ErrorReportException extends RuntimeException {
     this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
+  public ErrorReportException(Throwable cause, HttpStatus statusCode) {
+    super(cause);
+    this.causes = null;
+    this.statusCode = statusCode;
+  }
+
   public ErrorReportException(String message, List<String> causes, HttpStatus statusCode) {
     super(encodeMessage(message));
     this.causes = causes;
