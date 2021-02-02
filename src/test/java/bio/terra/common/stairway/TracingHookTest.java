@@ -13,7 +13,6 @@ import bio.terra.stairway.Stairway;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
-import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracing;
 import java.time.Duration;
@@ -102,7 +101,6 @@ public class TracingHookTest {
 
     @Override
     public StepResult doStep(FlightContext flightContext) {
-      Span span = Tracing.getTracer().getCurrentSpan();
       record(Tracing.getTracer().getCurrentSpan().getContext());
       return StepResult.getStepResultSuccess();
     }
