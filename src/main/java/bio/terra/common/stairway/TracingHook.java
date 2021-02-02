@@ -1,12 +1,12 @@
 package bio.terra.common.stairway;
 
+import bio.terra.stairway.DynamicHook;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.HookAction;
 import bio.terra.stairway.StairwayHook;
 import bio.terra.stairway.Step;
-import bio.terra.stairway.StepHook;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Link;
@@ -16,12 +16,8 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.propagation.SpanContextParseException;
 import java.util.Base64;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A {@link StairwayHook} to add support for tracing execution of Stairway flights with OpenCensus.
@@ -48,19 +44,12 @@ import org.slf4j.LoggerFactory;
  */
 public class TracingHook implements StairwayHook {
   private final Tracer tracer = Tracing.getTracer();
-  private final Logger logger = LoggerFactory.getLogger(TracingHook.class);
 
   // Prefixes to use for Span names. Standard prefixes make it easier to search for all Spans of
   // different types.
   private static final String SUBMISSION_NAME_PREFIX = "stairway/submission/";
   private static final String FLIGHT_NAME_PREFIX = "stairway/flight/";
   private static final String STEP_NAME_PREFIX = "stairway/step/";
-
-  /** Map of Flight IDs to Flight Spans. */
-  // DO NOT SUBMIT: Consider whether we want to have a FlightHook to match StepHook instead of
-  // storing per Flight data in a global map. Note that the FlightHook would have to be able to make
-  // StepHooks so that the StepHook can refer to data in the FlightHook.
-  private final Map<String, Span> flightSpans = new ConcurrentHashMap<>();
 
   /** The {@link FlightMap} key for the submission Span's context. */
   public static final String SUBMISSION_SPAN_CONTEXT_MAP_KEY = "opencensusTracingSpanContext";
@@ -78,66 +67,77 @@ public class TracingHook implements StairwayHook {
     inputMap.put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, serializeCurrentTracingContext());
   }
 
+  @Override
+  public Optional<DynamicHook> flightFactory(FlightContext context) {
+    return Optional.of(new TraceFlightHook());
+  }
+
+  @Override
+  public Optional<DynamicHook> stepFactory(FlightContext context) {
+    return Optional.of(new TraceStepHook());
+  }
+
   /**
-   * Creates a Flight Span for the current run of the Flight. Note that the same Flight may be run
-   * multiple times by Stairway.
+   * A {@link DynamicHook} for creating Spans for each Flight execution.
+   *
+   * <p>Note that the same Flight may be run multiple times by Stairway.
    */
-  @Override
-  public HookAction startFlight(FlightContext context) {
-    SpanContext submissionContext = getOrSubmissionContext(context);
-    // Start the Flight Span. We must remember to close the Flight Span at the end of the Flight's
-    // current run.
-    // Rather than use OpenCensus' scope-based span linkage, we manually attach step spans to this
-    // parent span via the stepFactory method."
-    Span flightSpan =
-        tracer
-            .spanBuilder(
-                FLIGHT_NAME_PREFIX + ClassUtils.getShortClassName(context.getFlightClassName()))
-            .startSpan();
-    flightSpan.addLink(Link.fromSpanContext(submissionContext, Link.Type.PARENT_LINKED_SPAN));
-    flightSpan.putAttribute(
-        "stairway/flightId", AttributeValue.stringAttributeValue(context.getFlightId()));
-    flightSpan.putAttribute(
-        "stairway/flightClass", AttributeValue.stringAttributeValue(context.getFlightClassName()));
-    flightSpans.put(context.getFlightId(), flightSpan);
-    return HookAction.CONTINUE;
-  }
+  private class TraceFlightHook implements DynamicHook {
+    private Scope flightScope = null;
 
-  /** Ends the Flight Span for the current run of the Flight. */
-  @Override
-  public HookAction endFlight(FlightContext context) {
-    Span flightSpan = flightSpans.remove(context.getFlightId());
-    flightSpan.putAttribute(
-        "flightStatus", AttributeValue.stringAttributeValue(context.getFlightStatus().toString()));
-    // End the Flight Span for the current run.
-    flightSpan.end();
-    return HookAction.CONTINUE;
-  }
-
-  @Override
-  public Optional<StepHook> stepFactory(FlightContext context) {
-    return Optional.of(new TraceStepHook(flightSpans.get(context.getFlightId())));
-  }
-
-  /** A {@link StepHook} for creating Spans for each Step execution. */
-  private class TraceStepHook implements StepHook {
-    private final Span flightSpan;
-    private Span stepSpan = null;
-    private Scope stepScope = null;
-
-    public TraceStepHook(Span flightSpan) {
-      this.flightSpan = flightSpan;
+    @Override
+    public HookAction start(FlightContext flightContext) throws InterruptedException {
+      SpanContext submissionContext = getOrSubmissionContext(flightContext);
+      // Start the Flight Span and its Scope. We rely on implicit propagation to get this Flight
+      // Span as the current span during Step execution. We must remember to close the Flight Scope
+      // at the end of the Flight's current run.
+      flightScope =
+          tracer
+              .spanBuilderWithExplicitParent(
+                  FLIGHT_NAME_PREFIX
+                      + ClassUtils.getShortClassName(flightContext.getFlightClassName()),
+                  null)
+              .startScopedSpan();
+      Span flightSpan = tracer.getCurrentSpan();
+      flightSpan.addLink(Link.fromSpanContext(submissionContext, Link.Type.PARENT_LINKED_SPAN));
+      flightSpan.putAttribute(
+          "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
+      flightSpan.putAttribute(
+          "stairway/flightClass",
+          AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
+      // Start the Scope of the Flight Span's execution. We rely on implicit Span propagation to get
+      // the scope for the step's execution. We must remember to close the Scope at the end of the
+      // Flight.
+      return HookAction.CONTINUE;
     }
 
     @Override
-    public HookAction startStep(FlightContext flightContext) {
-      // Start the Step Span. We must remember to close the Span at the end of the Step.
-      stepSpan =
+    public HookAction end(FlightContext flightContext) throws InterruptedException {
+      Span flightSpan = tracer.getCurrentSpan();
+      flightSpan.putAttribute(
+          "flightStatus",
+          AttributeValue.stringAttributeValue(flightContext.getFlightStatus().toString()));
+      flightScope.close();
+      return HookAction.CONTINUE;
+    }
+  }
+
+  /** A {@link DynamicHook} for creating Spans for each Step execution. */
+  private class TraceStepHook implements DynamicHook {
+    private Scope stepScope = null;
+
+    @Override
+    public HookAction start(FlightContext flightContext) {
+      // We rely on the implicit propagation of spans. By entering the scope of the Flight Span at
+      // the start of the flight, the current span here should be that same Flight Span.
+      // Start the Scope of the Step Span's execution so that the step execution has a relevant
+      // current span. We must remember to close the Scope at the end of the Step.
+      stepScope =
           tracer
-              .spanBuilderWithExplicitParent(
-                  STEP_NAME_PREFIX + ClassUtils.getShortClassName(flightContext.getStepClassName()),
-                  flightSpan)
-              .startSpan();
+              .spanBuilder(
+                  STEP_NAME_PREFIX + ClassUtils.getShortClassName(flightContext.getStepClassName()))
+              .startScopedSpan();
+      Span stepSpan = tracer.getCurrentSpan();
       stepSpan.putAttribute(
           "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
       stepSpan.putAttribute(
@@ -151,16 +151,12 @@ public class TracingHook implements StairwayHook {
       stepSpan.putAttribute(
           "stairway/direction",
           AttributeValue.stringAttributeValue(flightContext.getDirection().toString()));
-      // Start the Scope of the Step Span's execution so that the step execution has a relevant
-      // current span. We must remember to close the Scope at the end of the Step.
-      stepScope = tracer.withSpan(stepSpan);
       return HookAction.CONTINUE;
     }
 
     @Override
-    public HookAction endStep(FlightContext flightContext) {
+    public HookAction end(FlightContext flightContext) {
       stepScope.close();
-      stepSpan.end();
       return HookAction.CONTINUE;
     }
   }
