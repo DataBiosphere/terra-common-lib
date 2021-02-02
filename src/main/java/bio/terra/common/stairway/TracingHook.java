@@ -90,7 +90,7 @@ public class TracingHook implements StairwayHook {
     // Rather than use OpenCensus' scope-based span linkage, we manually attach step spans to this
     // parent span via the stepFactory method."
     Span flightSpan =
-        Tracing.getTracer()
+        tracer
             .spanBuilder(
                 FLIGHT_NAME_PREFIX + ClassUtils.getShortClassName(context.getFlightClassName()))
             .startSpan();
@@ -133,7 +133,7 @@ public class TracingHook implements StairwayHook {
     public HookAction startStep(FlightContext flightContext) {
       // Start the Step Span. We must remember to close the Span at the end of the Step.
       stepSpan =
-          Tracing.getTracer()
+          tracer
               .spanBuilderWithExplicitParent(
                   STEP_NAME_PREFIX + ClassUtils.getShortClassName(flightContext.getStepClassName()),
                   flightSpan)

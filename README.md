@@ -18,3 +18,36 @@ that mention "dependency lock state" after changing a dep, you need to do this s
 ```sh
 ./gradlew dependencies --write-locks
 ```
+
+### Setup
+
+### Database Configuration
+Terra Common Lib includes functionality using [Stairway](https://github.com/DataBiosphere/stairway).
+Some of the TCL unit tests therefore rely on a running SQL instance to run Stairway. There are two
+recommended ways to set up a local Postgres Database for the unit tests.
+
+#### Option A: Docker Postgres
+##### Running the Postgres Container
+To start a postgres container configured with the necessary databases:
+```sh
+./local-dev/run_postgres.sh start
+```
+To stop the container:
+```sh
+./local-dev/run_postgres.sh start
+```
+Note that the contents of the database is not saved between container runs.
+
+##### Connecting to the Postgres Container
+Use `psql` to connect to databases within the started database container, e.g. for database `tclstairway` users `tclstairwayuser` with password `tclstairwaypwd`:
+```sh
+PGPASSWORD=tclstairwaypwd psql postgresql://127.0.0.1:5432/tclstairway -U tclstairwayuser
+```
+
+#### Option B: Local Postgres 
+##### Database Configuration
+Set up a local Postgres instance. To set up TCL's required database for unit tests, run the following command, which will create the DB's and users:
+
+```sh
+psql -f local-dev/local-postgres-init.sql
+```
