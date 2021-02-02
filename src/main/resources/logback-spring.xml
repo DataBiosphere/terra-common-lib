@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <springProfile name="human-readable-logging">
+    <!--
+    This is the basic spring boot config. See:
+    https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-configure-logback-for-logging
+    -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
+
+  <springProfile name="!human-readable-logging">
+    <!-- See
+      https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-logging/src/main/java/org/springframework/cloud/gcp/logging/StackdriverJsonLayout.java
+      and
+      https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-logging/src/main/resources/org/springframework/cloud/gcp/logging/logback-json-appender.xml
+      for more details.
+    -->
+    <property name="projectId" value="${projectId:-${SPRING_CLOUD_GCP_LOGGING_PROJECT_ID}}"/>
+
+    <root level="INFO">
+      <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+          <layout class="bio.terra.common.logging.GoogleTraceAwareJsonLayout">
+            <projectId>${projectId}</projectId>
+          </layout>
+        </encoder>
+      </appender>
+    </root>
+  </springProfile>
+</configuration>
