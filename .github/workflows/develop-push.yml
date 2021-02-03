@@ -9,11 +9,27 @@ env:
 jobs:
   publish_snapshot:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12.3
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: develop
+      - name: Initialize Postgres DB
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -f ./local-dev/local-postgres-init.sql
       - name: Set up AdoptOpenJDK 11
         uses: joschi/setup-jdk@v2
         with:
