@@ -15,7 +15,16 @@ public class DatabaseRetryUtils {
 
   private DatabaseRetryUtils() {}
 
-  /** Executes a database operation and retries if retryable. */
+  /**
+   * Executes a database operation and retries if retryable.
+   *
+   * @param execute database operation to execute
+   * @param retrySleep fixed retry sleep interval
+   * @param maxNumAttempts maximum retries
+   * @param <T> database operation class
+   * @return database operation class
+   * @throws InterruptedException on thread interruption
+   */
   public static <T> T executeAndRetry(
       DatabaseOperation<T> execute, Duration retrySleep, int maxNumAttempts)
       throws InterruptedException {
@@ -35,7 +44,12 @@ public class DatabaseRetryUtils {
     throw new InterruptedException("Exceeds maximum number of retries.");
   }
 
-  /** Returns {@code true} if that is retryable {@link DataAccessException}. */
+  /**
+   * Tests an exception to see if it is retryable
+   *
+   * @param dataAccessException execption to test
+   * @return {@code true} if that is retryable {@link DataAccessException}.
+   */
   public static boolean shouldRetryQuery(DataAccessException dataAccessException) {
     return ExceptionUtils.hasCause(dataAccessException, RecoverableDataAccessException.class)
         || ExceptionUtils.hasCause(dataAccessException, TransientDataAccessException.class);

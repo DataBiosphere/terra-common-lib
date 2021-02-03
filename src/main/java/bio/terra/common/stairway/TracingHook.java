@@ -15,9 +15,10 @@ import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.propagation.SpanContextParseException;
+import org.apache.commons.lang3.ClassUtils;
+
 import java.util.Base64;
 import java.util.Optional;
-import org.apache.commons.lang3.ClassUtils;
 
 /**
  * A {@link StairwayHook} to add support for tracing execution of Stairway flights with OpenCensus.
@@ -60,12 +61,18 @@ public class TracingHook implements StairwayHook {
   /**
    * Serialize the current Span's {@link SpanContext}. To be used to store a submission Span for the
    * Flight with {@link #SUBMISSION_SPAN_CONTEXT_MAP_KEY}.
+   *
+   * @return Serialized context
    */
   public static Object serializeCurrentTracingContext() {
     return encodeContext(Tracing.getTracer().getCurrentSpan().getContext());
   }
 
-  /** Store the current Span's {@link SpanContext} as the submission Span. */
+  /**
+   * Store the current Span's {@link SpanContext} as the submission Span.
+   *
+   * @param inputMap flight map to use to store the context
+   */
   public static void storeCurrentContextAsSubmission(FlightMap inputMap) {
     inputMap.put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, serializeCurrentTracingContext());
   }
