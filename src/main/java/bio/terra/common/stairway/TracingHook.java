@@ -23,22 +23,25 @@ import org.apache.commons.lang3.ClassUtils;
  * A {@link StairwayHook} to add support for tracing execution of Stairway flights with OpenCensus.
  *
  * <p>This hook uses Spans at 3 different levels. From lowest to highest:
- * <li>A Span around the execution of each Step, one Span per Step execution. All of the {@link
- *     Step#doStep(FlightContext)} {@link Step#undoStep(FlightContext)} will be executed in the
- *     context of this Span.
- * <li>A Span around the execution of each Flight, one Span per {@link Flight#run()}. Note that a
- *     single Flight may be run multiple times if its execution is paused and resumed. Each Step
- *     Span is a child Span of a Flight Span.
- * <li>A linked Span for the entire Flight submission. Each Flight Span has a parent link to the
- *     submission span. See <a href="https://opencensus.io/tracing/span/link/">OpenCensus Link</a>.
- *     The submission span is used to correlate all of the Flight Spans together. The submission
- *     Span may be created outside of the context of this hook and passed in with the input
- *     FlightMap; this allows all of the Flight Spans to be linked to the request Span that
- *     initiated the Flight. See {@link #serializeCurrentTracingContext()} {@link
- *     #SUBMISSION_SPAN_CONTEXT_MAP_KEY}. If no submission Span is passed into the Flight, a dummy
- *     Submission span is created by this hook so that all Flight Spans are still correlated.
  *
- *     <p>If a Span is not ended, it will not be exported to the tracing service.
+ * <ul>
+ *   <li>A Span around the execution of each Step, one Span per Step execution. All of the {@link
+ *       Step#doStep(FlightContext)} {@link Step#undoStep(FlightContext)} will be executed in the
+ *       context of this Span.
+ *   <li>A Span around the execution of each Flight, one Span per {@link Flight#run()}. Note that a
+ *       single Flight may be run multiple times if its execution is paused and resumed. Each Step
+ *       Span is a child Span of a Flight Span.
+ *   <li>A linked Span for the entire Flight submission. Each Flight Span has a parent link to the
+ *       submission span. See <a href="https://opencensus.io/tracing/span/link/">OpenCensus
+ *       Link</a>. The submission span is used to correlate all of the Flight Spans together. The
+ *       submission Span may be created outside of the context of this hook and passed in with the
+ *       input FlightMap; this allows all of the Flight Spans to be linked to the request Span that
+ *       initiated the Flight. See {@link #serializeCurrentTracingContext()} {@link
+ *       #SUBMISSION_SPAN_CONTEXT_MAP_KEY}. If no submission Span is passed into the Flight, a dummy
+ *       Submission span is created by this hook so that all Flight Spans are still correlated.
+ * </ul>
+ *
+ * <p>If a Span is not ended, it will not be exported to the tracing service.
  *
  * @see <a href="https://opencensus.io/tracing/">https://opencensus.io/tracing/</a>
  */
