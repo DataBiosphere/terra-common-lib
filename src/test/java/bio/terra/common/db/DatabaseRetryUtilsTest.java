@@ -15,6 +15,7 @@ public class DatabaseRetryUtilsTest {
   private static final CannotSerializeTransactionException RETRY_EXCEPTION =
       new CannotSerializeTransactionException("test");
 
+  @SuppressWarnings("unchecked")
   @Mock
   DatabaseRetryUtils.DatabaseOperation<Boolean> mockDatabaseOperation =
       mock(DatabaseRetryUtils.DatabaseOperation.class);

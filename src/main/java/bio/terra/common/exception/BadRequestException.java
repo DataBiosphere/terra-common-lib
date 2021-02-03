@@ -16,7 +16,7 @@ public class BadRequestException extends ErrorReportException {
   }
 
   public BadRequestException(Throwable cause) {
-    super(null, cause, null, thisStatus);
+    super(cause, thisStatus);
   }
 
   public BadRequestException(String message, List<String> causes) {

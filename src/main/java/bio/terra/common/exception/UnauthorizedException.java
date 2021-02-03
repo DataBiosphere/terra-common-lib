@@ -16,7 +16,7 @@ public class UnauthorizedException extends ErrorReportException {
   }
 
   public UnauthorizedException(Throwable cause) {
-    super(null, cause, null, thisStatus);
+    super(cause, thisStatus);
   }
 
   public UnauthorizedException(String message, List<String> causes) {

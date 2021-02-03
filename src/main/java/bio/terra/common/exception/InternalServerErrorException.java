@@ -16,7 +16,7 @@ public class InternalServerErrorException extends ErrorReportException {
   }
 
   public InternalServerErrorException(Throwable cause) {
-    super(null, cause, null, thisStatus);
+    super(cause, thisStatus);
   }
 
   public InternalServerErrorException(String message, List<String> causes) {

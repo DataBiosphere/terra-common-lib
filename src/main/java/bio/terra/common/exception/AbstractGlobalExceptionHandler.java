@@ -65,5 +65,5 @@ public abstract class AbstractGlobalExceptionHandler<T> {
     return new ResponseEntity<>(generateErrorReport(ex, statusCode, causes), statusCode);
   }
 
-  abstract T generateErrorReport(Throwable ex, HttpStatus statusCode, List<String> causes);
+  public abstract T generateErrorReport(Throwable ex, HttpStatus statusCode, List<String> causes);
 }

@@ -45,7 +45,8 @@ public class AbstractGlobalExceptionHandlerTest {
 
   private static class TestExceptionHandler extends AbstractGlobalExceptionHandler<ErrorReport> {
     @Override
-    ErrorReport generateErrorReport(Throwable ex, HttpStatus statusCode, List causes) {
+    public ErrorReport generateErrorReport(
+        Throwable ex, HttpStatus statusCode, List<String> causes) {
       return new ErrorReport(statusCode);
     }
   }
