@@ -2,6 +2,7 @@ package bio.terra.common.kubernetes;
 
 import bio.terra.common.kubernetes.exception.KubeApiException;
 import bio.terra.stairway.Stairway;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
@@ -15,8 +16,6 @@ import io.kubernetes.client.util.ClientBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * KubeService provides access to a given Kubernetes environment.
@@ -35,32 +35,46 @@ import java.util.concurrent.TimeUnit;
  * name. Then the service can compare the list of stairways it thinks should be running, compare
  * with list of active pods, and recover anything that is no longer active.
  */
-@Component
+@SuppressFBWarnings(
+    value = "DMI_HARDCODED_ABSOLUTE_FILENAME",
+    justification = "The K8s namespace file is a valid absolute filename")
 public class KubeService {
   private static final Logger logger = LoggerFactory.getLogger(KubeService.class);
 
-  private final KubeConfiguration config;
-  private final KubeShutdownState shutdownState;
+  // Location in the container where Kubernetes stores service account and
+  // namespace information. Kubernetes mints a service account for the container (pod?)
+  // that can be used to make requests of Kubernetes.
+  static final String KUBE_DIR = "/var/run/secrets/kubernetes.io/serviceaccount";
+  static final String KUBE_NAMESPACE_FILE = KUBE_DIR + "/namespace";
+
   private final String podName;
-  private final String namespace;
   private final boolean inKubernetes;
-  private final String apiPodFilter;
+  private final String podNameFilter;
+  private final String namespace;
+  private final AtomicBoolean isShutdown;
 
   private KubePodListener podListener;
   private Thread podListenerThread;
 
-  @Autowired
-  public KubeService(KubeConfiguration config, KubeShutdownState shutdownState) {
-    this.config = config;
-    this.shutdownState = shutdownState;
-    this.podName = config.getPodName();
-    this.inKubernetes = config.isInKubernetes();
-    this.apiPodFilter = config.getApiPodFilter();
+  /**
+   * @param podName Name of the Kubernetes pod we are running in. If we are not in a pod, this
+   *     defaults to a constant string in application properties. We cannot easily find our own pod
+   *     name, so components must plumb this in using settings in the helm charts.
+   * @param inKubernetes Used to denote that we are running in the Kubernetes environment. The
+   *     service can be called and provides reasonable answers when inKubernetes is false.
+   * @param podNameFilter Filter to apply to pod names returned by Kubernetes API to know which pods
+   *     we care about.
+   */
+  public KubeService(String podName, boolean inKubernetes, String podNameFilter) {
+    this.podName = podName;
+    this.inKubernetes = inKubernetes;
+    this.podNameFilter = podNameFilter;
     if (inKubernetes) {
-      this.namespace = readFileIntoString(config.getNamespaceFile());
+      this.namespace = readFileIntoString(KUBE_NAMESPACE_FILE);
     } else {
       this.namespace = "nonamespace";
     }
+    this.isShutdown = new AtomicBoolean(false);
 
     logger.info(
         "Kubernetes configuration: inKube: "
@@ -88,9 +102,11 @@ public class KubeService {
       V1PodList list =
           api.listNamespacedPod(namespace, null, null, null, null, null, null, null, null, null);
       for (V1Pod item : list.getItems()) {
-        String podName = item.getMetadata().getName();
-        if (StringUtils.contains(podName, apiPodFilter)) {
-          pods.add(podName);
+        if (item.getMetadata() != null) {
+          String podName = item.getMetadata().getName();
+          if (StringUtils.contains(podName, podNameFilter)) {
+            pods.add(podName);
+          }
         }
       }
       return pods;
@@ -103,18 +119,18 @@ public class KubeService {
     // We want deployment to be unique for every run in the non-Kubernetes environment
     String uid = "fake" + UUID.randomUUID().toString();
     if (inKubernetes) {
-      V1Deployment deployment = getApiDeployment();
-      if (deployment != null) {
+      V1Deployment deployment = getPodDeployment();
+      if (deployment != null && deployment.getMetadata() != null) {
         uid = deployment.getMetadata().getUid();
       }
     }
     return uid;
   }
 
-  // Common method to pull out the api deployment. We expect to have only one api deployment. If
-  // there is more than
-  // one, this will return the first one it finds.
-  private V1Deployment getApiDeployment() {
+  // Method to pull out the pod deployment. We expect to have only one deployment at a time
+  // for a given podNameFilter but there can be more than one in some upgrade scenarios. If
+  // there is more than one, this will return the first one it finds.
+  private V1Deployment getPodDeployment() {
     try {
       AppsV1Api appsapi = makeDeploymentApi();
       V1DeploymentList deployments =
@@ -122,9 +138,11 @@ public class KubeService {
               namespace, null, null, null, null, null, null, null, null, null);
 
       for (V1Deployment item : deployments.getItems()) {
-        String deploymentName = item.getMetadata().getName();
-        if (StringUtils.contains(deploymentName, apiPodFilter)) {
-          return item;
+        if (item.getMetadata() != null) {
+          String deploymentName = item.getMetadata().getName();
+          if (StringUtils.contains(deploymentName, podNameFilter)) {
+            return item;
+          }
         }
       }
     } catch (ApiException ex) {
@@ -140,7 +158,7 @@ public class KubeService {
    */
   public void startPodListener(Stairway stairway) {
     if (inKubernetes) {
-      podListener = new KubePodListener(shutdownState, stairway, namespace, apiPodFilter);
+      podListener = new KubePodListener(this, stairway, namespace, podNameFilter);
       podListenerThread = new Thread(podListener);
       podListenerThread.start();
     }
@@ -175,6 +193,26 @@ public class KubeService {
     return defaultPodCount;
   }
 
+  public void clearShutdown() {
+    isShutdown.set(false);
+  }
+
+  public void setShutdown() {
+    isShutdown.set(true);
+  }
+
+  public boolean isShutdown() {
+    return isShutdown.get();
+  }
+
+  public String getPodName() {
+    return podName;
+  }
+
+  public String getNamespace() {
+    return namespace;
+  }
+
   private CoreV1Api makeCoreApi() {
     try {
       ApiClient client = ClientBuilder.cluster().build();
@@ -193,14 +231,6 @@ public class KubeService {
     } catch (IOException ex) {
       throw new KubeApiException("Error making deployment API", ex);
     }
-  }
-
-  public String getPodName() {
-    return podName;
-  }
-
-  public String getNamespace() {
-    return namespace;
   }
 
   private String readFileIntoString(String path) {

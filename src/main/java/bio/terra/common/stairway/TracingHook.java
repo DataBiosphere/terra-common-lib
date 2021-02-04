@@ -60,12 +60,18 @@ public class TracingHook implements StairwayHook {
   /**
    * Serialize the current Span's {@link SpanContext}. To be used to store a submission Span for the
    * Flight with {@link #SUBMISSION_SPAN_CONTEXT_MAP_KEY}.
+   *
+   * @return Serialized context
    */
   public static Object serializeCurrentTracingContext() {
     return encodeContext(Tracing.getTracer().getCurrentSpan().getContext());
   }
 
-  /** Store the current Span's {@link SpanContext} as the submission Span. */
+  /**
+   * Store the current Span's {@link SpanContext} as the submission Span.
+   *
+   * @param inputMap flight map to use to store the context
+   */
   public static void storeCurrentContextAsSubmission(FlightMap inputMap) {
     inputMap.put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, serializeCurrentTracingContext());
   }

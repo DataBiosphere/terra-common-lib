@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class KubePodListener implements Runnable {
   private static final int WATCH_MAX_WAIT = 30;
 
   private final Logger logger = LoggerFactory.getLogger(KubePodListener.class);
-  private final KubeShutdownState shutdownState;
+  private final KubeService kubeService;
   private final String namespace;
   private final String apiPodFilter;
   private final Stairway stairway;
@@ -54,14 +54,14 @@ public class KubePodListener implements Runnable {
   /**
    * Setup the listener configuration.
    *
-   * @param shutdownState An object holding the state that a shutdown is requested or not
+   * @param kubeService The parent service, used to check the shutdown state
    * @param stairway The Stairway instance to use for recovering deleted pods
    * @param namespace Kubernetes namespace to listen in
    * @param apiPodFilter Only pods with names containing this string are attended to by the listener
    */
   public KubePodListener(
-      KubeShutdownState shutdownState, Stairway stairway, String namespace, String apiPodFilter) {
-    this.shutdownState = shutdownState;
+      KubeService kubeService, Stairway stairway, String namespace, String apiPodFilter) {
+    this.kubeService = kubeService;
     this.namespace = namespace;
     this.apiPodFilter = apiPodFilter;
     this.stairway = stairway;
@@ -95,7 +95,7 @@ public class KubePodListener implements Runnable {
                 new TypeToken<Watch.Response<V1Namespace>>() {}.getType())) {
           for (Watch.Response<V1Namespace> item : watch) {
             // If we are shutting down, we stop watching
-            if (shutdownState.isShutdown()) {
+            if (kubeService.isShutdown()) {
               return;
             }
             // Reset retry if the watch worked
@@ -103,7 +103,10 @@ public class KubePodListener implements Runnable {
             retryWait = WATCH_INITIAL_WAIT;
 
             String operation = item.type;
-            String podName = item.object.getMetadata().getName();
+            String podName =
+                (item.object.getMetadata() != null)
+                    ? item.object.getMetadata().getName()
+                    : org.apache.commons.lang3.StringUtils.EMPTY;
             logger.info(String.format("%s : %s", operation, podName));
 
             if (StringUtils.contains(podName, apiPodFilter)) {
