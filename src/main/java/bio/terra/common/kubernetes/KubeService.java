@@ -12,6 +12,12 @@ import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.util.ClientBuilder;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,11 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * KubeService provides access to a given Kubernetes environment.
@@ -132,10 +133,14 @@ public class KubeService {
     return null;
   }
 
-  /** Launch the pod listener thread. */
+  /**
+   * Launch the {@link KubePodListener} thread.
+   *
+   * @param stairway the Stairway instance passed to the pod listener for Stairway recovery
+   */
   public void startPodListener(Stairway stairway) {
     if (inKubernetes) {
-      podListener = new KubePodListener(shutdownState, stairway, namespace, podName, apiPodFilter);
+      podListener = new KubePodListener(shutdownState, stairway, namespace, apiPodFilter);
       podListenerThread = new Thread(podListener);
       podListenerThread.start();
     }
@@ -163,8 +168,7 @@ public class KubeService {
 
   public int getActivePodCount() {
     if (podListener != null) {
-      int podCount = podListener.getActivePodCount();
-      return podCount;
+      return podListener.getActivePodCount();
     }
     int defaultPodCount = 1;
     logger.info("KubeService ActivePodCount - default val: {}", defaultPodCount);

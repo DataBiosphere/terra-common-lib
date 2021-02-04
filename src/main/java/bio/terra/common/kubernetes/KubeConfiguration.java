@@ -21,14 +21,10 @@ public class KubeConfiguration {
    */
   private boolean inKubernetes;
 
-  /**
-   *  Filter to apply to pod names returned by Kubernetes API.
-   */
+  /** Filter to apply to pod names returned by Kubernetes API. */
   private String apiPodFilter;
 
-  /**
-   * File containing Kubernetes namespace to use.
-   */
+  /** File containing Kubernetes namespace to use. */
   private String namespaceFile;
 
   public String getPodName() {

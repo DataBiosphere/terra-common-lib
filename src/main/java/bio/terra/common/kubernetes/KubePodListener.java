@@ -4,6 +4,7 @@ import bio.terra.stairway.Stairway;
 import bio.terra.stairway.exception.DatabaseOperationException;
 import bio.terra.stairway.exception.StairwayExecutionException;
 import com.google.common.reflect.TypeToken;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
@@ -20,6 +21,23 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Kubernetes Pod Listener listens for pod creation and deletion events within a namespace. When
+ * a pod is deleted, the listener tells Stairway to perform recovery on flights owned by the
+ * Stairway with that pod name. It works so long as the pod name is used as the stairway instance
+ * name when the Stairway object is created.
+ *
+ * <p>Typically, there are different types of pods in a namespace. We only want to listen to pods
+ * that are making a Stairway cluster. We rely on consistent pod naming to filter for those pods.
+ * The listener accepts a string and only attends to pods whose names contain that string.
+ *
+ * <p>Experience shows that the watch on the Kubernetes pod list is not stable. It drops and is
+ * recreated in a retry loop. Happily, recreating the watch causes Kubernetes to reiterate all of
+ * the current pods, so the listener does not miss state changes.
+ */
+@SuppressFBWarnings(
+    value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+    justification = "Spotbugs doesn't understand resource try construct")
 public class KubePodListener implements Runnable {
   private static final int WATCH_RETRIES = 10;
   private static final int WATCH_INITIAL_WAIT = 5;
@@ -28,21 +46,23 @@ public class KubePodListener implements Runnable {
   private final Logger logger = LoggerFactory.getLogger(KubePodListener.class);
   private final KubeShutdownState shutdownState;
   private final String namespace;
-  private final String thisPod;
   private final String apiPodFilter;
   private final Stairway stairway;
   private Exception exception;
-  private Map<String, Boolean> podMap; // pod name; true means running; false means deleted
+  private final Map<String, Boolean> podMap; // pod name; true means running; false means deleted
 
+  /**
+   * Setup the listener configuration.
+   *
+   * @param shutdownState An object holding the state that a shutdown is requested or not
+   * @param stairway The Stairway instance to use for recovering deleted pods
+   * @param namespace Kubernetes namespace to listen in
+   * @param apiPodFilter Only pods with names containing this string are attended to by the listener
+   */
   public KubePodListener(
-      KubeShutdownState shutdownState,
-      Stairway stairway,
-      String namespace,
-      String thisPod,
-      String apiPodFilter) {
+      KubeShutdownState shutdownState, Stairway stairway, String namespace, String apiPodFilter) {
     this.shutdownState = shutdownState;
     this.namespace = namespace;
-    this.thisPod = thisPod;
     this.apiPodFilter = apiPodFilter;
     this.stairway = stairway;
     this.exception = null;
