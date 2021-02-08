@@ -15,10 +15,9 @@ import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.propagation.SpanContextParseException;
-import org.apache.commons.lang3.ClassUtils;
-
 import java.util.Base64;
 import java.util.Optional;
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  * A {@link StairwayHook} to add support for tracing execution of Stairway flights with OpenCensus.
