@@ -12,14 +12,15 @@ import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1Namespace;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Kubernetes Pod Listener listens for pod creation and deletion events within a namespace. When
@@ -46,7 +47,7 @@ public class KubePodListener implements Runnable {
   private final Logger logger = LoggerFactory.getLogger(KubePodListener.class);
   private final KubeService kubeService;
   private final String namespace;
-  private final String apiPodFilter;
+  private final String podNameFilter;
   private final Stairway stairway;
   private Exception exception;
   private final Map<String, Boolean> podMap; // pod name; true means running; false means deleted
@@ -57,17 +58,19 @@ public class KubePodListener implements Runnable {
    * @param kubeService The parent service, used to check the shutdown state
    * @param stairway The Stairway instance to use for recovering deleted pods
    * @param namespace Kubernetes namespace to listen in
-   * @param apiPodFilter Only pods with names containing this string are attended to by the listener
+   * @param podNameFilter Only pods with names containing this string are attended to by the listener
    */
   public KubePodListener(
-      KubeService kubeService, Stairway stairway, String namespace, String apiPodFilter) {
+      KubeService kubeService, Stairway stairway, String namespace, String podNameFilter) {
     this.kubeService = kubeService;
     this.namespace = namespace;
-    this.apiPodFilter = apiPodFilter;
+    this.podNameFilter = podNameFilter;
     this.stairway = stairway;
     this.exception = null;
 
-    podMap = new HashMap<>();
+    // The map must be concurrent, since the computation of active pods may be done on different
+    // threads than the pod listener accesses.
+    podMap = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -109,7 +112,7 @@ public class KubePodListener implements Runnable {
                     : org.apache.commons.lang3.StringUtils.EMPTY;
             logger.info(String.format("%s : %s", operation, podName));
 
-            if (StringUtils.contains(podName, apiPodFilter)) {
+            if (StringUtils.contains(podName, podNameFilter)) {
               if (StringUtils.equals(operation, "ADDED")) {
                 logger.info("Added api pod: " + podName);
                 podMap.put(podName, true);

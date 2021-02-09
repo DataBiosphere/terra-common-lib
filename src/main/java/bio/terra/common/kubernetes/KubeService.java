@@ -6,25 +6,22 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
-import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1Deployment;
-import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.util.ClientBuilder;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * KubeService provides access to a given Kubernetes environment.
@@ -88,9 +85,9 @@ public class KubeService {
    * Get a list of the API pods from Kubernetes. It is returned as a set to make probing for
    * specific names easy.
    *
-   * @return set of pod names containing the API_POD_FILTER string; null if not in kubernetes
+   * @return set of pod names containing the podNameFilter string; null if not in kubernetes
    */
-  public Set<String> getApiPodList() {
+  public Set<String> getPodList() {
     Set<String> pods = new HashSet<>();
     if (!inKubernetes) {
       return pods;
@@ -112,42 +109,6 @@ public class KubeService {
     } catch (ApiException ex) {
       throw new KubeApiException("Error listing pods", ex);
     }
-  }
-
-  public String getApiDeploymentUid() {
-    // We want deployment to be unique for every run in the non-Kubernetes environment
-    String uid = "fake" + UUID.randomUUID().toString();
-    if (inKubernetes) {
-      V1Deployment deployment = getPodDeployment();
-      if (deployment != null && deployment.getMetadata() != null) {
-        uid = deployment.getMetadata().getUid();
-      }
-    }
-    return uid;
-  }
-
-  // Method to pull out the pod deployment. We expect to have only one deployment at a time
-  // for a given podNameFilter but there can be more than one in some upgrade scenarios. If
-  // there is more than one, this will return the first one it finds.
-  private V1Deployment getPodDeployment() {
-    try {
-      AppsV1Api appsapi = makeDeploymentApi();
-      V1DeploymentList deployments =
-          appsapi.listNamespacedDeployment(
-              namespace, null, null, null, null, null, null, null, null, null);
-
-      for (V1Deployment item : deployments.getItems()) {
-        if (item.getMetadata() != null) {
-          String deploymentName = item.getMetadata().getName();
-          if (StringUtils.contains(deploymentName, podNameFilter)) {
-            return item;
-          }
-        }
-      }
-    } catch (ApiException ex) {
-      throw new KubeApiException("Error listing deployments", ex);
-    }
-    return null;
   }
 
   /**
@@ -219,16 +180,6 @@ public class KubeService {
       return new CoreV1Api();
     } catch (IOException ex) {
       throw new KubeApiException("Error making core API", ex);
-    }
-  }
-
-  private AppsV1Api makeDeploymentApi() {
-    try {
-      ApiClient client = ClientBuilder.cluster().build();
-      Configuration.setDefaultApiClient(client);
-      return new AppsV1Api();
-    } catch (IOException ex) {
-      throw new KubeApiException("Error making deployment API", ex);
     }
   }
 
