@@ -12,15 +12,14 @@ import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1Namespace;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
-import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Kubernetes Pod Listener listens for pod creation and deletion events within a namespace. When
@@ -39,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressFBWarnings(
     value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
     justification = "Spotbugs doesn't understand resource try construct")
-public class KubePodListener implements Runnable {
+class KubePodListener implements Runnable {
   private static final int WATCH_RETRIES = 10;
   private static final int WATCH_INITIAL_WAIT = 5;
   private static final int WATCH_MAX_WAIT = 30;
@@ -58,9 +57,10 @@ public class KubePodListener implements Runnable {
    * @param kubeService The parent service, used to check the shutdown state
    * @param stairway The Stairway instance to use for recovering deleted pods
    * @param namespace Kubernetes namespace to listen in
-   * @param podNameFilter Only pods with names containing this string are attended to by the listener
+   * @param podNameFilter Only pods with names containing this string are attended to by the
+   *     listener
    */
-  public KubePodListener(
+  KubePodListener(
       KubeService kubeService, Stairway stairway, String namespace, String podNameFilter) {
     this.kubeService = kubeService;
     this.namespace = namespace;
@@ -163,15 +163,15 @@ public class KubePodListener implements Runnable {
     }
   }
 
-  public Exception getException() {
+  Exception getException() {
     return exception;
   }
 
-  public Map<String, Boolean> getPodMap() {
+  Map<String, Boolean> getPodMap() {
     return podMap;
   }
 
-  public int getActivePodCount() {
+  int getActivePodCount() {
     int count = 0;
     for (Boolean isActive : podMap.values()) {
       if (isActive) {

@@ -124,15 +124,27 @@ public class KubeService {
     }
   }
 
+  public int getActivePodCount() {
+    if (podListener != null) {
+      return podListener.getActivePodCount();
+    }
+    int defaultPodCount = 1;
+    logger.info("KubeService ActivePodCount - default val: {}", defaultPodCount);
+    return defaultPodCount;
+  }
+
   /**
-   * Stop the pod listener thread within a given time span.
+   * Stop pod listener flips the isShutdown flag so we don't do it more than once. It tries to join
+   * the pod listener thread.
    *
-   * @param timeUnit unit of the joinWait
-   * @param joinWait number of units to wait for the listener thread to stop
-   * @return true if the thread joined in the time span. False otherwise.
+   * @param timeUnit time unit to wait for the listener thread to stop
+   * @param joinWait time in the time unit to wait
+   * @return true if we joined the listener thread; false if that timed out
    */
   public boolean stopPodListener(TimeUnit timeUnit, long joinWait) {
-    if (inKubernetes) {
+    if (!isShutdown.get() && inKubernetes) {
+      isShutdown.set(true);
+      // stop the pod listener thread
       podListenerThread.interrupt();
       long waitMillis = timeUnit.toMillis(joinWait);
       try {
@@ -144,33 +156,17 @@ public class KubeService {
     return true;
   }
 
-  public int getActivePodCount() {
-    if (podListener != null) {
-      return podListener.getActivePodCount();
-    }
-    int defaultPodCount = 1;
-    logger.info("KubeService ActivePodCount - default val: {}", defaultPodCount);
-    return defaultPodCount;
-  }
-
-  public void clearShutdown() {
-    isShutdown.set(false);
-  }
-
-  public void setShutdown() {
-    isShutdown.set(true);
-  }
-
-  public boolean isShutdown() {
-    return isShutdown.get();
-  }
-
   public String getPodName() {
     return podName;
   }
 
   public String getNamespace() {
     return namespace;
+  }
+
+  // Method for pod listener to test shutdown state
+  boolean isShutdown() {
+    return isShutdown.get();
   }
 
   private CoreV1Api makeCoreApi() {
@@ -188,8 +184,7 @@ public class KubeService {
       byte[] encoded = Files.readAllBytes(Paths.get(path));
       return new String(encoded, StandardCharsets.UTF_8);
     } catch (IOException e) {
-      logger.error("Failed to read file: " + path + "; ", e);
-      return null;
+      throw new KubeApiException("Failed to read file: " + path, e);
     }
   }
 }
