@@ -1,5 +1,6 @@
 package bio.terra.common.logging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public class LoggingTestController {
   }
 
   @GetMapping("/testStructuredLogging")
-  public String testStructuredLogging() {
+  public String testStructuredLogging() throws JsonProcessingException {
     LOG.info("Some event happened", LoggingUtils.jsonFromString("{foo: 'bar'}"));
     LOG.info("Another event", LoggingUtils.jsonFromString("{a: 1, b: 2}"));
 

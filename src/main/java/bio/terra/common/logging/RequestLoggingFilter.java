@@ -28,7 +28,7 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 /**
- * A Servlet filter that collects and logs structured information about a HTTP requset and response.
+ * A Servlet filter that collects and logs structured information about a HTTP request and response.
  *
  * <p>The complete request and response details are logged at DEBUG level, while a short summary
  * message is logged at INFO level.
@@ -39,9 +39,11 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  * then sent to the logging subsystem by appending it as an additional argument to the log.info
  * call.
  */
-public class RequestLoggingFilter implements Filter {
+class RequestLoggingFilter implements Filter {
 
   Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
+
+  static final int MAX_PAYLOAD_TO_DEBUG_LOG = 10000;
 
   @Override
   public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
@@ -77,19 +79,21 @@ public class RequestLoggingFilter implements Filter {
         getGoogleHttpRequestObject(request, response, latency, requestSize, responseSize));
     json.set("requestHeaders", new ServletServerHttpRequest(request).getHeaders());
 
+    String requestPath = null;
     try {
       URI uri = new URI(request.getRequestURI());
-      String message =
-          String.format("%s %s %s", request.getMethod(), uri.getPath(), response.getStatus());
-
-      // Log the message, and include the supplementary JSON as an additional arg.
-      // If GoogleJsonLayout has been loaded, it will merge the JSON into the structured log output
-      // for ingestion by Cloud Logging. If the default logback layout is being used, the JSON
-      // argument will be ignored.
-      log.info(message, json);
+      requestPath = uri.getPath();
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      log.error("Error parsing request path. Logging the full URI instead.", e);
+      requestPath = request.getRequestURI();
     }
+    // Log the message, and include the supplementary JSON as an additional arg.
+    // If GoogleJsonLayout has been loaded, it will merge the JSON into the structured log output
+    // for ingestion by Cloud Logging. If the default logback layout is being used, the JSON
+    // argument will be ignored.
+    String message =
+        String.format("%s %s %s", request.getMethod(), requestPath, response.getStatus());
+    log.info(message, json);
 
     debugLogResponse(response);
   }
@@ -118,10 +122,11 @@ public class RequestLoggingFilter implements Filter {
     if (request instanceof ContentCachingRequestWrapper) {
       ContentCachingRequestWrapper wrapper = (ContentCachingRequestWrapper) request;
       byte[] buf = wrapper.getContentAsByteArray();
-      int length = Math.min(buf.length, 10000);
+      int length = Math.min(buf.length, MAX_PAYLOAD_TO_DEBUG_LOG);
       try {
         json.put("payload", new String(buf, 0, length, wrapper.getCharacterEncoding()));
       } catch (UnsupportedEncodingException e) {
+        log.debug("Error reading request payload", e);
       }
     }
     log.debug(json.toPrettyString());
@@ -139,10 +144,11 @@ public class RequestLoggingFilter implements Filter {
     if (response instanceof ContentCachingResponseWrapper) {
       ContentCachingResponseWrapper wrapper = (ContentCachingResponseWrapper) response;
       byte[] buf = wrapper.getContentAsByteArray();
-      int length = Math.min(buf.length, 10000);
+      int length = Math.min(buf.length, MAX_PAYLOAD_TO_DEBUG_LOG);
       try {
         json.put("payload", new String(buf, 0, length, wrapper.getCharacterEncoding()));
       } catch (UnsupportedEncodingException e) {
+        log.debug("Error reading response payload", e);
       }
     }
     log.debug(json.toPrettyString());
@@ -163,6 +169,7 @@ public class RequestLoggingFilter implements Filter {
       URI uri = new URI(request.getRequestURI());
       path = uri.getPath();
     } catch (URISyntaxException e) {
+      log.error("Error parsing request path", e);
     }
 
     HttpRequest httpRequest =

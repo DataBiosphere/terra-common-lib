@@ -53,8 +53,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = LoggingTestApplication.class)
 @ContextConfiguration(
     // This is the simplest way to trigger LoggingInitializer from within this test. See
-    // LoggingTestApplication
-    // for an example of how a real-world application would initialize the logging flow.
+    // LoggingTestApplication for an example of how a real-world application would initialize the
+    // logging flow.
     initializers = LoggingInitializer.class,
     // This line is required to cause Spring to attach the MockSpanFilter to the HttpServlet. Real
     // applications would presumably have some logic to autogeneate spans on HTTP requests, e.g.
@@ -84,7 +84,9 @@ public class LoggingTest {
       requestSpanContext = Tracing.getTracer().getCurrentSpan().getContext();
       chain.doFilter(request, response);
       // Note: we purposefully don't close the scope here. For some reason, it doesn't seem possible
-      // to inject this filter into the servlet at high enough precedence to
+      // to inject this filter into the servlet at high enough precedence to ensure it covers the
+      // entire RequestLoggingFilter lifetime. By not closing the scope here, we can ensure that the
+      // tracing span is available as context when an inbound request ultimately gets logged.
     }
   }
 
@@ -153,7 +155,7 @@ public class LoggingTest {
    * for details on the invocation.
    */
   @Test
-  public void setTestStructuredLogging() {
+  public void testStructuredLogging() {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testStructuredLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
