@@ -45,8 +45,8 @@ import org.springframework.util.StringUtils;
  * <p>Example usage:
  *
  * <pre>
- *   log.info(
- *
+ *   // Send arbitrary JSON to the JSON layout
+ *   log.info("My Event", LoggingUtils.jsonFromString("{eventId: 'MY_EVENT'}"));
  * </pre>
  */
 public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
@@ -190,7 +190,6 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
   private void addTraceId(Map<String, Object> map) {
     TraceId traceId = tracer.getCurrentSpan().getContext().getTraceId();
-    System.out.println(traceId.toString());
     if (traceId.equals(TraceId.INVALID)) {
       return;
     }
@@ -208,7 +207,6 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
   private void addSpanId(Map<String, Object> map) {
     SpanId spanId = tracer.getCurrentSpan().getContext().getSpanId();
-    System.out.println(spanId.toString());
     if (spanId.equals(SpanId.INVALID)) {
       return;
     }
