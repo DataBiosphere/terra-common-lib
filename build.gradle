@@ -29,22 +29,23 @@ def OPENCENSUS_VERSION = '0.28.2'
 
 dependencies {
     implementation group: 'bio.terra', name: 'stairway', version: '0.0.37-SNAPSHOT'
-    implementation group: 'bio.terra', name: 'stairway', version: '0.0.20'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'com.google.cloud', name: 'google-cloud-core', version: '1.94.0'
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev662-1.18.0-rc'
     implementation group: 'io.kubernetes', name: 'client-java', version: '10.0.0'
     implementation group: 'io.opencensus', name: 'opencensus-api', version: OPENCENSUS_VERSION
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
-    implementation group: "org.hashids", name: "hashids", version: "1.0.3"
+    implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
     implementation group: 'org.liquibase' , name: 'liquibase-core', version: '3.10.0'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
-    implementation group: 'org.springframework' , name: 'spring-context', version: '5.3.2'
+    implementation group: 'org.springframework' , name: 'spring-context', version: '5.2.7.RELEASE'
+    implementation group: 'org.springframework' , name: 'spring-core', version: '5.2.7.RELEASE'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
     implementation group: 'org.springframework.cloud', name: 'spring-cloud-gcp-logging', version: '1.2.6.RELEASE'
 
-    runtimeOnly group: "io.opencensus", name: "opencensus-impl", version: OPENCENSUS_VERSION
+    runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
 
     api group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
@@ -52,15 +53,18 @@ dependencies {
     implementation 'com.google.code.findbugs:annotations:3.0.1'
 
     // For test
+    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
     testImplementation group: "io.opencensus", name: "opencensus-impl", version: "0.28.2"
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.+'
+    testImplementation group: 'org.springframework' , name: 'spring-core', version: '5.2.7.RELEASE'
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
 
-    annotationProcessor group: "com.google.auto.value", name: "auto-value", version: "1.7.4"
-    annotationProcessor group: "org.springframework.boot", name: "spring-boot-configuration-processor"
+    annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: '1.7.4'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
 }
 
 dependencyLocking {
