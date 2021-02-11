@@ -9,8 +9,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-public class LoggingInitializer
-    implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+class LoggingInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
   public static final String TERRA_APPENDER_NAME = "terra-common";
 
@@ -19,20 +18,11 @@ public class LoggingInitializer
     ch.qos.logback.classic.Logger logbackLogger =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     ConfigurableEnvironment environment = applicationContext.getEnvironment();
-    // MutablePropertySources propertySources = environment.getPropertySources();
 
     if (Arrays.stream(environment.getActiveProfiles()).anyMatch("human-readable-logging"::equals)) {
       System.out.println("Human-readable logging enabled, skipping Google JSON layout");
-      // propertySources.addLast(
-      //     new MapPropertySource(
-      //         "logging-properties", Map.of("terra.common.logging.human-readable-format",
-      // "true")));
       return;
     }
-
-    // propertySources.addLast(
-    //     new MapPropertySource(
-    //         "logging-properties", Map.of("terra.common.logging.google-format", "true")));
 
     logbackLogger.detachAndStopAllAppenders();
     GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
@@ -45,6 +35,7 @@ public class LoggingInitializer
     ConsoleAppender appender = new ConsoleAppender();
     appender.setName(TERRA_APPENDER_NAME);
     appender.setEncoder(encoder);
+    appender.setContext(logbackLogger.getLoggerContext());
     appender.start();
 
     logbackLogger.addAppender(appender);

@@ -3,9 +3,10 @@ package bio.terra.common.logging;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
 import ch.qos.logback.classic.spi.CallerData;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.contrib.jackson.JacksonJsonFormatter;
 import ch.qos.logback.contrib.json.JsonLayoutBase;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.ServiceOptions;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
@@ -30,7 +31,7 @@ import org.springframework.util.StringUtils;
  * including so-called "special fields in JSON payloads". See
  * https://cloud.google.com/logging/docs/structured-logging#special-payload-fields for more details.
  *
- * <p>A goal of this class is to product maximally useful logs for operating Terra services on
+ * <p>A goal of this class is to produce maximally useful logs for operating Terra services on
  * Google Cloud, including correlation with trace details and inclusion of useful metadata such as
  * HTTP request info and MDC key-value pairs.
  *
@@ -54,7 +55,7 @@ import org.springframework.util.StringUtils;
  * https://github.com/ankurcha/gcloud-logging-slf4j-logback/ which inspired some of the patterns
  * used here.
  */
-public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
+class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
   private Tracer tracer = Tracing.getTracer();
 
@@ -75,7 +76,7 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
     // Configure the superclass.
     this.appendLineSeparator = true;
-    setJsonFormatter(new Gson()::toJson);
+    setJsonFormatter(new JacksonJsonFormatter());
   }
 
   @Override
@@ -105,12 +106,12 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
     map.put("severity", String.valueOf(event.getLevel()));
     map.put("message", getMessage(event));
-    map.put(
-        "serviceContext",
-        Map.of(
-            "service", applicationContext.getEnvironment().getProperty("spring.application.name"),
-            "version",
-                applicationContext.getEnvironment().getProperty("spring.application.version")));
+    Map<String, Object> serviceContextMap = new HashMap<>();
+    serviceContextMap.put(
+        "service", applicationContext.getEnvironment().getProperty("spring.application.name"));
+    serviceContextMap.put(
+        "version", applicationContext.getEnvironment().getProperty("spring.application.version"));
+    map.put("serviceContext", serviceContextMap);
 
     map.put("context", event.getLoggerContextVO().getName());
     map.put("thread", event.getThreadName());
@@ -130,12 +131,19 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     // This is how e.g. the RequestLoggingFilter adds the 'httpRequest' object to the JSON output.
     if (event.getArgumentArray() != null) {
       for (Object arg : event.getArgumentArray()) {
-        if (arg instanceof Map) {
-          Map<String, Object> jsonMap = (Map<String, Object>) arg;
-          jsonMap.forEach(map::put);
-        } else if (arg instanceof JsonObject) {
-          JsonObject jsonObject = (JsonObject) arg;
-          jsonObject.entrySet().forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+        try {
+          if (arg instanceof Map) {
+            Map<String, Object> jsonMap = (Map<String, Object>) arg;
+            jsonMap.forEach(map::put);
+          } else if (arg instanceof JsonNode) {
+            JsonNode jsonNode = (JsonNode) arg;
+            jsonNode.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
+          } else if (arg instanceof JsonObject) {
+            JsonObject jsonObject = (JsonObject) arg;
+            jsonObject.entrySet().forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+          }
+        } catch (Exception e) {
+          System.err.println(String.format("Error parsing JSON: %s", e));
         }
       }
     }

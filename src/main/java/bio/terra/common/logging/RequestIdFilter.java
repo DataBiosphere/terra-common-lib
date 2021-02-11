@@ -21,6 +21,7 @@ import org.slf4j.MDC;
  *
  * <p>The requestId is added to the MDC context and set as a response header.
  */
+@VisibleForTesting
 public class RequestIdFilter implements Filter {
 
   public static final String REQUEST_ID_HEADER = "X-Request-ID";

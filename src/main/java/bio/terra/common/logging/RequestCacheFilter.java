@@ -15,7 +15,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  * A Servlet filter that wraps the request and response in a ContentCachingFooWrapper, to allow the
  * payloads to be read by intermediate filters, i.e. the RequestLoggingFilter.
  */
-public class RequestCacheFilter implements Filter {
+class RequestCacheFilter implements Filter {
 
   @Override
   public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
