@@ -164,12 +164,15 @@ public class LoggingTest {
 
     String event1 = null;
     String event2 = null;
+    String event3 = null;
     for (String line : lines) {
       String message = (String) readJson(line, "$.message");
       if (message != null && message.contains("Some event happened")) {
         event1 = line;
       } else if (message != null && message.contains("Another event")) {
         event2 = line;
+      } else if (message != null && message.contains("Structured data")) {
+        event3 = line;
       }
     }
 
@@ -180,6 +183,10 @@ public class LoggingTest {
     assertThat(event2).isNotNull();
     assertThat((Integer) readJson(event2, "$.a")).isEqualTo(1);
     assertThat((Integer) readJson(event2, "$.b")).isEqualTo(2);
+
+    assertThat(event3).isNotNull();
+    assertThat((String) readJson(event3, "$.pojo.name")).isEqualTo("asdf");
+    assertThat((Integer) readJson(event3, "$.pojo.id")).isEqualTo(1234);
   }
 
   // Uses the JsonPath library to extract data from a given path within a JSON string.

@@ -12,20 +12,31 @@ public class LoggingTestController {
   private static final Logger LOG = LoggerFactory.getLogger(LoggingTestController.class);
 
   @GetMapping("/testRequestLogging")
-  public String testRequestLogging() {
+  public void testRequestLogging() {
     LOG.trace("This is a TRACE log");
     LOG.debug("This is a DEBUG log");
     LOG.info("This is an INFO log");
     LOG.error("This is an ERROR log");
+  }
 
-    return "Added some log output to console...";
+  class StructuredDataPojo {
+    public String name;
+    public int id;
   }
 
   @GetMapping("/testStructuredLogging")
-  public String testStructuredLogging() throws JsonProcessingException {
+  public void testStructuredLogging() throws JsonProcessingException {
+    // Test a simple key-value pair. Should show up as {... "foo": "bar", ...}
     LOG.info("Some event happened", LoggingUtils.jsonFromString("{foo: 'bar'}"));
+
+    // Test a map with integer values. Should show up as {... "a": 1, "b": 2, ...}
     LOG.info("Another event", LoggingUtils.jsonFromString("{a: 1, b: 2}"));
 
-    return "Logged with arbitrary key-value pairs";
+    // Test structured object serialization.
+    // Should show up as {... "pojo": { "name": "asdf", "id": 1234 }, ...}
+    StructuredDataPojo pojo = new StructuredDataPojo();
+    pojo.name = "asdf";
+    pojo.id = 1234;
+    LOG.info("Structured data", LoggingUtils.structuredLogData("pojo", pojo));
   }
 }
