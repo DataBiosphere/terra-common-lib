@@ -145,7 +145,7 @@ task unitTest(type: Test) {
 }
 
 java {
-     withJavadocJar()
+    withJavadocJar()
 }
 
 def artifactory_repo_key = System.getenv("ARTIFACTORY_REPO_KEY") != null ? System.getenv("ARTIFACTORY_REPO_KEY") : 'libs-snapshot-local'
