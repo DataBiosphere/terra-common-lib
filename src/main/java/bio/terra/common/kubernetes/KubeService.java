@@ -82,12 +82,12 @@ public class KubeService {
   }
 
   /**
-   * Get a list of the API pods from Kubernetes. It is returned as a set to make probing for
+   * Get the set of filtered pods from Kubernetes. It is returned as a set to make probing for
    * specific names easy.
    *
    * @return set of pod names containing the podNameFilter string; null if not in kubernetes
    */
-  public Set<String> getPodList() {
+  public Set<String> getPodSet() {
     Set<String> pods = new HashSet<>();
     if (!inKubernetes) {
       return pods;

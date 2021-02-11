@@ -39,6 +39,12 @@ import org.slf4j.LoggerFactory;
     value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
     justification = "Spotbugs doesn't understand resource try construct")
 class KubePodListener implements Runnable {
+
+  enum PodState {
+    RUNNING,
+    DELETED
+  }
+
   private static final int WATCH_RETRIES = 10;
   private static final int WATCH_INITIAL_WAIT = 5;
   private static final int WATCH_MAX_WAIT = 30;
@@ -49,7 +55,7 @@ class KubePodListener implements Runnable {
   private final String podNameFilter;
   private final Stairway stairway;
   private Exception exception;
-  private final Map<String, Boolean> podMap; // pod name; true means running; false means deleted
+  private final Map<String, PodState> podMap;
 
   /**
    * Setup the listener configuration.
@@ -115,18 +121,18 @@ class KubePodListener implements Runnable {
             if (StringUtils.contains(podName, podNameFilter)) {
               if (StringUtils.equals(operation, "ADDED")) {
                 logger.info("Added api pod: " + podName);
-                podMap.put(podName, true);
+                podMap.put(podName, PodState.RUNNING);
               } else if (StringUtils.equals(operation, "DELETED")) {
                 try {
                   logger.info("Attempting clean up of deleted stairway instance: " + podName);
                   stairway.recoverStairway(podName);
-                  Boolean deletedPodValue = podMap.get(podName);
-                  if (deletedPodValue != null && deletedPodValue) {
+                  PodState deletedPodValue = podMap.get(podName);
+                  if (deletedPodValue == PodState.RUNNING) {
                     logger.info("Deleted api pod: " + podName);
-                    podMap.put(podName, false);
+                    podMap.put(podName, PodState.DELETED);
                   }
                 } catch (DatabaseOperationException | StairwayExecutionException ex) {
-                  logger.error("Stairway recoveryStairway failed to recovery pod: " + podName, ex);
+                  logger.error("Stairway recoverStairway failed to recover pod: " + podName, ex);
                 } catch (InterruptedException ex) {
                   logger.info("KubePodListener interrupted - exiting", ex);
                   exception = ex;
@@ -167,14 +173,14 @@ class KubePodListener implements Runnable {
     return exception;
   }
 
-  Map<String, Boolean> getPodMap() {
+  Map<String, PodState> getPodMap() {
     return podMap;
   }
 
   int getActivePodCount() {
     int count = 0;
-    for (Boolean isActive : podMap.values()) {
-      if (isActive) {
+    for (PodState podState : podMap.values()) {
+      if (podState == PodState.RUNNING) {
         count++;
       }
     }
