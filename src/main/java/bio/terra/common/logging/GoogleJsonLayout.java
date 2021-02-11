@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.springframework.cloud.gcp.logging.StackdriverErrorReportingServiceContext;
-import org.springframework.cloud.gcp.logging.StackdriverTraceConstants;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.StringUtils;
 
@@ -48,18 +46,31 @@ import org.springframework.util.StringUtils;
  *   // Send arbitrary JSON to the JSON layout
  *   log.info("My Event", LoggingUtils.jsonFromString("{eventId: 'MY_EVENT'}"));
  * </pre>
+ *
+ * This class is similar in spirit to the StackdriverJsonLayout from the spring-gcp-logging module.
+ * It removes / simplifies some config options, fixes some bugs (mostly related to tracing context
+ * not being reliably included), and brings in some additional structured logging context variables
+ * that Google Cloud knows how to ingest, such as support for HttpRequest. See also
+ * https://github.com/ankurcha/gcloud-logging-slf4j-logback/ which inspired some of the patterns
+ * used here.
  */
 public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
   private Tracer tracer = Tracing.getTracer();
 
-  private String projectId;
+  // A reference to the current Spring app context, on order to pull out the spring.application.name
+  // and spring.application.version variable for inclusion in JSON output.
   private ConfigurableApplicationContext applicationContext;
+  // A Logback utility class to assist with handling stack traces.
   private ThrowableProxyConverter throwableProxyConverter;
 
   public GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
+    super();
+
     this.applicationContext = applicationContext;
     this.throwableProxyConverter = new ThrowableProxyConverter();
+    // "full" is a magic string used by the TPC to indicate we want a full stack trace, rather
+    // than a truncated version.
     this.throwableProxyConverter.setOptionList(Collections.singletonList("full"));
 
     // Configure the superclass.
@@ -71,8 +82,6 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   public void start() {
     super.start();
     throwableProxyConverter.start();
-
-    // this.projectId = ServiceOptions.getDefaultProjectId();
   }
 
   @Override
@@ -82,7 +91,7 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   }
 
   /**
-   * Convert a logging event into a Map.
+   * Converts a logging event into a Map.
    *
    * @param event the logging event
    * @return the map which should get rendered as JSON
@@ -91,20 +100,17 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   protected Map<String, Object> toJsonMap(ILoggingEvent event) {
     Map<String, Object> map = new LinkedHashMap<>();
 
-    map.put(
-        StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE,
-        TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
-    map.put(
-        StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE,
-        TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
+    map.put("timestampSeconds", TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
+    map.put("timestampNanos", TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
 
     map.put("severity", String.valueOf(event.getLevel()));
     map.put("message", getMessage(event));
     map.put(
         "serviceContext",
-        new StackdriverErrorReportingServiceContext(
-            applicationContext.getEnvironment().getProperty("spring.application.name"),
-            applicationContext.getEnvironment().getProperty("spring.application.version")));
+        Map.of(
+            "service", applicationContext.getEnvironment().getProperty("spring.application.name"),
+            "version",
+                applicationContext.getEnvironment().getProperty("spring.application.version")));
 
     map.put("context", event.getLoggerContextVO().getName());
     map.put("thread", event.getThreadName());
@@ -115,8 +121,13 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     addSpanId(map);
     addTraceSampled(map);
 
+    // All MDC properties will be directly splatted onto the JSON map. This is how the MDC
+    // 'requestId' property ends up in the JSON output, and ultimately into jsonPayload.requestId
+    // in cloud logging.
     event.getMDCPropertyMap().forEach(map::put);
 
+    // Generically splat any map-like or JSON-like argument to the log call onto the output JSON.
+    // This is how e.g. the RequestLoggingFilter adds the 'httpRequest' object to the JSON output.
     if (event.getArgumentArray() != null) {
       for (Object arg : event.getArgumentArray()) {
         if (arg instanceof Map) {
@@ -129,6 +140,8 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
       }
     }
 
+    // If the generic JSON splatting above caused a 'labels' entry to exist, move the value to
+    // the well-known key that Cloud Logging will ingest as proper labels key-value pairs.
     if (map.get("labels") != null) {
       map.put("logging.googleapis.com/labels", map.get("labels"));
       map.remove("labels");
@@ -137,6 +150,7 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     return map;
   }
 
+  // Pulls the log event message, and appends a stack trace if the event contains a throwable.
   String getMessage(ILoggingEvent event) {
     String message = event.getFormattedMessage();
 
@@ -147,26 +161,29 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     return message;
   }
 
-  // Taken from
+  // Returns a Map with properties indicating the source file and location of the code triggering
+  // the logging event.
+  //
+  // Taken largely from
   // https://github.com/ankurcha/gcloud-logging-slf4j-logback/blob/master/src/main/java/com/google/cloud/logging/GoogleCloudLoggingV2Layout.java
   static Map<String, Object> getSourceLocation(ILoggingEvent event) {
-    StackTraceElement[] cda = event.getCallerData();
+    StackTraceElement[] callerData = event.getCallerData();
     Map<String, Object> sourceLocation = new HashMap<>();
-    if (cda != null && cda.length > 0) {
-      StackTraceElement ste = cda[0];
+    if (callerData != null && callerData.length > 0) {
+      StackTraceElement stackTraceElement = callerData[0];
 
       sourceLocation.put(
           "function",
-          ste.getClassName()
+          stackTraceElement.getClassName()
               + "."
-              + ste.getMethodName()
-              + (ste.isNativeMethod() ? "(Native Method)" : ""));
-      if (ste.getFileName() != null) {
-        String pkg = ste.getClassName().replaceAll("\\.", "/");
-        pkg = pkg.substring(0, pkg.lastIndexOf("/") + 1);
-        sourceLocation.put("file", pkg + ste.getFileName());
+              + stackTraceElement.getMethodName()
+              + (stackTraceElement.isNativeMethod() ? "(Native Method)" : ""));
+      if (stackTraceElement.getFileName() != null) {
+        String packageName = stackTraceElement.getClassName().replaceAll("\\.", "/");
+        packageName = packageName.substring(0, packageName.lastIndexOf("/") + 1);
+        sourceLocation.put("file", packageName + stackTraceElement.getFileName());
       }
-      sourceLocation.put("line", ste.getLineNumber());
+      sourceLocation.put("line", stackTraceElement.getLineNumber());
     } else {
       sourceLocation.put("file", CallerData.NA);
       sourceLocation.put("line", CallerData.LINE_NA);
@@ -188,6 +205,10 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     return traceId;
   }
 
+  /**
+   * Adds a Cloud Logging traceId attribute to the input map. An entry is added only if the current
+   * OpenCensus tracing context has a valid trace ID.
+   */
   private void addTraceId(Map<String, Object> map) {
     TraceId traceId = tracer.getCurrentSpan().getContext().getTraceId();
     if (traceId.equals(TraceId.INVALID)) {
@@ -200,20 +221,27 @@ public class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     }
 
     map.put(
-        StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
-        StackdriverTraceConstants.composeFullTraceName(
-            projectId, formatTraceId(traceId.toLowerBase16())));
+        "logging.googleapis.com/trace",
+        "projects/" + projectId + "/traces/" + traceId.toLowerBase16());
   }
 
+  /**
+   * Adds a Cloud Logging spanId attribute to the input map, only if the current context has a valid
+   * span ID.
+   */
   private void addSpanId(Map<String, Object> map) {
     SpanId spanId = tracer.getCurrentSpan().getContext().getSpanId();
     if (spanId.equals(SpanId.INVALID)) {
       return;
     }
 
-    map.put(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, spanId.toLowerBase16());
+    map.put("logging.googleapis.com/spanId", spanId.toLowerBase16());
   }
 
+  /**
+   * Adds a Cloud Logging 'traceSampled' attribute to the input map, only if the current context has
+   * a valid span ID.
+   */
   private void addTraceSampled(Map<String, Object> map) {
     SpanId spanId = tracer.getCurrentSpan().getContext().getSpanId();
     if (spanId.equals(SpanId.INVALID)) {
