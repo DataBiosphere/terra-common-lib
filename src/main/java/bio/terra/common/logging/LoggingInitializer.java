@@ -9,7 +9,14 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-class LoggingInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+/**
+ * A Spring app-context initializer for installing the GoogleJsonLayout as the sole Logback logger.
+ *
+ * If the "human-readable-logging" Spring profile is active, no changes will be made and the default
+ * Spring logging config (see resources/logback.xml) will be used.
+ */
+public class LoggingInitializer
+    implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
   public static final String TERRA_APPENDER_NAME = "terra-common";
 
@@ -24,7 +31,6 @@ class LoggingInitializer implements ApplicationContextInitializer<ConfigurableAp
       return;
     }
 
-    logbackLogger.detachAndStopAllAppenders();
     GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
     layout.start();
 
@@ -38,6 +44,7 @@ class LoggingInitializer implements ApplicationContextInitializer<ConfigurableAp
     appender.setContext(logbackLogger.getLoggerContext());
     appender.start();
 
+    logbackLogger.detachAndStopAllAppenders();
     logbackLogger.addAppender(appender);
   }
 }

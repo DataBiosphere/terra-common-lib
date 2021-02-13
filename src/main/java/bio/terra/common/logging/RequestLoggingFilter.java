@@ -3,7 +3,7 @@ package bio.terra.common.logging;
 import static org.springframework.http.HttpHeaders.REFERER;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
-import com.google.api.client.json.GenericJson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.logging.v2.model.HttpRequest;
 import java.io.IOException;
@@ -12,6 +12,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -72,12 +75,11 @@ class RequestLoggingFilter implements Filter {
       responseSize = ((ContentCachingResponseWrapper) response).getContentAsByteArray().length;
     }
 
-    GenericJson json = new GenericJson();
-    json.setFactory(new JacksonFactory());
-    json.set(
+    Map<String, Object> logPayload = new HashMap<>();
+    logPayload.put(
         "httpRequest",
         getGoogleHttpRequestObject(request, response, latency, requestSize, responseSize));
-    json.set("requestHeaders", new ServletServerHttpRequest(request).getHeaders());
+    logPayload.put("requestHeaders", getRequestHeaders(request));
 
     String requestPath = null;
     try {
@@ -93,7 +95,7 @@ class RequestLoggingFilter implements Filter {
     // argument will be ignored.
     String message =
         String.format("%s %s %s", request.getMethod(), requestPath, response.getStatus());
-    log.info(message, json);
+    log.info(message, logPayload);
 
     debugLogResponse(response);
   }
@@ -106,52 +108,72 @@ class RequestLoggingFilter implements Filter {
    * debugging.
    */
   private void debugLogRequest(HttpServletRequest request) throws IOException {
-    GenericJson json = new GenericJson();
-    json.setFactory(new JacksonFactory());
-    json.put("method", request.getMethod());
-    json.put("uri", request.getRequestURI());
+    Map<String, Object> map = new HashMap<>();
+    map.put("method", request.getMethod());
+    map.put("uri", request.getRequestURI());
 
     String queryString = request.getQueryString();
     if (queryString != null) {
-      json.put("query", queryString);
+      map.put("query", queryString);
     }
 
-    HttpHeaders headers = new ServletServerHttpRequest(request).getHeaders();
-    json.put("headers", headers);
+    map.put("headers", new ServletServerHttpRequest(request).getHeaders());
 
     if (request instanceof ContentCachingRequestWrapper) {
       ContentCachingRequestWrapper wrapper = (ContentCachingRequestWrapper) request;
       byte[] buf = wrapper.getContentAsByteArray();
       int length = Math.min(buf.length, MAX_PAYLOAD_TO_DEBUG_LOG);
       try {
-        json.put("payload", new String(buf, 0, length, wrapper.getCharacterEncoding()));
+        map.put("payload", new String(buf, 0, length, wrapper.getCharacterEncoding()));
       } catch (UnsupportedEncodingException e) {
         log.debug("Error reading request payload", e);
       }
     }
-    log.debug(json.toPrettyString());
+
+    log.debug(
+        "REQUEST: \n"
+            + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(map));
   }
 
   /** Logs various details about the response at DEBUG severity. */
   private void debugLogResponse(HttpServletResponse response) throws IOException {
-    GenericJson json = new GenericJson();
-    json.setFactory(new JacksonFactory());
-    json.put("status", response.getStatus());
+    Map<String, Object> map = new HashMap<>();
+    map.put("status", response.getStatus());
 
     HttpHeaders headers = new ServletServerHttpResponse(response).getHeaders();
-    json.put("headers", headers);
+    map.put("headers", headers);
 
     if (response instanceof ContentCachingResponseWrapper) {
       ContentCachingResponseWrapper wrapper = (ContentCachingResponseWrapper) response;
       byte[] buf = wrapper.getContentAsByteArray();
       int length = Math.min(buf.length, MAX_PAYLOAD_TO_DEBUG_LOG);
       try {
-        json.put("payload", new String(buf, 0, length, wrapper.getCharacterEncoding()));
+        map.put("payload", new String(buf, 0, length, wrapper.getCharacterEncoding()));
       } catch (UnsupportedEncodingException e) {
         log.debug("Error reading response payload", e);
       }
     }
-    log.debug(json.toPrettyString());
+    log.debug(
+        "RESPONSE: \n"
+            + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(map));
+  }
+
+  /**
+   * Returns a map of header key-value pairs from the input request. This takes only the first
+   * header value for each key even though headers may contain multiple values. This is ultimately
+   * being used for debug structured logging and querying via Cloud Logging, where it's much more
+   * convenient to access a single property value than it is to dig into a single-value array.
+   *
+   * <p>Example query:
+   *
+   * <pre>jsonPayload.headers."user-agent" =~ "Chrome"</pre>
+   */
+  private Map<String, String> getRequestHeaders(HttpServletRequest request) {
+    HttpHeaders headers = new ServletServerHttpRequest(request).getHeaders();
+    return headers.entrySet().stream()
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey, entry -> entry.getValue().stream().findFirst().orElse(null)));
   }
 
   /**
