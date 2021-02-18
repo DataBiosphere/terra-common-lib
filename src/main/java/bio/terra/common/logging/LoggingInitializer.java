@@ -12,8 +12,8 @@ import org.springframework.core.env.ConfigurableEnvironment;
 /**
  * A Spring app-context initializer for installing the GoogleJsonLayout as the sole Logback logger.
  *
- * If the "human-readable-logging" Spring profile is active, no changes will be made and the default
- * Spring logging config (see resources/logback.xml) will be used.
+ * <p>If the "human-readable-logging" Spring profile is active, no changes will be made and the
+ * default Spring logging config (see resources/logback.xml) will be used.
  */
 public class LoggingInitializer
     implements ApplicationContextInitializer<ConfigurableApplicationContext> {

@@ -7,7 +7,6 @@ import ch.qos.logback.contrib.jackson.JacksonJsonFormatter;
 import ch.qos.logback.contrib.json.JsonLayoutBase;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.ServiceOptions;
-import com.google.gson.JsonObject;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.Tracer;
@@ -138,9 +137,6 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
           } else if (arg instanceof JsonNode) {
             JsonNode jsonNode = (JsonNode) arg;
             jsonNode.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
-          } else if (arg instanceof JsonObject) {
-            JsonObject jsonObject = (JsonObject) arg;
-            jsonObject.entrySet().forEach(entry -> map.put(entry.getKey(), entry.getValue()));
           }
         } catch (Exception e) {
           System.err.println(String.format("Error parsing JSON: %s", e));
@@ -247,8 +243,8 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   }
 
   /**
-   * Adds a Cloud Logging 'traceSampled' attribute to the input map, only if the current context has
-   * a valid span ID.
+   * Adds a Cloud Logging 'trace_sampled' attribute to the input map, only if the current context
+   * has a valid span ID.
    */
   private void addTraceSampled(Map<String, Object> map) {
     SpanId spanId = tracer.getCurrentSpan().getContext().getSpanId();
@@ -257,7 +253,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     }
 
     map.put(
-        "logging.googleapis.com/traceSampled",
+        "logging.googleapis.com/trace_sampled",
         tracer.getCurrentSpan().getContext().getTraceOptions().isSampled());
   }
 }
