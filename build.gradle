@@ -25,7 +25,7 @@ group 'bio.terra'
 version '0.0.16-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
-def OPENCENSUS_VERSION = '0.28.2'
+def OPENCENSUS_VERSION = '0.28.+'
 
 dependencies {
     implementation group: 'bio.terra', name: 'stairway', version: '0.0.37-SNAPSHOT'
@@ -35,10 +35,9 @@ dependencies {
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev662-1.18.0-rc'
     implementation group: 'io.kubernetes', name: 'client-java', version: '10.0.0'
     implementation group: 'io.opencensus', name: 'opencensus-api', version: OPENCENSUS_VERSION
-    implementation group: "io.opencensus", name: "opencensus-contrib-spring"
-    implementation group: "io.opencensus", name: "opencensus-exporter-trace-stackdriver"
-    runtimeOnly group: "io.opencensus", name: "opencensus-impl"
-
+    implementation group: 'io.opencensus', name: 'opencensus-contrib-spring', version: OPENCENSUS_VERSION
+    implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: OPENCENSUS_VERSION
+    implementation group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.+'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
     implementation group: 'org.liquibase' , name: 'liquibase-core', version: '3.10.0'
@@ -59,7 +58,6 @@ dependencies {
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
-    testImplementation group: "io.opencensus", name: "opencensus-impl", version: "0.28.2"
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.+'
