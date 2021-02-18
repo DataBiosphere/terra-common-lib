@@ -131,8 +131,8 @@ class RequestLoggingFilter implements Filter {
     }
 
     log.debug(
-        "REQUEST: \n"
-            + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(map));
+        "REQUEST: \n{}",
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(map));
   }
 
   /** Logs various details about the response at DEBUG severity. */
@@ -154,8 +154,8 @@ class RequestLoggingFilter implements Filter {
       }
     }
     log.debug(
-        "RESPONSE: \n"
-            + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(map));
+        "RESPONSE: \n{}",
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(map));
   }
 
   /**

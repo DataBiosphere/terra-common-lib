@@ -28,8 +28,8 @@ import org.springframework.util.StringUtils;
  *
  * <p>The output JSON relies heavily on Google Cloud's interpretation of structured JSON logs,
  * including so-called "special fields in JSON payloads". See <a
- * href="https://cloud.google.com/logging/docs/structured-logging#special-payload-fields">Google
- * Cloud docs</a> for more details.
+ * href="https://cloud.google.com/logging/docs/structured-logging#special-payload-fields">Google's
+ * documentation</a> for more details.
  *
  * <p>A goal of this class is to produce maximally useful logs for operating Terra services on
  * Google Cloud, including correlation with trace details and inclusion of useful metadata such as
