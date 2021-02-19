@@ -50,11 +50,11 @@ dependencies {
 
     api group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
-    // For test
-    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.+'
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-    testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
+    // Jsonpath version is managed by the Spring Boot plugin
+    testImplementation group: 'com.jayway.jsonpath', name: 'json-path'
     testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
+    testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.+'
@@ -64,6 +64,7 @@ dependencies {
 }
 
 dependencyLocking {
+    lockMode = LockMode.STRICT
     lockAllConfigurations() // see https://docs.gradle.org/current/userguide/dependency_locking.html
 }
 
@@ -143,6 +144,8 @@ task unitTest(type: Test) {
     }
 }
 
+// TODO(gjordan): turn off doclint to remove "no @return value" warnings
+// https://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
 java {
     withJavadocJar()
 }

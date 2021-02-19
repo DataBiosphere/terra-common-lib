@@ -1,11 +1,18 @@
 package bio.terra.common.logging;
 
+import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * Logging utility methods intended for use by service / app developers. These are generally aimed
@@ -13,6 +20,9 @@ import java.util.Map;
  * read by Cloud Logging.
  */
 public class LoggingUtils {
+
+  public static final String TERRA_APPENDER_NAME = "terra-common";
+  private static boolean loggingInitialized = false;
 
   /**
    * Parses a JSON string and returns a Jackson JsonNode object which can be passed as an argument
@@ -56,5 +66,47 @@ public class LoggingUtils {
    */
   static Map<String, Object> structuredLogData(String key, Object value) {
     return Collections.singletonMap(key, value);
+  }
+
+  /**
+   * Initializes the Terra logging configuration, primarily by installing GoogleJsonLayout as the
+   * sole Logback logger.
+   *
+   * <p>This method will only apply configuration once; subsequent calls will have no effect.
+   *
+   * <p>If the "human-readable-logging" Spring profile is active, no changes will be made and the
+   * default Spring logging config (see resources/logback.xml) will be used.
+   *
+   */
+  protected static void initializeLogging(ConfigurableApplicationContext applicationContext) {
+    if (loggingInitialized) {
+      return;
+    }
+    loggingInitialized = true;
+
+    ch.qos.logback.classic.Logger logbackLogger =
+        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    ConfigurableEnvironment environment = applicationContext.getEnvironment();
+
+    if (Arrays.stream(environment.getActiveProfiles()).anyMatch("human-readable-logging"::equals)) {
+      System.out.println("Human-readable logging enabled, skipping Google JSON layout");
+      return;
+    }
+
+    GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
+    layout.start();
+
+    LayoutWrappingEncoder encoder = new LayoutWrappingEncoder();
+    encoder.setLayout(layout);
+    encoder.start();
+
+    ConsoleAppender appender = new ConsoleAppender();
+    appender.setName(TERRA_APPENDER_NAME);
+    appender.setEncoder(encoder);
+    appender.setContext(logbackLogger.getLoggerContext());
+    appender.start();
+
+    logbackLogger.detachAndStopAllAppenders();
+    logbackLogger.addAppender(appender);
   }
 }
