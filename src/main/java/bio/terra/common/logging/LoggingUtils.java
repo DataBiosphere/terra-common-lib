@@ -76,7 +76,6 @@ public class LoggingUtils {
    *
    * <p>If the "human-readable-logging" Spring profile is active, no changes will be made and the
    * default Spring logging config (see resources/logback.xml) will be used.
-   *
    */
   protected static void initializeLogging(ConfigurableApplicationContext applicationContext) {
     if (loggingInitialized) {

@@ -13,15 +13,15 @@ and the [GoogleJsonLayout.java](GoogleJsonLayout.java) file for more details.
 
 ## Quickstart
 
-No explicit configuration is needed. The `LoggingAutoConfiguration` class will
-be loaded by Spring if this package is on the classpath.
-
-In order to initialize the logging config as early as possible, it is 
-recommended to add the initializer directly to the Spring application:
+Below is typical logging config boilerplate for a Terra application. In order to
+initialize the logging config as early as possible, it is  recommended to add 
+the initializer directly to the Spring application builder:
 
 ```
+@SpringBootApplication(scanBasPackages = {"bio.terra.common.logging", ...})
+public class MyApp {
   public static void main(String[] args) throws Exception {
-    new SpringApplicationBuilder(MyApplication.class)
+    new SpringApplicationBuilder(MyApp.class)
         .initializers(new LoggingInitializer())
         .run(args);
   }
@@ -45,18 +45,6 @@ task bootRunDev {
     }
 }
 bootRunDev.finalizedBy bootRun
-```
-
-### Turning off auto-config
-
-To disable all auto-configuration from this package, exclude the 
-`LoggingAutoConfiguration` class with an app-level annotation:
-
-```
-@SpringBootApplication(
-    exclude = {
-      LoggingAutoConfiguration.class
-    })
 ```
 
 ## Structured logs

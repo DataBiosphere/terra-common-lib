@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  bio.terra.common.logging.LoggingAutoConfiguration

@@ -14,23 +14,23 @@ import org.springframework.core.annotation.Order;
  * logging-related behaviors:
  *
  * <ul>
- * <li>RequestIdFilter, which generates or propagates a random requestId token for inbound HTTP
- *   requests, and applies requestId to the MDC and the HttpResponse.
- * <li>RequestLoggingFilter, which collects HTTP information and geneates an info log for each inbound
- *   HTTP request.
- * <li>GoogleJsonLayout, which installs a custom JSON logback layout with enhanced metadata for Google
- *   Cloud Logging.
+ *   <li>RequestIdFilter, which generates or propagates a random requestId token for inbound HTTP
+ *       requests, and applies requestId to the MDC and the HttpResponse.
+ *   <li>RequestLoggingFilter, which collects HTTP information and geneates an info log for each
+ *       inbound HTTP request.
+ *   <li>GoogleJsonLayout, which installs a custom JSON logback layout with enhanced metadata for
+ *       Google Cloud Logging.
  * </ul>
  */
 @Configuration
-public class LoggingAutoConfiguration {
+public class LoggingConfig {
 
-  Logger log = LoggerFactory.getLogger(LoggingAutoConfiguration.class);
+  Logger log = LoggerFactory.getLogger(LoggingConfig.class);
 
   private ConfigurableApplicationContext applicationContext;
 
   @Autowired
-  public LoggingAutoConfiguration(ConfigurableApplicationContext applicationContext) {
+  public LoggingConfig(ConfigurableApplicationContext applicationContext) {
     this.applicationContext = applicationContext;
   }
 

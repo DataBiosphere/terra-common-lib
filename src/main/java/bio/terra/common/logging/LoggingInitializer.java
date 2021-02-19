@@ -6,7 +6,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 /**
  * A Spring app-context initializer for installing the GoogleJsonLayout as the sole Logback logger.
  *
- * Usage: this initializer can be added directly to a Spring application builder:
+ * <p>Usage: this initializer can be added directly to a Spring application builder:
  *
  * <pre>
  *   public static void main(String[] args) throws Exception {
@@ -17,8 +17,8 @@ import org.springframework.context.ConfigurableApplicationContext;
  * </pre>
  *
  * If this initializer is not attached, the LoggingAutoConfiguration class will trigger
- * initialization after the config class is constructed. In that case, the first few lines of
- * Spring logging will not be JSON-formatted, so the initializer approach is slightly preferred.
+ * initialization after the config class is constructed. In that case, the first few lines of Spring
+ * logging will not be JSON-formatted, so the initializer approach is slightly preferred.
  */
 public class LoggingInitializer
     implements ApplicationContextInitializer<ConfigurableApplicationContext> {
