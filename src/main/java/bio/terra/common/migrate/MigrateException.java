@@ -1,4 +1,4 @@
-package bio.terra.common.migirate;
+package bio.terra.common.migrate;
 
 public class MigrateException extends RuntimeException {
   public MigrateException(String message) {
