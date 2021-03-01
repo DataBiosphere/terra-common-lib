@@ -12,25 +12,25 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties
 @ConfigurationProperties(prefix = "terra.common.tracing")
 public class TracingProperties implements InitializingBean {
-  /** Rate of sampling, 0.0 - 1.0 */
-  Double probability = 0.0;
+  /** Rate of trace sampling, 0.0 - 1.0 */
+  double probability = 0.0;
 
   /** Whether Stackdriver tracing export is enabled at all */
-  Boolean enabled = true;
+  boolean enabled = true;
 
-  public Double getProbability() {
+  public double getProbability() {
     return probability;
   }
 
-  public void setProbability(Double probability) {
+  public void setProbability(double probability) {
     this.probability = probability;
   }
 
-  public Boolean getEnabled() {
+  public boolean getEnabled() {
     return enabled;
   }
 
-  public void setEnabled(Boolean enabled) {
+  public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
 
