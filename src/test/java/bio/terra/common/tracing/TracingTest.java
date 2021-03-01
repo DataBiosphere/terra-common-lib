@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import bio.terra.common.logging.LoggingInitializer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanExporter;
 import io.opencensus.trace.export.SpanExporter.Handler;
 import java.util.Collection;
 import org.junit.Before;
@@ -57,12 +56,14 @@ public class TracingTest {
     // com.google.cloud.ServiceOptions#getDefaultProjectId for
     // lookup details.
     // System.setProperty("GOOGLE_CLOUD_PROJECT", "my-project-1234");
-    Tracing.getExportComponent().getSpanExporter().registerHandler("asdf", new Handler() {
-      @Override
-      public void export(Collection<SpanData> spanDataList) {
-
-      }
-    });
+    Tracing.getExportComponent()
+        .getSpanExporter()
+        .registerHandler(
+            "asdf",
+            new Handler() {
+              @Override
+              public void export(Collection<SpanData> spanDataList) {}
+            });
   }
 
   @Test
