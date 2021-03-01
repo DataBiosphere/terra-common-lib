@@ -7,7 +7,6 @@ import ch.qos.logback.contrib.jackson.JacksonJsonFormatter;
 import ch.qos.logback.contrib.json.JsonLayoutBase;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.ServiceOptions;
-import com.google.gson.JsonObject;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.Tracer;
@@ -28,8 +27,9 @@ import org.springframework.util.StringUtils;
  * concrete examples of field values.
  *
  * <p>The output JSON relies heavily on Google Cloud's interpretation of structured JSON logs,
- * including so-called "special fields in JSON payloads". See
- * https://cloud.google.com/logging/docs/structured-logging#special-payload-fields for more details.
+ * including so-called "special fields in JSON payloads". See <a
+ * href="https://cloud.google.com/logging/docs/structured-logging#special-payload-fields">Google's
+ * documentation</a> for more details.
  *
  * <p>A goal of this class is to produce maximally useful logs for operating Terra services on
  * Google Cloud, including correlation with trace details and inclusion of useful metadata such as
@@ -51,9 +51,9 @@ import org.springframework.util.StringUtils;
  * This class is similar in spirit to the StackdriverJsonLayout from the spring-gcp-logging module.
  * It removes / simplifies some config options, fixes some bugs (mostly related to tracing context
  * not being reliably included), and brings in some additional structured logging context variables
- * that Google Cloud knows how to ingest, such as support for HttpRequest. See also
- * https://github.com/ankurcha/gcloud-logging-slf4j-logback/ which inspired some of the patterns
- * used here.
+ * that Google Cloud knows how to ingest, such as support for HttpRequest. See also <a
+ * href="https://github.com/ankurcha/gcloud-logging-slf4j-logback/">gcloud-logging-slf4j-logback</a>
+ * which inspired some of the patterns used here.
  */
 class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
@@ -138,9 +138,6 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
           } else if (arg instanceof JsonNode) {
             JsonNode jsonNode = (JsonNode) arg;
             jsonNode.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
-          } else if (arg instanceof JsonObject) {
-            JsonObject jsonObject = (JsonObject) arg;
-            jsonObject.entrySet().forEach(entry -> map.put(entry.getKey(), entry.getValue()));
           }
         } catch (Exception e) {
           System.err.println(String.format("Error parsing JSON: %s", e));
@@ -169,11 +166,13 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     return message;
   }
 
-  // Returns a Map with properties indicating the source file and location of the code triggering
-  // the logging event.
-  //
-  // Taken largely from
-  // https://github.com/ankurcha/gcloud-logging-slf4j-logback/blob/master/src/main/java/com/google/cloud/logging/GoogleCloudLoggingV2Layout.java
+  /**
+   * Returns a Map with properties indicating the source file and location of the code triggering
+   * the logging event.
+   *
+   * <p>Taken largely from <a
+   * href="https://github.com/ankurcha/gcloud-logging-slf4j-logback/blob/master/src/main/java/com/google/cloud/logging/GoogleCloudLoggingV2Layout.java">gcloud-logging-slf4j-logback</a>.
+   */
   static Map<String, Object> getSourceLocation(ILoggingEvent event) {
     StackTraceElement[] callerData = event.getCallerData();
     Map<String, Object> sourceLocation = new HashMap<>();
@@ -247,8 +246,8 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   }
 
   /**
-   * Adds a Cloud Logging 'traceSampled' attribute to the input map, only if the current context has
-   * a valid span ID.
+   * Adds a Cloud Logging 'trace_sampled' attribute to the input map, only if the current context
+   * has a valid span ID.
    */
   private void addTraceSampled(Map<String, Object> map) {
     SpanId spanId = tracer.getCurrentSpan().getContext().getSpanId();
@@ -257,7 +256,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     }
 
     map.put(
-        "logging.googleapis.com/traceSampled",
+        "logging.googleapis.com/trace_sampled",
         tracer.getCurrentSpan().getContext().getTraceOptions().isSampled());
   }
 }
