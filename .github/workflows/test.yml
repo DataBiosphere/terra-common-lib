@@ -37,7 +37,7 @@ jobs:
       - name: Run unit tests
         id: unit-test
         run: ./gradlew unitTest --scan
-      - name: Checks Javadoc
+      - name: Check Javadoc
         run: ./gradlew javadoc --scan
       - name: Upload Test Reports
         if: always()
