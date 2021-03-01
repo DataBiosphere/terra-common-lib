@@ -10,6 +10,7 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +45,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 // Refer to an external properties file to define a Spring application name and version, which is
 // included in the JSON output if available.
 @ActiveProfiles("tracing-test")
+@Tag("unit")
 public class TracingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
