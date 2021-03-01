@@ -22,8 +22,8 @@ public final class BearerTokenParser {
    * Takes the Authorization header passed as a String in {@code authorizationHeader}, parses out
    * the bearer token payload, and returns it as a String.
    *
-   * @throws UnauthorizedException if the header is not properly formatted and the bearer token
-   *     cannot be parsed.
+   * @throws {@link UnauthorizedException} if the header is not properly formatted and the bearer
+   *     token cannot be parsed.
    */
   public static String parse(String authorizationHeader) {
     Matcher matcher = authorizationPattern.matcher(authorizationHeader);
