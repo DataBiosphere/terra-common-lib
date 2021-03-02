@@ -8,7 +8,7 @@ plugins {
     id 'com.diffplug.gradle.spotless' version '3.27.2'
     id 'com.jfrog.artifactory' version '4.13.0'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
-    id 'org.springframework.boot' version '2.3.1.RELEASE'
+    id 'org.springframework.boot' version '2.4.3'
 }
 
 repositories {
@@ -60,6 +60,7 @@ dependencies {
     testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
     testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+    testImplementation platform(group: 'org.junit', name: 'junit-bom', version: '5.8.0-M1')
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.8.0-M1'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.0-M1'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.+'
