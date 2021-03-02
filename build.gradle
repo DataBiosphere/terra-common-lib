@@ -28,7 +28,6 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 def OPENCENSUS_VERSION = '0.28.+'
 
 dependencies {
-//    implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
     implementation group: 'bio.terra', name: 'stairway', version: '0.0.37-SNAPSHOT'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.+'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.+'
