@@ -4,11 +4,12 @@ plugins {
     id 'maven-publish'
 
     id 'com.github.ben-manes.versions' version '0.33.0'
-    id 'com.github.spotbugs' version '4.5.1'
+//    id 'com.github.spotbugs' version '4.5.1'
     id 'com.diffplug.gradle.spotless' version '3.27.2'
     id 'com.jfrog.artifactory' version '4.13.0'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'org.springframework.boot' version '2.3.1.RELEASE'
+    id 'ru.vyarus.quality' version '4.5.0'
 }
 
 repositories {
@@ -101,29 +102,31 @@ spotless {
 
 compileJava.dependsOn spotlessApply
 
-// Static analysis
-spotbugs {
-    effort = 'max'
-    // This makes the "html" reports come out in plain text so you can just open the file in IntelliJ
-    // and look at your bugs instead of having to switch to a browser.
-    extraArgs = ['-emacs']
+quality {
+
 }
-spotbugsMain {
-    reports {
-        html {
-            enabled = true
-            destination = file("$buildDir/reports/spotbugs/main.html")
-        }
-    }
-}
-spotbugsTest {
-    reports {
-        html {
-            enabled = true
-            destination = file("$buildDir/reports/spotbugs/test.html")
-        }
-    }
-}
+
+//// We use the workaround from https://github.com/spotbugs/spotbugs-gradle-plugin/issues/172#issuecomment-555901305
+//// to redirect spotbugs output to the console on failure.
+//tasks.withType(SpotBugsTask).configureEach {
+//    effort = "max"
+//    reportLevel = "low"
+//    extraArgs = mutableListOf("-longBugCodes")
+//    reports {
+//        text.isEnabled = true
+//        xml.isEnabled = false
+//    }
+//}
+//
+//val spotbugsReport by tasks.registering {
+//    doLast {
+//        println()
+//        file("build/reports/spotbugs/main.text").readLines().forEach {
+//            println( it )
+//        }
+//    }
+//}
+//tasks.getByPath("spotbugsMain").finalizedBy(spotbugsReport)
 
 tasks.withType(Test) {
     testLogging {
