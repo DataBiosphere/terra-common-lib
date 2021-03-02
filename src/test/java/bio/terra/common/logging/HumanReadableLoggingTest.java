@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +28,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = LoggingTestApplication.class)
 @ContextConfiguration(initializers = LoggingInitializer.class)
 @ActiveProfiles("human-readable-logging")
+@Tag("unit")
 public class HumanReadableLoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;

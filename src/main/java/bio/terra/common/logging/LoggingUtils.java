@@ -1,5 +1,6 @@
 package bio.terra.common.logging;
 
+import ch.qos.logback.classic.util.ContextInitializer;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Logging utility methods intended for use by service / app developers. These are generally aimed
@@ -22,7 +24,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 public class LoggingUtils {
 
   public static final String TERRA_APPENDER_NAME = "terra-common";
-  private static boolean loggingInitialized = false;
 
   /**
    * Parses a JSON string and returns a Jackson JsonNode object which can be passed as an argument
@@ -78,34 +79,39 @@ public class LoggingUtils {
    * default Spring logging config (see resources/logback.xml) will be used.
    */
   protected static void initializeLogging(ConfigurableApplicationContext applicationContext) {
-    if (loggingInitialized) {
-      return;
-    }
-    loggingInitialized = true;
-
     ch.qos.logback.classic.Logger logbackLogger =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     ConfigurableEnvironment environment = applicationContext.getEnvironment();
 
     if (Arrays.stream(environment.getActiveProfiles()).anyMatch("human-readable-logging"::equals)) {
       System.out.println("Human-readable logging enabled, skipping Google JSON layout");
-      return;
+
+      // We might encounter a situation (especially in tests) where Google JSON logging had
+      // previously been installed. To fully reset to the human-readable layout, we want to reset
+      // the logging context and re-initialize from the logback XML file on the classpath.
+      try {
+        logbackLogger.getLoggerContext().reset();
+        new ContextInitializer(logbackLogger.getLoggerContext())
+            .configureByResource(ResourceUtils.getURL("classpath:logback.xml"));
+      } catch (Exception e) {
+        throw new RuntimeException("Error loading human-readable logging", e);
+      }
+    } else {
+      GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
+      layout.start();
+
+      LayoutWrappingEncoder encoder = new LayoutWrappingEncoder();
+      encoder.setLayout(layout);
+      encoder.start();
+
+      ConsoleAppender appender = new ConsoleAppender();
+      appender.setName(TERRA_APPENDER_NAME);
+      appender.setEncoder(encoder);
+      appender.setContext(logbackLogger.getLoggerContext());
+      appender.start();
+
+      logbackLogger.detachAndStopAllAppenders();
+      logbackLogger.addAppender(appender);
     }
-
-    GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
-    layout.start();
-
-    LayoutWrappingEncoder encoder = new LayoutWrappingEncoder();
-    encoder.setLayout(layout);
-    encoder.start();
-
-    ConsoleAppender appender = new ConsoleAppender();
-    appender.setName(TERRA_APPENDER_NAME);
-    appender.setEncoder(encoder);
-    appender.setContext(logbackLogger.getLoggerContext());
-    appender.start();
-
-    logbackLogger.detachAndStopAllAppenders();
-    logbackLogger.addAppender(appender);
   }
 }
