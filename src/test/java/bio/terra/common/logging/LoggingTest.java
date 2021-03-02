@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
@@ -86,7 +87,7 @@ public class LoggingTest {
     }
   }
 
-  @org.springframework.context.annotation.Configuration
+  @TestConfiguration
   static class FilterTestConfiguration {
     @Bean
     @Order(LOWEST_PRECEDENCE)
@@ -98,14 +99,6 @@ public class LoggingTest {
   @BeforeEach
   public void setUp() throws IOException, ServletException {
     // Ensure the request ID is always set to a known value.
-    // doCallRealMethod().when(requestIdFilter).doFilter(any(), any(), any());
-    // doAnswer(
-    //         invocation -> {
-    //           System.out.println("Invocation!");
-    //           return "asdf";
-    //         })
-    //     .when(requestIdFilter)
-    //     .doFilter(any(), any(), any());
     when(requestIdFilter.generateRequestId()).thenReturn("12345");
     // Ensure the GCP project ID is always set to a known value. See
     // com.google.cloud.ServiceOptions#getDefaultProjectId for
