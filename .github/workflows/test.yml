@@ -34,11 +34,13 @@ jobs:
           java-version: 11
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Run unit tests
-        id: unit-test
-        run: ./gradlew unitTest --scan
+      - name: Check Spotless format
+        run: ./gradlew spotlessCheck
       - name: Check Javadoc
-        run: ./gradlew javadoc --scan
+        run: ./gradlew javadoc
+      - name: Build and test
+        id: build-test
+        run: ./gradlew test --scan
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v1

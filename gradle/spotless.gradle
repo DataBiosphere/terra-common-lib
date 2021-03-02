@@ -1,0 +1,15 @@
+spotless {
+    groovyGradle {
+        target '**/*.gradle'
+        greclipse()
+        indentWithSpaces()
+    }
+    java {
+        googleJavaFormat()
+        removeUnusedImports()
+        targetExclude "${buildDir}/**"
+    }
+
+    // Only enforce on changed files
+    ratchetFrom 'origin/develop'
+}

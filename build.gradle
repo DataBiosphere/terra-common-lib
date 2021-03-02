@@ -3,11 +3,11 @@ plugins {
     id 'java-library'
     id 'maven-publish'
 
+    id 'com.diffplug.spotless' version '5.10.2'
     id 'com.github.ben-manes.versions' version '0.33.0'
-//    id 'com.github.spotbugs' version '4.5.1'
-    id 'com.diffplug.gradle.spotless' version '3.27.2'
     id 'com.jfrog.artifactory' version '4.13.0'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'jacoco'
     id 'org.springframework.boot' version '2.3.1.RELEASE'
     id 'ru.vyarus.quality' version '4.5.0'
 }
@@ -26,7 +26,9 @@ group 'bio.terra'
 version '0.0.32-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
-def OPENCENSUS_VERSION = '0.28.+'
+ext {
+    OPENCENSUS_VERSION = '0.28.+'
+}
 
 dependencies {
     implementation group: 'bio.terra', name: 'stairway', version: '0.0.41-SNAPSHOT'
@@ -40,6 +42,7 @@ dependencies {
     api group: "io.opencensus", name: "opencensus-contrib-spring", version: OPENCENSUS_VERSION
     implementation group: "io.opencensus", name: "opencensus-exporter-trace-stackdriver", version: OPENCENSUS_VERSION
 
+    implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: project.ext.OPENCENSUS_VERSION
     // commons-dbcp2 and -lang3 versions are managed by the Spring Boot plugin
     implementation group: 'org.apache.commons', name: 'commons-dbcp2'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
@@ -51,9 +54,12 @@ dependencies {
     implementation group: 'org.springframework' , name: 'spring-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-    runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
+
+    runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: project.ext.OPENCENSUS_VERSION
 
     api group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+    api group: 'io.opencensus', name: 'opencensus-api', version: project.ext.OPENCENSUS_VERSION
+    api group: 'io.opencensus', name: 'opencensus-contrib-spring', version: project.ext.OPENCENSUS_VERSION
 
     // Jsonpath version is managed by the Spring Boot plugin
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path'
@@ -67,11 +73,8 @@ dependencies {
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'
 
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
-}
 
-dependencyLocking {
-    lockMode = LockMode.STRICT
-    lockAllConfigurations() // see https://docs.gradle.org/current/userguide/dependency_locking.html
+    // Test dependencies are split out into gradle/test.gradle
 }
 
 // We use Spring Boot gradle plugin in a non-Spring Boot environment to manage Spring Boot dependency.
@@ -92,96 +95,11 @@ if (hasProperty('buildScan')) {
     }
 }
 
-// Linter
-spotless {
-    java {
-        googleJavaFormat()
-        targetExclude "${buildDir}/**"
-    }
-}
+apply from: "$rootDir/gradle/dependency-locking.gradle"
+apply from: "$rootDir/gradle/javadoc.gradle"
+apply from: "$rootDir/gradle/publishing.gradle"
+apply from: "$rootDir/gradle/quality.gradle"
+apply from: "$rootDir/gradle/spotless.gradle"
+apply from: "$rootDir/gradle/test.gradle"
 
-compileJava.dependsOn spotlessApply
-
-quality {
-
-}
-
-//// We use the workaround from https://github.com/spotbugs/spotbugs-gradle-plugin/issues/172#issuecomment-555901305
-//// to redirect spotbugs output to the console on failure.
-//tasks.withType(SpotBugsTask).configureEach {
-//    effort = "max"
-//    reportLevel = "low"
-//    extraArgs = mutableListOf("-longBugCodes")
-//    reports {
-//        text.isEnabled = true
-//        xml.isEnabled = false
-//    }
-//}
-//
-//val spotbugsReport by tasks.registering {
-//    doLast {
-//        println()
-//        file("build/reports/spotbugs/main.text").readLines().forEach {
-//            println( it )
-//        }
-//    }
-//}
-//tasks.getByPath("spotbugsMain").finalizedBy(spotbugsReport)
-
-tasks.withType(Test) {
-    testLogging {
-        events = ["passed", "failed", "skipped"]
-        // Causes the correct line to be reported on an exception.
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        reports {
-            // Write XML file (used by CircleCI, Jenkins, etc) to build/test-results/*
-            junitXml.enabled = true
-            // Write human-readable test report to build/reports/tests/*
-            html.enabled = true
-        }
-    }
-}
-
-test {
-    useJUnitPlatform()
-}
-
-task unitTest(type: Test) {
-    useJUnitPlatform {
-        includeTags 'unit'
-    }
-}
-
-// TODO(gjordan): turn off doclint to remove "no @return value" warnings
-// https://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
-java {
-    withJavadocJar()
-}
-
-def artifactory_repo_key = System.getenv("ARTIFACTORY_REPO_KEY") != null ? System.getenv("ARTIFACTORY_REPO_KEY") : 'libs-snapshot-local'
-def artifactory_username = System.getenv('ARTIFACTORY_USERNAME')
-def artifactory_password = System.getenv('ARTIFACTORY_PASSWORD')
-
-publishing {
-    publications {
-        terraCommonLib(MavenPublication) {
-            from components.java
-        }
-    }
-}
-
-artifactory {
-    publish {
-        contextUrl = 'https://broadinstitute.jfrog.io/broadinstitute/'
-        repository {
-            repoKey = "${artifactory_repo_key}"
-            username = "${artifactory_username}"
-            password = "${artifactory_password}"
-        }
-        defaults {
-            publications('terraCommonLib')
-            publishArtifacts = true
-            publishPom = true
-        }
-    }
-}
+defaultTasks 'spotlessApply', 'build'

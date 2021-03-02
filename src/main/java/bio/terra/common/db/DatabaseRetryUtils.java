@@ -45,7 +45,7 @@ public class DatabaseRetryUtils {
   }
 
   /**
-   * Tests an exception to see if it is retryable
+   * Tests an exception to see if it is retryable.
    *
    * @param dataAccessException execption to test
    * @return {@code true} if that is retryable {@link DataAccessException}.

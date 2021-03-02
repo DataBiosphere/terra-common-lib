@@ -46,7 +46,8 @@ import org.apache.commons.lang3.ClassUtils;
  * @see <a href="https://opencensus.io/tracing/">https://opencensus.io/tracing/</a>
  */
 public class TracingHook implements StairwayHook {
-  private final Tracer tracer = Tracing.getTracer();
+  /** The {@link FlightMap} key for the submission Span's context. */
+  public static final String SUBMISSION_SPAN_CONTEXT_MAP_KEY = "opencensusTracingSpanContext";
 
   // Prefixes to use for Span names. Standard prefixes make it easier to search for all Spans of
   // different types.
@@ -54,8 +55,7 @@ public class TracingHook implements StairwayHook {
   private static final String FLIGHT_NAME_PREFIX = "stairway/flight/";
   private static final String STEP_NAME_PREFIX = "stairway/step/";
 
-  /** The {@link FlightMap} key for the submission Span's context. */
-  public static final String SUBMISSION_SPAN_CONTEXT_MAP_KEY = "opencensusTracingSpanContext";
+  private final Tracer tracer = Tracing.getTracer();
 
   /**
    * Serialize the current Span's {@link SpanContext}. To be used to store a submission Span for the

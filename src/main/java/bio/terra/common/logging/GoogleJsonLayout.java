@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
  * href="https://github.com/ankurcha/gcloud-logging-slf4j-logback/">gcloud-logging-slf4j-logback</a>
  * which inspired some of the patterns used here.
  */
+@SuppressWarnings("MultipleStringLiterals")
 class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
   // A reference to the current Spring app context, on order to pull out the spring.application.name

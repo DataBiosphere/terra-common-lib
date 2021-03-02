@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<!-- Empty suppressions file: copy it into gradle/config/checkstyle and specify required suppressions
+     (https://checkstyle.sourceforge.io/config_filters.html#SuppressionFilter)-->
+<suppressions>
+
+  <suppress checks="FinalLocalVariable"/> <!-- Terra: less strict about final -->
+  <suppress checks="Indentation"/> <!-- Terra: indentation handled by Spotless -->
+  <suppress checks="InnerTypeLast"/> <!-- Terra: inner types out of order is OK, especially in tests -->
+  <suppress checks="JavadocType"/> <!-- Terra: less strict about javadoc -->
+  <suppress checks="MultipleStringLiterals"/> <!-- Terra: less strict about string literals, especially in tests -->
+
+</suppressions>
