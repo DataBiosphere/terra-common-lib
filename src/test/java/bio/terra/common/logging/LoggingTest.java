@@ -64,6 +64,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 // included in the JSON output if available.
 @ActiveProfiles("logging-test")
 @Tag("unit")
+@org.junit.jupiter.api.Order(10)
 public class LoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;

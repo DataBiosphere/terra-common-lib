@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Tag;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -17,18 +16,19 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 
 /**
  * A test to verify that the human-readable-logging Spring Profile will disable the configuration of
  * Google-formatted JSON layout. This test is configured in a very similar manner to the main
  * LoggingTest, except for the @ActiveProfiles annotation.
  */
-@RunWith(SpringRunner.class)
+@SpringJUnitWebConfig
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = LoggingTestApplication.class)
 @ContextConfiguration(initializers = LoggingInitializer.class)
 @ActiveProfiles("human-readable-logging")
 @Tag("unit")
+@org.junit.jupiter.api.Order(20)
 public class HumanReadableLoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
