@@ -8,7 +8,6 @@ import bio.terra.common.logging.LoggingTest.FilterTestConfiguration;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import io.opencensus.common.Scope;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
@@ -81,8 +80,7 @@ public class LoggingTest {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
-      Scope scope =
-          Tracing.getTracer().spanBuilderWithExplicitParent("test-span", null).startScopedSpan();
+      Tracing.getTracer().spanBuilderWithExplicitParent("test-span", null).startScopedSpan();
       requestSpanContext = Tracing.getTracer().getCurrentSpan().getContext();
       chain.doFilter(request, response);
       // Note: we purposefully don't close the scope here. For some reason, it doesn't seem possible
