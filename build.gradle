@@ -55,8 +55,9 @@ dependencies {
     testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
     testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
+    // Jupiter version is managed by the Spring Boot plugin
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.+'
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'

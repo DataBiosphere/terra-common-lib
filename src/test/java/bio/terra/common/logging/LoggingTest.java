@@ -8,7 +8,6 @@ import bio.terra.common.logging.LoggingTest.FilterTestConfiguration;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import io.opencensus.common.Scope;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
@@ -17,25 +16,24 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.test.system.OutputCaptureRule;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Tests the functionality of the common logging package, including request ID generation and
@@ -50,9 +48,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  * <p>Inspired by
  * https://github.com/eugenp/tutorials/blob/master/spring-boot-modules/spring-boot-testing/src/test/java/com/baeldung/testloglevel/LogbackMultiProfileTestLogLevelIntegrationTest.java
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = LoggingTestApplication.class)
-@ContextConfiguration(
+@SpringJUnitConfig(
     // This is the simplest way to trigger LoggingInitializer from within this test. See
     // LoggingTestApplication for an example of how a real-world application would initialize the
     // logging flow.
@@ -64,14 +61,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 // Refer to an external properties file to define a Spring application name and version, which is
 // included in the JSON output if available.
 @ActiveProfiles("logging-test")
+@ExtendWith(OutputCaptureExtension.class)
 @Tag("unit")
 public class LoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
   // Spy bean to allow us to mock out the RequestIdFilter ID generator.
   @SpyBean private RequestIdFilter requestIdFilter;
-  // Capture stdout and stderr for log output assertions
-  @Rule public OutputCaptureRule outputCapture = new OutputCaptureRule();
 
   private static SpanContext requestSpanContext;
 
@@ -81,8 +77,7 @@ public class LoggingTest {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
-      Scope scope =
-          Tracing.getTracer().spanBuilderWithExplicitParent("test-span", null).startScopedSpan();
+      Tracing.getTracer().spanBuilderWithExplicitParent("test-span", null).startScopedSpan();
       requestSpanContext = Tracing.getTracer().getCurrentSpan().getContext();
       chain.doFilter(request, response);
       // Note: we purposefully don't close the scope here. For some reason, it doesn't seem possible
@@ -101,8 +96,8 @@ public class LoggingTest {
     }
   }
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  public void setUp() throws IOException, ServletException {
     // Ensure the request ID is always set to a known value.
     when(requestIdFilter.generateRequestId()).thenReturn("12345");
     // Ensure the GCP project ID is always set to a known value. See
@@ -112,12 +107,12 @@ public class LoggingTest {
   }
 
   @Test
-  public void testRequestLogging() {
+  public void testRequestLogging(CapturedOutput capturedOutput) {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testRequestLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
 
-    String line = lastLoggedLine();
+    String line = lastLoggedLine(capturedOutput);
 
     // Timestamp fields
     assertThat((Integer) readJson(line, "$.timestampSeconds")).isNotNull();
@@ -157,12 +152,12 @@ public class LoggingTest {
    * for details on the invocation.
    */
   @Test
-  public void testStructuredLogging() {
+  public void testStructuredLogging(CapturedOutput capturedOutput) {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testStructuredLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
 
-    String[] lines = outputCapture.getAll().split("\n");
+    String[] lines = capturedOutput.getAll().split("\n");
 
     String event1 = null;
     String event2 = null;
@@ -201,8 +196,8 @@ public class LoggingTest {
             .read(path);
   }
 
-  private String lastLoggedLine() {
-    String[] lines = outputCapture.getAll().split("\n");
+  private String lastLoggedLine(CapturedOutput capturedOutput) {
+    String[] lines = capturedOutput.getAll().split("\n");
     return lines[lines.length - 1];
   }
 }
