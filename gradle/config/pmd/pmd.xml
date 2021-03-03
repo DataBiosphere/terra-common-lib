@@ -20,7 +20,7 @@
         <exclude name="JUnit4TestShouldUseBeforeAnnotation"/>
         <exclude name="JUnit4TestShouldUseAfterAnnotation"/>
         <exclude name="JUnit4TestShouldUseTestAnnotation"/>
-        <exclude name="JUnitTestContainsTooManyAsserts"/> <!-- Terra override -->
+        <exclude name="JUnitTestContainsTooManyAsserts"/> <!-- Terra override: multiple asserts are OK -->
         <exclude name="JUnitTestsShouldIncludeAssert"/>
     </rule>
 
@@ -40,7 +40,7 @@
         <exclude name="LocalVariableCouldBeFinal"/>
         <exclude name="LongVariable"/>
         <exclude name="MDBAndSessionBeanNamingConvention"/> <!-- earlier j2ee group-->
-        <exclude name="MethodArgumentCouldBeFinal"/> <!-- Terra style override -->
+        <exclude name="MethodArgumentCouldBeFinal"/> <!-- Terra override: final on method args is not required -->
         <exclude name="OnlyOneReturn"/> <!-- disabled in favour of checkstyle ReturnCount check -->
         <exclude name="RemoteInterfaceNamingConvention"/> <!-- earlier j2ee group-->
         <exclude name="RemoteSessionInterfaceNamingConvention"/> <!-- earlier j2ee group-->
