@@ -9,7 +9,4 @@ spotless {
         removeUnusedImports()
         targetExclude "${buildDir}/**"
     }
-
-    // Only enforce on changed files
-    ratchetFrom 'origin/develop'
 }
