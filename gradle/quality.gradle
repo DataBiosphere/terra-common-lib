@@ -1,10 +1,30 @@
-// Config for the Gradle quality plugin. See docs at http://xvik.github.io/gradle-quality-plugin/4.5.0/
-//
-// For override files, see gradle/config/{toolName}/*.xml . These files were
-// auto-generated with `./gradlew initQualityConfig`. All overrides should be
-// tagged with a Terra-specific justification comment.
-//
-// To suppress a violation in code, use `@SuppressWarning("ViolationName")`.
+/**
+ * Terra configs for the Gradle quality plugin.
+ *
+ * See docs at http://xvik.github.io/gradle-quality-plugin/4.5.0/
+ *
+ * Guiding principles behind our use of static code analyzers:
+ *
+ * 1) Shift left. We value code analyzers because they can accelerate and
+ *    automate our detection of clear-cut violations of Java style expectations
+ *    and good coding practice. Automated enforcement should be scoped to
+ *    non-controversial matters of code health.
+ * 2) Suppress early, discuss later. We prefer fewer, more meaningful findings.
+ *    At the first sign of a noisy or controversial finding, add a global
+ *    suppression and follow-up with discussion among the team. We prefer global
+ *    exclusions to many identical `@SuppressWarning` statements.
+ *
+ * Practical matters:
+ *
+ * For override files, see gradle/config/{toolName}/*.xml . These files were
+ * auto-generated with `./gradlew initQualityConfig`.
+ *
+ * All overrides should be tagged with a Terra-specific justification comment
+ * that explains why we are excluding the finding. Cross-links to tickets or
+ * discussion threads for context are encouraged.
+ *
+ * To suppress a violation in code, use `@SuppressWarning("ViolationName")`.
+ */
 quality {
     // FYI-only mode for now. Switch to strict=on once all sub-tasks are green.
     strict = false
