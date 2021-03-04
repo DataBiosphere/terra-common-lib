@@ -7,7 +7,7 @@ start() {
     echo "attempting to remove old $CONTAINER container..."
     docker rm -f $CONTAINER
 
-    # start up postgres
+    # start up postgreskub
     echo "starting up postgres container..."
     BASEDIR=$(dirname "$0")
     docker create --name $CONTAINER --rm -e POSTGRES_PASSWORD=password -p "$POSTGRES_PORT:5432" postgres:$POSTGRES_VERSION
