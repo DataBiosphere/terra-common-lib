@@ -22,7 +22,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 public class LoggingUtils {
 
   public static final String TERRA_APPENDER_NAME = "terra-common";
-  private static boolean loggingInitialized = false;
 
   /**
    * Parses a JSON string and returns a Jackson JsonNode object which can be passed as an argument
@@ -78,34 +77,30 @@ public class LoggingUtils {
    * default Spring logging config (see resources/logback.xml) will be used.
    */
   protected static void initializeLogging(ConfigurableApplicationContext applicationContext) {
-    if (loggingInitialized) {
-      return;
-    }
-    loggingInitialized = true;
-
     ch.qos.logback.classic.Logger logbackLogger =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     ConfigurableEnvironment environment = applicationContext.getEnvironment();
 
     if (Arrays.stream(environment.getActiveProfiles()).anyMatch("human-readable-logging"::equals)) {
       System.out.println("Human-readable logging enabled, skipping Google JSON layout");
-      return;
+      // No action needed. The logback.xml file on the classpath contains a default human-readable
+      // logging layout.
+    } else {
+      GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
+      layout.start();
+
+      LayoutWrappingEncoder encoder = new LayoutWrappingEncoder();
+      encoder.setLayout(layout);
+      encoder.start();
+
+      ConsoleAppender appender = new ConsoleAppender();
+      appender.setName(TERRA_APPENDER_NAME);
+      appender.setEncoder(encoder);
+      appender.setContext(logbackLogger.getLoggerContext());
+      appender.start();
+
+      logbackLogger.detachAndStopAllAppenders();
+      logbackLogger.addAppender(appender);
     }
-
-    GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
-    layout.start();
-
-    LayoutWrappingEncoder encoder = new LayoutWrappingEncoder();
-    encoder.setLayout(layout);
-    encoder.start();
-
-    ConsoleAppender appender = new ConsoleAppender();
-    appender.setName(TERRA_APPENDER_NAME);
-    appender.setEncoder(encoder);
-    appender.setContext(logbackLogger.getLoggerContext());
-    appender.start();
-
-    logbackLogger.detachAndStopAllAppenders();
-    logbackLogger.addAppender(appender);
   }
 }

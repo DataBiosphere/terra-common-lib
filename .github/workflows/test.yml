@@ -37,6 +37,8 @@ jobs:
       - name: Run unit tests
         id: unit-test
         run: ./gradlew unitTest --scan
+      - name: Check Javadoc
+        run: ./gradlew javadoc --scan
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v1
