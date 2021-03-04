@@ -4,12 +4,10 @@ import io.opencensus.contrib.http.servlet.OcHttpServletFilter;
 import io.opencensus.contrib.spring.aop.CensusSpringAspect;
 import io.opencensus.exporter.trace.stackdriver.StackdriverTraceConfiguration;
 import io.opencensus.exporter.trace.stackdriver.StackdriverTraceExporter;
-import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.config.TraceParams;
 import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
-import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -79,12 +77,6 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
 
   @Override
   public void afterPropertiesSet() {
-    // TODO DO NOT SUBMIT do we need to unregister for tests or something?
-    try {
-      StackdriverTraceExporter.unregister();
-    } catch (IllegalStateException e) {
-      logger.info("No exporter registered yet");
-    }
     setTraceSamplingProbability();
     if (tracingProperties.getStackdriverExportEnabled()) {
       try {
@@ -92,15 +84,7 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
         // Use Google's default environment inspection to set options. Google's method for
         // collecting the default project ID. This will attempt to extract the project ID from
         // environment variables and/or application default credentials.
-        StackdriverTraceExporter.createAndRegister(
-            StackdriverTraceConfiguration.builder()
-                .setFixedAttributes(
-                    Collections.singletonMap(
-                        "/terra/component",
-                        AttributeValue.stringAttributeValue(
-                            configurableEnvironment.getRequiredProperty(
-                                "spring.application.name"))))
-                .build());
+        StackdriverTraceExporter.createAndRegister(StackdriverTraceConfiguration.builder().build());
         logger.info("Registered StackdriverTraceExporter");
       } catch (IOException e) {
         logger.warn("Unable to register StackdriverTraceExporter. Traces will not be exported.", e);
@@ -121,6 +105,9 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(new TracingAttributeAnnotatorInterceptor());
+    registry.addInterceptor(
+        new TracingAttributeAnnotatorInterceptor(
+            configurableEnvironment.getProperty("spring.application.name"),
+            configurableEnvironment.getProperty("spring.application.version")));
   }
 }
