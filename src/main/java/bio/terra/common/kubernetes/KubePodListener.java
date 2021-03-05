@@ -161,6 +161,7 @@ class KubePodListener implements Runnable {
 
   /**
    * Process a single pod/operation pair.
+   *
    * @param operation - pod operation, such as ADDED or DELETED
    * @param podName - name of pod to map or recover
    * @return true if stairway recovery was interrupted, false otherwise.
@@ -211,9 +212,7 @@ class KubePodListener implements Runnable {
 
   // get the number of running pods from the podMap
   int getActivePodCount() {
-    final long count = podMap.values().stream()
-        .filter(PodState.RUNNING::equals)
-        .count();
+    final long count = podMap.values().stream().filter(PodState.RUNNING::equals).count();
     logger.info("KubePodListener ActivePodCount: {} of {} pods active", count, podMap.size());
     return (int) count;
   }
