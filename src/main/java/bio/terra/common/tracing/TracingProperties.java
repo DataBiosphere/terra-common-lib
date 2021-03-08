@@ -3,17 +3,13 @@ package bio.terra.common.tracing;
 import com.google.common.collect.Lists;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-@EnableConfigurationProperties
 @ConfigurationProperties(prefix = "terra.common.tracing")
 public class TracingProperties {
   /** Rate of trace sampling, 0.0 - 1.0 */
-  private double probability = 0.10;
+  private double samplingRate = 0.1; // TODO DO NOT SUBMIT
 
-  /** Whether Stackdriver tracing export is enabled at all */
+  /** Whether Stackdriver tracing export is enabled. */
   private boolean stackdriverExportEnabled = true;
 
   /**
@@ -22,12 +18,12 @@ public class TracingProperties {
    */
   private List<String> urlPatterns = Lists.newArrayList("/api/*");
 
-  public double getProbability() {
-    return probability;
+  public double getSamplingRate() {
+    return samplingRate;
   }
 
-  public void setProbability(double probability) {
-    this.probability = probability;
+  public void setSamplingRate(double samplingRate) {
+    this.samplingRate = samplingRate;
   }
 
   public boolean getStackdriverExportEnabled() {

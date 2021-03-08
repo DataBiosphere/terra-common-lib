@@ -16,9 +16,9 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * A {@link HandlerInterceptor} that adds more attributes to HTTP requests being traced.
+ * A {@link HandlerInterceptor} that adds more tracing attributes to HTTP requests.
  *
- * <p>This adds more attributes that are Terra specific or could not be figured out by the {@link
+ * <p>This adds attributes that are Terra specific or could not be figured out by the {@link
  * io.opencensus.contrib.http.servlet.OcHttpServletFilter}.
  */
 class TracingAttributeAnnotatorInterceptor implements HandlerInterceptor {
@@ -37,7 +37,6 @@ class TracingAttributeAnnotatorInterceptor implements HandlerInterceptor {
       HttpServletRequest httpRequest, HttpServletResponse httpResponse, Object handler) {
     if (handler instanceof HandlerMethod) {
       HandlerMethod handlerMethod = (HandlerMethod) handler;
-
       // This relies on the span for the request being already set as the current span. If there is
       // no span, this is a no-op.
       Tracing.getTracer().getCurrentSpan().putAttributes(buildAttributes(handlerMethod));
@@ -62,6 +61,8 @@ class TracingAttributeAnnotatorInterceptor implements HandlerInterceptor {
           AttributeValue.stringAttributeValue(
               Arrays.stream(mapping.path()).findFirst().orElse("unknown")));
     }
+    // We expect the RequestIdFilter to have already set up the MDC context. This is true today
+    // because servlet Filters are always run before Spring HandlerInterceptors.
     String requestId = MDC.get(RequestIdFilter.REQUEST_ID_MDC_KEY);
     if (requestId != null) {
       attributes.put("/terra/requestId", AttributeValue.stringAttributeValue(requestId));

@@ -12,10 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -39,7 +39,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * {@code @ComponentScan(basePackages = "bio.terra.common.tracing")}
  */
 @Configuration
-@PropertySource("classpath:common-tracing.properties")
+@EnableConfigurationProperties(value = TracingProperties.class)
 public class TracingConfig implements InitializingBean, WebMvcConfigurer {
   private static final Logger logger = LoggerFactory.getLogger(TracingConfig.class);
 
@@ -61,11 +61,7 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
   public FilterRegistrationBean<OcHttpServletFilter> tracingServletFilter() {
     FilterRegistrationBean<OcHttpServletFilter> registration =
         new FilterRegistrationBean(new OcHttpServletFilter());
-    // By default, only allow /api patterns to exclude adding tracing for boring status calls.
     registration.setUrlPatterns(tracingProperties.getUrlPatterns());
-    // The order should be at least lower than RequestIdFilter so that we can add the Terra request
-    // id to the trace.
-    registration.setOrder(5);
     return registration;
   }
 
@@ -81,9 +77,9 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
     if (tracingProperties.getStackdriverExportEnabled()) {
       try {
         // Once properties are loaded, initialize the Stackdriver exporter.
-        // Use Google's default environment inspection to set options. Google's method for
-        // collecting the default project ID. This will attempt to extract the project ID from
-        // environment variables and/or application default credentials.
+        // Use Google's default environment inspection to set options. This will attempt to extract
+        // the project ID and container environment from environment variables and/or application
+        // default credentials.
         StackdriverTraceExporter.createAndRegister(StackdriverTraceConfiguration.builder().build());
         logger.info("Registered StackdriverTraceExporter");
       } catch (IOException e) {
@@ -99,7 +95,7 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
         .updateActiveTraceParams(
             origParams
                 .toBuilder()
-                .setSampler(Samplers.probabilitySampler(tracingProperties.getProbability()))
+                .setSampler(Samplers.probabilitySampler(tracingProperties.getSamplingRate()))
                 .build());
   }
 
