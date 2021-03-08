@@ -7,7 +7,6 @@ import io.opencensus.trace.Tracing;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
@@ -22,16 +21,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
  * io.opencensus.contrib.http.servlet.OcHttpServletFilter}.
  */
 class TracingAttributeAnnotatorInterceptor implements HandlerInterceptor {
-  /** The name of the service. */
-  @Nullable private final String componentName;
-  /** The version of the service. */
-  @Nullable private final String version;
-
-  TracingAttributeAnnotatorInterceptor(@Nullable String componentName, @Nullable String version) {
-    this.componentName = componentName;
-    this.version = version;
-  }
-
   @Override
   public boolean preHandle(
       HttpServletRequest httpRequest, HttpServletResponse httpResponse, Object handler) {
@@ -46,12 +35,6 @@ class TracingAttributeAnnotatorInterceptor implements HandlerInterceptor {
 
   private Map<String, AttributeValue> buildAttributes(HandlerMethod handlerMethod) {
     Map<String, AttributeValue> attributes = new HashMap<>();
-    if (componentName != null) {
-      attributes.put("/terra/component", AttributeValue.stringAttributeValue(componentName));
-    }
-    if (version != null) {
-      attributes.put("/terra/version", AttributeValue.stringAttributeValue(version));
-    }
     RequestMapping mapping = handlerMethod.getMethodAnnotation(RequestMapping.class);
     if (mapping != null) {
       // The OcHttpServletFilter sets a blank HTTP route attribute. We can fill in a meaningful

@@ -4,10 +4,13 @@ import io.opencensus.contrib.http.servlet.OcHttpServletFilter;
 import io.opencensus.contrib.spring.aop.CensusSpringAspect;
 import io.opencensus.exporter.trace.stackdriver.StackdriverTraceConfiguration;
 import io.opencensus.exporter.trace.stackdriver.StackdriverTraceExporter;
+import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.config.TraceParams;
 import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -80,10 +83,16 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
         // Use Google's default environment inspection to set options. This will attempt to extract
         // the project ID and container environment from environment variables and/or application
         // default credentials.
-        StackdriverTraceExporter.createAndRegister(StackdriverTraceConfiguration.builder().build());
+        StackdriverTraceExporter.createAndRegister(
+            StackdriverTraceConfiguration.builder()
+                // Set attributes to appear on every trace exported for this service.
+                .setFixedAttributes(createFixedAttributes())
+                .build());
         logger.info("Registered StackdriverTraceExporter");
       } catch (IOException e) {
-        logger.warn("Unable to register StackdriverTraceExporter. Traces will not be exported.", e);
+        // We do not want to prevent servers from starting up if there is an error exporting traces.
+        logger.error(
+            "Unable to register StackdriverTraceExporter. Traces will not be exported.", e);
       }
     }
   }
@@ -99,11 +108,21 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
                 .build());
   }
 
+  private Map<String, AttributeValue> createFixedAttributes() {
+    Map<String, AttributeValue> attributes = new HashMap<>();
+    String componentName = configurableEnvironment.getProperty("spring.application.name");
+    if (componentName != null) {
+      attributes.put("/terra/component", AttributeValue.stringAttributeValue(componentName));
+    }
+    String version = configurableEnvironment.getProperty("spring.application.version");
+    if (version != null) {
+      attributes.put("/terra/version", AttributeValue.stringAttributeValue(version));
+    }
+    return attributes;
+  }
+
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(
-        new TracingAttributeAnnotatorInterceptor(
-            configurableEnvironment.getProperty("spring.application.name"),
-            configurableEnvironment.getProperty("spring.application.version")));
+    registry.addInterceptor(new TracingAttributeAnnotatorInterceptor());
   }
 }

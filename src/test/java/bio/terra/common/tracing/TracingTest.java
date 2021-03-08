@@ -23,7 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 /** Tests the functionality of the common tracing package. */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = TracingTestApplication.class)
-// Use a properties file to define a Spring application name and version and tracing properties.
+// Use a properties file to set tracing properties.
 @ActiveProfiles("tracing-test")
 @Tag("unit")
 public class TracingTest {
@@ -55,8 +55,6 @@ public class TracingTest {
     assertThat(requestAttributes, Matchers.hasKey("http.user_agent"));
 
     assertThat(requestAttributes, Matchers.hasKey("/terra/requestId"));
-    assertThat(requestAttributes, Matchers.hasEntry("/terra/component", "tracingTest"));
-    assertThat(requestAttributes, Matchers.hasEntry("/terra/version", "1.2.3-SNAPSHOT"));
     assertThat(requestAttributes, Matchers.hasEntry("/terra/operationId", "getFoo"));
 
     RecordEventsSpanImpl beanSpan = (RecordEventsSpanImpl) annotatedBean.getLatestSpan();
