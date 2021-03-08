@@ -92,19 +92,20 @@ class KubePodListener implements Runnable {
     // retry loop
     while (true) {
       try {
-        final ApiClient defaultClient = Config.defaultClient();
+        final ApiClient client = Config.defaultClient();
         // infinite timeout
         final OkHttpClient httpClient =
-            defaultClient.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build();
-        defaultClient.setHttpClient(httpClient);
-        Configuration.setDefaultApiClient(defaultClient);
+            client.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build();
+        client.setHttpClient(httpClient);
+        Configuration.setDefaultApiClient(client);
         final CoreV1Api kubeApi = new CoreV1Api();
 
         // Instantiate the watch and scope it.
-        try (Watch<V1Namespace> watch = makeWatch(defaultClient, kubeApi)) {
+        try (Watch<V1Namespace> watch = makeWatch(client, kubeApi)) {
           for (Watch.Response<V1Namespace> item : watch) {
             // If we are shutting down, we stop watching
             if (kubeService.isShutdown()) {
+              logger.info("Kubernetes service is shutting down. Exiting.");
               return;
             }
             // Reset retry if the watch worked
@@ -115,14 +116,22 @@ class KubePodListener implements Runnable {
             final String podName =
                 Optional.ofNullable(item.object.getMetadata())
                     .map(V1ObjectMeta::getName)
-                    .orElse("");
+                    .orElse(StringUtils.EMPTY);
             logger.info(String.format("%s : %s", operation, podName));
 
-            if (handlePodOperation(operation, podName)) {
-              // interrupted
-              return;
+            // interrupted
+            if (StringUtils.contains(podName, podNameFilter)) {
+              if ("ADDED".equals(operation)) {
+                handleRunningPod(podName);
+              } else if ("DELETED".equals(operation)) {
+                handleDeletedPod(podName);
+              }
             }
           }
+        } catch (InterruptedException ex) {
+          logger.info("KubePodListener interrupted - exiting", ex);
+          exception = ex;
+          return;
         }
       } catch (RuntimeException | ApiException | IOException ex) {
         exception = ex;
@@ -144,7 +153,7 @@ class KubePodListener implements Runnable {
         TimeUnit.SECONDS.sleep(retryWait);
         retryWait = Math.min(retryWait + retryWait, WATCH_MAX_WAIT);
       } catch (InterruptedException ex) {
-        logger.info("KubePodListener exiting - interruped while retrying");
+        logger.info("KubePodListener exiting - interrupted while retrying");
         return;
       }
       logger.info("KubePodListener consecutive retry: " + consecutiveRetryCount);
@@ -159,39 +168,19 @@ class KubePodListener implements Runnable {
         new TypeToken<Watch.Response<V1Namespace>>() {}.getType());
   }
 
-  /**
-   * Process a single pod/operation pair.
-   *
-   * @param operation - pod operation, such as ADDED or DELETED
-   * @param podName - name of pod to map or recover
-   * @return true if stairway recovery was interrupted, false otherwise.
-   */
-  private boolean handlePodOperation(String operation, String podName) {
-    if (StringUtils.contains(podName, podNameFilter)) {
-      if ("ADDED".equals(operation)) {
-        logger.info("Added api pod: " + podName);
-        podMap.put(podName, PodState.RUNNING);
-      } else if ("DELETED".equals(operation)) {
-        try {
-          recoverDeletedPod(podName);
-        } catch (DatabaseOperationException | StairwayExecutionException ex) {
-          logger.error("Stairway recoverStairway failed to recover pod: " + podName, ex);
-        } catch (InterruptedException ex) {
-          logger.info("KubePodListener interrupted - exiting", ex);
-          exception = ex;
-          return true;
-        }
-      }
-    }
-    return false;
+  private void handleRunningPod(String podName) {
+    logger.info("Added api pod: " + podName);
+    podMap.put(podName, PodState.RUNNING);
   }
 
-  // Attempt to recover a deleted pod using Stairway. Update the map to indicate the pod is deleted.
-  private void recoverDeletedPod(String podName)
-      throws DatabaseOperationException, InterruptedException, StairwayExecutionException {
-    logger.info("Attempting clean up of deleted stairway instance: " + podName);
-    stairway.recoverStairway(podName);
-    markDeletedIfRunning(podName);
+  private void handleDeletedPod(String podName) throws InterruptedException {
+    try {
+      logger.info("Attempting clean up of deleted stairway instance: " + podName);
+      stairway.recoverStairway(podName);
+      markDeletedIfRunning(podName);
+    } catch (DatabaseOperationException | StairwayExecutionException ex) {
+      logger.error("Stairway recoverStairway failed to recover pod: " + podName, ex);
+    }
   }
 
   private void markDeletedIfRunning(String podName) {
@@ -214,6 +203,6 @@ class KubePodListener implements Runnable {
   int getActivePodCount() {
     final long count = podMap.values().stream().filter(PodState.RUNNING::equals).count();
     logger.info("KubePodListener ActivePodCount: {} of {} pods active", count, podMap.size());
-    return (int) count;
+    return Math.toIntExact(count);
   }
 }
