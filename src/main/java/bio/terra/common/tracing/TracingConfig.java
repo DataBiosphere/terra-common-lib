@@ -30,12 +30,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *   <li>{@link OcHttpServletFilter}, encloses HTTP requests to the server in a per-request
  *       OpenCensus trace.
  *   <li>{@link TracingAttributeAnnotatorInterceptor}, which adds additional per-request annotations
- *       for each service request..
+ *       for each service request.
+ *   <li>{@link StackdriverTraceExporter} configuration, which causes traces sampled by the service
+ *       to be exported to Stackdriver aka Google Cloud Tracing.
  *   <li>{@link CensusSpringAspect}, a Spring aspect to enable using the {@link
  *       io.opencensus.contrib.spring.aop.Traced} annotation on Spring bean methods to add sub
  *       spans.
- *   <li>{@link StackdriverTraceExporter} configuration, which causes traces sampled by the service
- *       to be exported to Stackdriver aka Google Cloud Tracing.
  * </ul>
  *
  * <p>To enable, add this package to Spring's component scan, e.g.
@@ -66,12 +66,6 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
         new FilterRegistrationBean(new OcHttpServletFilter());
     registration.setUrlPatterns(tracingProperties.getUrlPatterns());
     return registration;
-  }
-
-  /** Enable the @Traced annotation for use within the application. */
-  @Bean
-  public CensusSpringAspect censusAspect() {
-    return new CensusSpringAspect(Tracing.getTracer());
   }
 
   @Override
@@ -124,5 +118,11 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(new TracingAttributeAnnotatorInterceptor());
+  }
+
+  /** Enable the @Traced annotation for use within the application. */
+  @Bean
+  public CensusSpringAspect censusAspect() {
+    return new CensusSpringAspect(Tracing.getTracer());
   }
 }

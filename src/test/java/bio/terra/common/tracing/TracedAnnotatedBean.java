@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 /** A bean with an {@link Traced} annotation for testing. */
 @Component
 class TracedAnnotatedBean {
+  /** The most recent span seen by {@link #annotatedMethod()}. */
   private Span latestSpan;
 
   @Traced

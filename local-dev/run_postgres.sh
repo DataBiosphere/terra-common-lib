@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Start up a postgres container with initial user/database setup.
 POSTGRES_VERSION=12.3
+
 start() {
     echo "attempting to remove old $CONTAINER container..."
     docker rm -f $CONTAINER
 
-    # start up postgreskub
+    # start up postgres
     echo "starting up postgres container..."
     BASEDIR=$(dirname "$0")
     docker create --name $CONTAINER --rm -e POSTGRES_PASSWORD=password -p "$POSTGRES_PORT:5432" postgres:$POSTGRES_VERSION
@@ -14,7 +15,7 @@ start() {
 
     # validate postgres
     echo "running postgres validation..."
-    #docker exec $CONTAINER sh -c "$(cat $BASEDIR/sql_validate.sh)"
+    docker exec $CONTAINER sh -c "$(cat $BASEDIR/sql_validate.sh)"
     if [ 0 -eq $? ]; then
         echo "postgres validation succeeded."
     else
