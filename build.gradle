@@ -38,7 +38,6 @@ dependencies {
     implementation group: 'io.opencensus', name: 'opencensus-api', version: OPENCENSUS_VERSION
     implementation group: "io.opencensus", name: "opencensus-contrib-spring", version: OPENCENSUS_VERSION
     implementation group: "io.opencensus", name: "opencensus-exporter-trace-stackdriver", version: OPENCENSUS_VERSION
-    implementation group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.+'
     // commons-lang3 version is managed by the Spring Boot plugin
     implementation group: 'org.apache.commons', name: 'commons-lang3'
     implementation group: 'org.hashids', name: 'hashids', version: '1.+'

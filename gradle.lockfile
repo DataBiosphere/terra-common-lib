@@ -114,7 +114,6 @@ io.sundr:builder-annotations:0.22.0=compileClasspath,productionRuntimeClasspath,
 io.sundr:resourcecify-annotations:0.22.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 io.sundr:sundr-codegen:0.22.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 io.sundr:sundr-core:0.22.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-io.swagger.core.v3:swagger-annotations:2.1.7=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 io.swagger:swagger-annotations:1.6.2=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 jakarta.activation:jakarta.activation-api:1.2.2=testCompileClasspath,testRuntimeClasspath
 jakarta.annotation:jakarta.annotation-api:1.3.5=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
