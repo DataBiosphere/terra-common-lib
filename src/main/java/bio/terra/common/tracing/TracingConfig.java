@@ -24,13 +24,13 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Auto-configuration class for Terra common tracing setup.
+ * Spring Configuration for Terra common tracing setup.
  *
  * <ul>
  *   <li>{@link OcHttpServletFilter}, encloses HTTP requests to the server in a per-request
  *       OpenCensus trace.
- *   <li>{@link TracingAttributeAnnotatorInterceptor}, which adds additional per-request annotations
- *       for each service request.
+ *   <li>{@link RequestAttributeInterceptor}, which adds additional per-request annotations for each
+ *       service request.
  *   <li>{@link StackdriverTraceExporter} configuration, which causes traces sampled by the service
  *       to be exported to Stackdriver aka Google Cloud Tracing.
  *   <li>{@link CensusSpringAspect}, a Spring aspect to enable using the {@link
@@ -69,8 +69,33 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
   }
 
   @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(new RequestAttributeInterceptor());
+  }
+
+  /** Enable the @Traced annotation for use within the application. */
+  @Bean
+  public CensusSpringAspect censusAspect() {
+    return new CensusSpringAspect(Tracing.getTracer());
+  }
+
+  @Override
   public void afterPropertiesSet() {
     setTraceSamplingProbability();
+    maybeExportToStackdriver();
+  }
+
+  private void setTraceSamplingProbability() {
+    TraceParams origParams = Tracing.getTraceConfig().getActiveTraceParams();
+    Tracing.getTraceConfig()
+        .updateActiveTraceParams(
+            origParams
+                .toBuilder()
+                .setSampler(Samplers.probabilitySampler(tracingProperties.getSamplingRate()))
+                .build());
+  }
+
+  private void maybeExportToStackdriver() {
     if (tracingProperties.getStackdriverExportEnabled()) {
       try {
         // Once properties are loaded, initialize the Stackdriver exporter.
@@ -91,17 +116,6 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
     }
   }
 
-  /** Propagates the workspace.tracing.probability property to the OpenCensus tracing config. */
-  private void setTraceSamplingProbability() {
-    TraceParams origParams = Tracing.getTraceConfig().getActiveTraceParams();
-    Tracing.getTraceConfig()
-        .updateActiveTraceParams(
-            origParams
-                .toBuilder()
-                .setSampler(Samplers.probabilitySampler(tracingProperties.getSamplingRate()))
-                .build());
-  }
-
   private Map<String, AttributeValue> createFixedAttributes() {
     Map<String, AttributeValue> attributes = new HashMap<>();
     String componentName = configurableEnvironment.getProperty("spring.application.name");
@@ -113,16 +127,5 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
       attributes.put("/terra/version", AttributeValue.stringAttributeValue(version));
     }
     return attributes;
-  }
-
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(new TracingAttributeAnnotatorInterceptor());
-  }
-
-  /** Enable the @Traced annotation for use within the application. */
-  @Bean
-  public CensusSpringAspect censusAspect() {
-    return new CensusSpringAspect(Tracing.getTracer());
   }
 }

@@ -4,10 +4,14 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * Defines configuration properties for the tracing package; see {@link TracingConfig} for their
+ * use.
+ */
 @ConfigurationProperties(prefix = "terra.common.tracing")
 public class TracingProperties {
   /** Rate of trace sampling, 0.0 - 1.0 */
-  private double samplingRate = 0.1; // TODO DO NOT SUBMIT
+  private double samplingRate = 0.05; // TODO DO NOT SUBMIT
 
   /** Whether Stackdriver tracing export is enabled. */
   private boolean stackdriverExportEnabled = true;
@@ -15,6 +19,8 @@ public class TracingProperties {
   /**
    * What HTTP URL patterns to enable tracing for. An empty list enables tracing for all HTTP
    * requests.
+   *
+   * <p>The pattern format is for {@link org.springframework.web.util.pattern.PathPattern}.
    */
   private List<String> urlPatterns = Lists.newArrayList("/api/*");
 

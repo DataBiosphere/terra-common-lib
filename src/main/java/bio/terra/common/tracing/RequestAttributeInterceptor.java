@@ -17,10 +17,13 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * A {@link HandlerInterceptor} that adds more tracing attributes to HTTP requests.
  *
+ * <p>This class expects the request to already have a span set as the current context. Today that
+ * span is created and set by the {@link io.opencensus.contrib.http.servlet.OcHttpServletFilter}.
+ *
  * <p>This adds attributes that are Terra specific or could not be figured out by the {@link
  * io.opencensus.contrib.http.servlet.OcHttpServletFilter}.
  */
-class TracingAttributeAnnotatorInterceptor implements HandlerInterceptor {
+class RequestAttributeInterceptor implements HandlerInterceptor {
   @Override
   public boolean preHandle(
       HttpServletRequest httpRequest, HttpServletResponse httpResponse, Object handler) {
@@ -50,6 +53,7 @@ class TracingAttributeAnnotatorInterceptor implements HandlerInterceptor {
     if (requestId != null) {
       attributes.put("/terra/requestId", AttributeValue.stringAttributeValue(requestId));
     }
+    // The "operationId" comes from the "operationId" field defined on the OpenAPI 3 definition.
     attributes.put(
         "/terra/operationId",
         AttributeValue.stringAttributeValue(handlerMethod.getMethod().getName()));

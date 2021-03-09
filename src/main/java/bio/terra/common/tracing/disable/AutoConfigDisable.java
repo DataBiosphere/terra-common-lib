@@ -11,7 +11,7 @@ import org.springframework.context.annotation.PropertySource;
  * <p>We include the io.opencensus.contrib.spring package to make use of its @Traced annotation. It
  * also, however, autoconfigures client and server trace annotations. We want to be able to make use
  * of the @Traced annotation, but client services importing this library should not be
- * autoconfigured. To do this, this sub package is EnableAutoConfiguratoin by
+ * autoconfigured. To do this, this sub package is EnableAutoConfiguration by
  * META-INF/spring.factories, but only uses tracing-disable.properties to disable the
  * io.opencensus.contrib.spring auto configuration.
  *
