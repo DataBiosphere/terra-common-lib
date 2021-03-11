@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "terra.common.tracing")
 public class TracingProperties {
   /** Rate of trace sampling, 0.0 - 1.0 */
-  private double samplingRate = 0.05; // TODO DO NOT SUBMIT
+  private double samplingRate = 0.05;
 
   /** Whether Stackdriver tracing export is enabled. */
   private boolean stackdriverExportEnabled = true;
