@@ -112,6 +112,15 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
         // We do not want to prevent servers from starting up if there is an error exporting traces.
         logger.error(
             "Unable to register StackdriverTraceExporter. Traces will not be exported.", e);
+      } catch (IllegalStateException e) {
+        // In testing, the exporter may have already been registered by a previous bean setup.
+        // If the exporter is registered multiple times, an IllegalStateException is thrown.
+        // This is expected in testing.
+        logger.warn(
+            "Unable to register StackdriverTraceExporter. In testing, this is expected "
+                + "because the exporter may have already been registered. Otherwise, traces will "
+                + "not be exported.",
+            e);
       }
     }
   }
