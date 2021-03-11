@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 /**
- * Auto-configuration class for Terra common logging setup. This config class installs three main
+ * Spring Configuration for Terra common logging setup. This config class installs three main
  * logging-related behaviors:
  *
  * <ul>
