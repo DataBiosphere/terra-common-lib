@@ -1,6 +1,7 @@
 package bio.terra.common.logging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.JsonObject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,5 +41,11 @@ public class LoggingTestController {
     pojo.name = "asdf";
     pojo.id = 1234;
     LOG.info("Structured data", LoggingUtils.structuredLogData("pojo", pojo));
+
+    // Test that a raw GSON JsonObject works too. Some libraries such as CRL may prefer to include
+    // GSON type objects in the log event payload.
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.addProperty("foo", "bar");
+    LOG.info("GSON object", jsonObject);
   }
 }
