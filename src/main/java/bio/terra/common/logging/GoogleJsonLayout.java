@@ -6,7 +6,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.jackson.JacksonJsonFormatter;
 import ch.qos.logback.contrib.json.JsonLayoutBase;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.ServiceOptions;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.Tracer;
@@ -62,6 +65,8 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   // A reference to the current Spring app context, on order to pull out the spring.application.name
   // and spring.application.version variable for inclusion in JSON output.
   private ConfigurableApplicationContext applicationContext;
+  private Gson gson;
+  private ObjectMapper objectMapper;
   // A Logback utility class to assist with handling stack traces.
   private ThrowableProxyConverter throwableProxyConverter;
 
@@ -69,6 +74,8 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     super();
 
     this.applicationContext = applicationContext;
+    this.gson = new Gson();
+    this.objectMapper = new ObjectMapper();
     this.throwableProxyConverter = new ThrowableProxyConverter();
     // "full" is a magic string used by the TPC to indicate we want a full stack trace, rather
     // than a truncated version.
@@ -133,10 +140,20 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
       for (Object arg : event.getArgumentArray()) {
         try {
           if (arg instanceof Map) {
+            // Handle arbitrary Map by splatting each key-value pair into the main output map.
             Map<String, Object> jsonMap = (Map<String, Object>) arg;
             jsonMap.forEach(map::put);
           } else if (arg instanceof JsonNode) {
+            // Handle Jackson JsonNode by splatting each property sub-tree into the main output map.
             JsonNode jsonNode = (JsonNode) arg;
+            jsonNode.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
+          } else if (arg instanceof JsonObject) {
+            // Some libraries use GSON rather than Jackson for arbitrary JSON data, and we should
+            // support that too. Since we're using Jackson for top-level serialization, we need to
+            // convert this gson.JsonObject into a jackson.databind.JsonNode for storage in the
+            // output map. The simplest way to do this is by using a JSON string as intermediary.
+            JsonObject jsonObject = (JsonObject) arg;
+            JsonNode jsonNode = objectMapper.readTree(jsonObject.toString());
             jsonNode.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
           }
         } catch (Exception e) {
