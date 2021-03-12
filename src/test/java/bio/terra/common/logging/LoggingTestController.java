@@ -45,7 +45,10 @@ public class LoggingTestController {
     // Test that a raw GSON JsonObject works too. Some libraries such as CRL may prefer to include
     // GSON type objects in the log event payload.
     JsonObject jsonObject = new JsonObject();
-    jsonObject.addProperty("foo", "bar");
+    JsonObject innerObject = new JsonObject();
+    innerObject.addProperty("bar", "baz");
+    jsonObject.add("foo", innerObject);
+    // The GSON should look like {"foo": {"bar": "baz"}}
     LOG.info("GSON object", jsonObject);
   }
 }
