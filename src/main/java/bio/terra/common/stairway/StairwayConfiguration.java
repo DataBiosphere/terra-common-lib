@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties
-@ConfigurationProperties(prefix = "buffer.stairway")
+@ConfigurationProperties(prefix = "bio.terra.common.stairway")
 public class StairwayConfiguration {
   private boolean forceCleanStart;
   private boolean migrateUpgrade;
