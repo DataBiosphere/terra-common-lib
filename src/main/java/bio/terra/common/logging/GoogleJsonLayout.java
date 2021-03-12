@@ -60,15 +60,16 @@ import org.springframework.util.StringUtils;
  */
 class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
-  private Tracer tracer = Tracing.getTracer();
-
   // A reference to the current Spring app context, on order to pull out the spring.application.name
   // and spring.application.version variable for inclusion in JSON output.
   private ConfigurableApplicationContext applicationContext;
+  // A Gson instance to support converting Gson-type payloads into Jackson nodes.
   private Gson gson;
+  // A Jackson ObjectMapper to support converting Gson-type payloads into Jackson nodes.
   private ObjectMapper objectMapper;
   // A Logback utility class to assist with handling stack traces.
   private ThrowableProxyConverter throwableProxyConverter;
+  private Tracer tracer = Tracing.getTracer();
 
   public GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
     super();

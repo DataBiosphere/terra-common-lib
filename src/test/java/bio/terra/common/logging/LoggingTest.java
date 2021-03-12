@@ -189,7 +189,7 @@ public class LoggingTest {
     assertThat((Integer) readJson(event3, "$.pojo.id")).isEqualTo(1234);
 
     assertThat(event4).isNotNull();
-    assertThat((String) readJson(event4, "$.foo")).isEqualTo("bar");
+    assertThat((String) readJson(event4, "$.foo.bar")).isEqualTo("baz");
   }
 
   // Uses the JsonPath library to extract data from a given path within a JSON string.
