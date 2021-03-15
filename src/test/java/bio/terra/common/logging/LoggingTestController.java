@@ -8,6 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * A controller providing Spring REST API calls to exercise common logging functionality. See {@link
+ * LoggingTest} for its use and assertions.
+ */
 @RestController
 @SuppressFBWarnings(value = "UrF", justification = "Pojo fields are unread but serialized to JSON")
 public class LoggingTestController {
