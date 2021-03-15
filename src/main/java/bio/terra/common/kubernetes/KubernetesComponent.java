@@ -23,7 +23,7 @@ public class KubernetesComponent {
     return kubeService;
   }
 
-  /** Returns {@link true} if in Kubernetes. */
+  /** Returns true if in Kubernetes. */
   public boolean isInKubernetes() {
     return kubernetesConfiguration.isInKubernetes();
   }

@@ -7,5 +7,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties
-@ConfigurationProperties(prefix = "bio.terra.common.stairway.db")
+@ConfigurationProperties(prefix = "terra.common.stairway.db")
 public class StairwayJdbcConfiguration extends JdbcConfiguration {}

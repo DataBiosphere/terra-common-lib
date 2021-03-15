@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 /** Configurations for running Buffer Services in Kubernetes and support multi-instance Stairway. */
 @Configuration
 @EnableConfigurationProperties
-@ConfigurationProperties(prefix = "buffer.kubernetes")
+@ConfigurationProperties(prefix = "terra.common.kubernetes")
 public class KubernetesConfiguration {
   // The pod that host the Buffer service app.
   private String podNameFilter;
