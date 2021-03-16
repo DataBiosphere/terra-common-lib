@@ -133,7 +133,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     // All MDC properties will be directly splatted onto the JSON map. This is how the MDC
     // 'requestId' property ends up in the JSON output, and ultimately into jsonPayload.requestId
     // in cloud logging.
-    event.getMDCPropertyMap().forEach(outputMap::put);
+    outputMap.putAll(event.getMDCPropertyMap());
 
     // Generically splat any map-like or JSON-like argument to the log call onto the output JSON.
     // This is how e.g. the RequestLoggingFilter adds the 'httpRequest' object to the JSON output.
@@ -169,7 +169,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
     // If the generic JSON splatting above caused a 'labels' entry to exist, move the value to
     // the well-known key that Cloud Logging will ingest as proper labels key-value pairs.
-    if (outputMap.get("labels") != null) {
+    if (outputMap.containsKey("labels")) {
       outputMap.put("logging.googleapis.com/labels", outputMap.get("labels"));
       outputMap.remove("labels");
     }
