@@ -16,7 +16,7 @@ public final class DatabaseRetryUtils {
   private DatabaseRetryUtils() {}
 
   /**
-   * Executes a database operation and retries if retryable.
+   * Executes a database operation and retries if retryable
    *
    * @param execute database operation to execute
    * @param retrySleep fixed retry sleep interval

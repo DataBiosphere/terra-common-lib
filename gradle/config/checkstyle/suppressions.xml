@@ -9,6 +9,10 @@
   -->
   <suppress checks="ClassFanOutComplexity"/>
   <!--
+    Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
+  -->
+  <suppress checks="ExecutableStatementCount"/>
+  <!--
     Terra: final is considered optional for local vars.
   -->
   <suppress checks="FinalLocalVariable"/>
@@ -20,6 +24,10 @@
     Terra: inner types out of order is OK, especially in tests.
   -->
   <suppress checks="InnerTypeLast"/>
+  <!--
+    Terra: less strict about javadoc.
+  -->
+  <suppress checks="JavadocStyle"/>
   <!--
     Terra: less strict about javadoc.
   -->

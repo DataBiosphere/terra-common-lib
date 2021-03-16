@@ -80,6 +80,8 @@ public final class LoggingUtils {
    * <p>If the "human-readable-logging" Spring profile is active, no changes will be made and the
    * default Spring logging config (see resources/logback.xml) will be used.
    */
+  // System.out.println is OK since this is a message relating to the logging system initialization.
+  @SuppressWarnings("PMD.SystemPrintln")
   protected static void initializeLogging(ConfigurableApplicationContext applicationContext) {
     ch.qos.logback.classic.Logger logbackLogger =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);

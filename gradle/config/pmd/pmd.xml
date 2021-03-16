@@ -38,6 +38,10 @@
         <exclude name="ConfusingTernary"/>
         <exclude name="ClassNamingConventions"/>
         <exclude name="DefaultPackage"/>
+        <!--
+          Terra: this rule is overly sensitive on method naming.
+        -->
+        <exclude name="LinguisticNaming"/>
         <exclude name="LocalHomeNamingConvention"/> <!-- earlier j2ee group-->
         <exclude name="LocalInterfaceSessionNamingConvention"/> <!-- earlier j2ee group-->
         <exclude name="LocalVariableCouldBeFinal"/>
@@ -48,6 +52,10 @@
         -->
         <exclude name="MethodArgumentCouldBeFinal"/>
         <exclude name="OnlyOneReturn"/> <!-- disabled in favour of checkstyle ReturnCount check -->
+        <!--
+          Terra: overly sensitive rule with marginal value.
+        -->
+        <exclude name="PrematureDeclaration"/>
         <exclude name="RemoteInterfaceNamingConvention"/> <!-- earlier j2ee group-->
         <exclude name="RemoteSessionInterfaceNamingConvention"/> <!-- earlier j2ee group-->
         <exclude name="ShortClassName"/>
@@ -67,12 +75,20 @@
     <rule ref="category/java/design.xml">
         <exclude name="AvoidCatchingGenericException"/>
         <exclude name="AvoidUncheckedExceptionsInSignatures"/>
+        <!--
+          Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
+        -->
+        <exclude name="CyclomaticComplexity"/>
         <exclude name="DataClass"/>
         <exclude name="ExcessiveClassLength"/> <!-- replaced by NcssCount -->
         <exclude name="ExcessiveMethodLength"/> <!-- replaced by NcssCount -->
         <exclude name="LawOfDemeter"/>
         <exclude name="LoosePackageCoupling"/>
         <exclude name="ModifiedCyclomaticComplexity"/>
+        <!--
+          Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
+        -->
+        <exclude name="NcssCount"/>
         <exclude name="SignatureDeclareThrowsException"/>
         <exclude name="StdCyclomaticComplexity"/>
     </rule>
@@ -81,6 +97,12 @@
             <property name="problemDepth" value="4"/>
         </properties>
     </rule>
+    <!--
+      Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
+
+      (The commented-out sections below were present in the default geneated XML. They are kept
+      here in commented form for clarity and provenance.)
+
     <rule ref="category/java/design.xml/CyclomaticComplexity">
         <properties>
             <property name="cycloOptions" value="ignoreBooleanPaths"/>
@@ -104,8 +126,7 @@
             <property name="maxmethods" value="20"/>
         </properties>
     </rule>
-
-
+    -->
     <!-- Documentation (https://pmd.github.io/pmd-6.0.1/pmd_rules_java_documentation.html) -->
     <rule ref="category/java/documentation.xml">
         <exclude name="CommentRequired"/>
@@ -164,6 +185,14 @@
     <rule ref="category/java/performance.xml">
         <!-- Mostly annoying because reacts on all instantiations, including unmovable -->
         <exclude name="AvoidInstantiatingObjectsInLoops"/>
+        <!--
+          Terra: we're okay with vanilla string concatenation.
+        -->
+        <exclude name="InefficientStringBuffering"/>
+        <!--
+          Terra: overly sensitive performance check.
+        -->
+        <exclude name="UseIndexOfChar"/>
     </rule>
 
 

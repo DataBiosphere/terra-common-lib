@@ -46,8 +46,6 @@ public class AuthenticatedUserRequest {
     private String subjectId;
     private String token;
 
-    public Builder() {}
-
     /** Sets the value for {@link #getEmail()}. */
     public Builder setEmail(String email) {
       this.email = email;

@@ -104,6 +104,8 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
    * @return the map which should get rendered as JSON
    */
   @Override
+  // System.err.println is OK here, since this is happening from within the logging infra.
+  @SuppressWarnings("PMD.SystemPrintln")
   protected Map<String, Object> toJsonMap(ILoggingEvent event) {
     Map<String, Object> outputMap = new LinkedHashMap<>();
 

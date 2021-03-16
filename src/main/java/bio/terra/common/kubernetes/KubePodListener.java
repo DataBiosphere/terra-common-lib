@@ -82,7 +82,6 @@ class KubePodListener implements Runnable {
   }
 
   @Override
-  @SuppressWarnings({"CyclomaticComplexity", "ExecutableStatementCount", "NPathComplexity"})
   public void run() {
     logger.info("KubePodListener starting");
 

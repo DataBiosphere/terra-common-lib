@@ -80,7 +80,7 @@ class RequestLoggingFilter implements Filter {
         getGoogleHttpRequestObject(request, response, latency, requestSize, responseSize));
     logPayload.put("requestHeaders", getRequestHeaders(request));
 
-    String requestPath = null;
+    String requestPath;
     try {
       URI uri = new URI(request.getRequestURI());
       requestPath = uri.getPath();

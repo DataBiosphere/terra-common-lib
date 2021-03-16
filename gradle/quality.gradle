@@ -9,7 +9,23 @@
  *    automate our detection of clear-cut violations of Java style expectations
  *    and good coding practice. Automated enforcement should be scoped to
  *    non-controversial matters of code health.
- * 2) Suppress early, discuss later. We prefer fewer, more meaningful findings.
+ *
+ * 2) Automated enforcement is for programming errors or mechanical code
+ *    formatting. Style and good judgment can not be replaced by automatic
+ *    checks.
+ *
+ *    Good candidates for automated enforcement include code formatting,
+ *    such as white space or camel case variable naming, or programmer errors
+ *    such as unused or uninitialized variables.
+ *
+ *    Bad candidates for automated enforcement include trying to determine when
+ *    a method is too complex or coding conventions with many exceptions to any
+ *    rule, such as class member ordering.
+ *
+ *    For inspiration, see Error Prone's guidelines for new automated checks:
+ *    https://github.com/google/error-prone/wiki/Criteria-for-new-checks
+ *
+ * 3) Suppress early, discuss later. We prefer fewer, more meaningful findings.
  *    At the first sign of a noisy or controversial finding, add a global
  *    suppression and follow-up with discussion among the team. We prefer global
  *    exclusions to many identical `@SuppressWarning` statements.
@@ -28,4 +44,8 @@
 quality {
     // FYI-only mode for now. Switch to strict=true once all sub-tasks are green.
     strict = false
+
+    pmd = true
+    pmdIncremental = false
+    pmdVersion = '6.31.0'
 }
