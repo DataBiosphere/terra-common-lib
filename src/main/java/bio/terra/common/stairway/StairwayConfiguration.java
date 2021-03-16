@@ -1,57 +1,37 @@
 package bio.terra.common.stairway;
 
 import java.time.Duration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties
-@ConfigurationProperties(prefix = "terra.common.stairway")
+@EnableConfigurationProperties(value = StairwayProperties.class)
 public class StairwayConfiguration {
-  private boolean forceCleanStart;
-  private boolean migrateUpgrade;
-  private int maxParallelFlights;
-  private Duration quietDownTimeout;
-  private Duration terminateTimeout;
+
+  private final StairwayProperties stairwayProperties;
+
+  public StairwayConfiguration(StairwayProperties stairwayProperties) {
+
+    this.stairwayProperties = stairwayProperties;
+  }
 
   public boolean isForceCleanStart() {
-    return forceCleanStart;
+    return stairwayProperties.isForceCleanStart();
   }
 
   public boolean isMigrateUpgrade() {
-    return migrateUpgrade;
+    return stairwayProperties.isMigrateUpgrade();
   }
 
   public int getMaxParallelFlights() {
-    return maxParallelFlights;
+    return stairwayProperties.getMaxParallelFlights();
   }
 
   public Duration getQuietDownTimeout() {
-    return quietDownTimeout;
+    return stairwayProperties.getQuietDownTimeout();
   }
 
   public Duration getTerminateTimeout() {
-    return terminateTimeout;
-  }
-
-  public void setForceCleanStart(boolean forceCleanStart) {
-    this.forceCleanStart = forceCleanStart;
-  }
-
-  public void setMigrateUpgrade(boolean migrateUpgrade) {
-    this.migrateUpgrade = migrateUpgrade;
-  }
-
-  public void setMaxParallelFlights(int maxParallelFlights) {
-    this.maxParallelFlights = maxParallelFlights;
-  }
-
-  public void setQuietDownTimeout(Duration quietDownTimeout) {
-    this.quietDownTimeout = quietDownTimeout;
-  }
-
-  public void setTerminateTimeout(Duration terminateTimeout) {
-    this.terminateTimeout = terminateTimeout;
+    return stairwayProperties.getTerminateTimeout();
   }
 }

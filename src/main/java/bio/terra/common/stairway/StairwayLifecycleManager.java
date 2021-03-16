@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
 @Component
-public class StairwayComponent {
-  private final Logger logger = LoggerFactory.getLogger(StairwayComponent.class);
+public class StairwayLifecycleManager {
+  private final Logger logger = LoggerFactory.getLogger(StairwayLifecycleManager.class);
 
   private final StairwayConfiguration stairwayConfiguration;
   private final StairwayJdbcConfiguration stairwayJdbcConfiguration;
@@ -38,7 +38,7 @@ public class StairwayComponent {
   private final AtomicReference<Status> status = new AtomicReference<>(Status.INITIALIZING);
 
   @Autowired
-  public StairwayComponent(
+  public StairwayLifecycleManager(
       ApplicationContext applicationContext,
       StairwayConfiguration stairwayConfiguration,
       StairwayJdbcConfiguration stairwayJdbcConfiguration,
@@ -132,7 +132,7 @@ public class StairwayComponent {
     return stairway;
   }
 
-  public StairwayComponent.Status getStatus() {
+  public StairwayLifecycleManager.Status getStatus() {
     return status.get();
   }
 }
