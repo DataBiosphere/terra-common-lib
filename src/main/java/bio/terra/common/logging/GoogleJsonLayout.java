@@ -71,9 +71,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   private ThrowableProxyConverter throwableProxyConverter;
   private Tracer tracer = Tracing.getTracer();
 
-  public GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
-    super();
-
+  GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
     this.applicationContext = applicationContext;
     this.gson = new Gson();
     this.objectMapper = new ObjectMapper();

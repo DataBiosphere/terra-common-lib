@@ -21,9 +21,11 @@ import org.springframework.util.ResourceUtils;
  * around providing well-known mechanisms for supplementing logs with structured data that can be
  * read by Cloud Logging.
  */
-public class LoggingUtils {
+public final class LoggingUtils {
 
   public static final String TERRA_APPENDER_NAME = "terra-common";
+
+  private LoggingUtils() {}
 
   /**
    * Parses a JSON string and returns a Jackson JsonNode object which can be passed as an argument

@@ -5,6 +5,10 @@
 
 <suppressions>
   <!--
+    Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
+  -->
+  <suppress checks="ClassFanOutComplexity"/>
+  <!--
     Terra: final is considered optional for local vars.
   -->
   <suppress checks="FinalLocalVariable"/>
@@ -21,8 +25,24 @@
   -->
   <suppress checks="JavadocType"/>
   <!--
+    Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
+  -->
+  <suppress checks="JavaNCSS"/>
+  <!--
+    Terra: Spotless is canonical for line length.
+  -->
+  <suppress checks="LineLength"/>
+  <!--
     Terra: there are legitimate cases (esp. in tests) where multiple string literals are okay.
   -->
   <suppress checks="MultipleStringLiterals"/>
+  <!--
+    Terra: multiple returns are OK.
+  -->
+  <suppress checks="ReturnCount"/>
+  <!--
+    Terra: Spotless is canonical for whitespace.
+  -->
+  <suppress checks="WhitespaceAround"/>
 
 </suppressions>

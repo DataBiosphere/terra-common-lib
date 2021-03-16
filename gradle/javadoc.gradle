@@ -1,4 +1,5 @@
 java {
+    // Builds Javadoc into the published package as part of the 'assemble' task.
     withJavadocJar()
 }
 

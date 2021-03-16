@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 /** Utility class for consistently parsing bearer tokens from HTTP Request Authorization headers. */
 public final class BearerTokenParser {
+
   /**
    * Regex to parse bearer token value from authorization header.
    *
@@ -15,8 +16,10 @@ public final class BearerTokenParser {
    * reference.
    * </pre>
    */
-  private static final Pattern authorizationPattern =
+  private static final Pattern AUTHORIZATION_PATTERN =
       Pattern.compile("^Bearer (?<token>[a-zA-Z0-9-._~+/]+=*)$", Pattern.CASE_INSENSITIVE);
+
+  private BearerTokenParser() {}
 
   /**
    * Takes the Authorization header passed as a String in {@code authorizationHeader}, parses out
@@ -26,7 +29,7 @@ public final class BearerTokenParser {
    *     cannot be parsed.
    */
   public static String parse(String authorizationHeader) {
-    Matcher matcher = authorizationPattern.matcher(authorizationHeader);
+    Matcher matcher = AUTHORIZATION_PATTERN.matcher(authorizationHeader);
     if (!matcher.matches()) {
       throw new UnauthorizedException(
           String.format("Invalid Authorization header: '%s'", authorizationHeader));

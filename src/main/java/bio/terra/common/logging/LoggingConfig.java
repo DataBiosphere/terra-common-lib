@@ -1,8 +1,6 @@
 package bio.terra.common.logging;
 
 import javax.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +22,6 @@ import org.springframework.core.annotation.Order;
  */
 @Configuration
 public class LoggingConfig {
-
-  Logger log = LoggerFactory.getLogger(LoggingConfig.class);
 
   private ConfigurableApplicationContext applicationContext;
 

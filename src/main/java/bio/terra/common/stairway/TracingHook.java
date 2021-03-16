@@ -92,7 +92,7 @@ public class TracingHook implements StairwayHook {
    * <p>Note that the same Flight may be run multiple times by Stairway.
    */
   private class TraceFlightHook implements DynamicHook {
-    private Scope flightScope = null;
+    private Scope flightScope;
 
     @Override
     public HookAction start(FlightContext flightContext) throws InterruptedException {
@@ -133,7 +133,7 @@ public class TracingHook implements StairwayHook {
 
   /** A {@link DynamicHook} for creating Spans for each Step execution. */
   private class TraceStepHook implements DynamicHook {
-    private Scope stepScope = null;
+    private Scope stepScope;
 
     @Override
     public HookAction start(FlightContext flightContext) {

@@ -44,9 +44,8 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  */
 class RequestLoggingFilter implements Filter {
 
-  Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
-
-  static final int MAX_PAYLOAD_TO_DEBUG_LOG = 10000;
+  private static final Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
+  private static final int MAX_PAYLOAD_TO_DEBUG_LOG = 10000;
 
   @Override
   public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)

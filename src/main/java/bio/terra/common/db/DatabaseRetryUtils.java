@@ -10,7 +10,7 @@ import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.dao.TransientDataAccessException;
 
 /** Utilities to execute database operations with retry support. */
-public class DatabaseRetryUtils {
+public final class DatabaseRetryUtils {
   private static final Logger logger = LoggerFactory.getLogger(DatabaseRetryUtils.class);
 
   private DatabaseRetryUtils() {}
