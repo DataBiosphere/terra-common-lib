@@ -1,5 +1,6 @@
 package bio.terra.common.logging;
 
+import ch.qos.logback.classic.util.ContextInitializer;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Logging utility methods intended for use by service / app developers. These are generally aimed
@@ -83,8 +85,15 @@ public class LoggingUtils {
 
     if (Arrays.stream(environment.getActiveProfiles()).anyMatch("human-readable-logging"::equals)) {
       System.out.println("Human-readable logging enabled, skipping Google JSON layout");
-      // No action needed. The logback.xml file on the classpath contains a default human-readable
-      // logging layout.
+      // Attempt to fully reload the logback logger context to reset to the default human-readable
+      // logback.xml config.
+      try {
+        logbackLogger.getLoggerContext().reset();
+        new ContextInitializer(logbackLogger.getLoggerContext())
+            .configureByResource(ResourceUtils.getURL("classpath:logback.xml"));
+      } catch (Exception e) {
+        throw new RuntimeException("Error loading human-readable logging", e);
+      }
     } else {
       GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
       layout.start();

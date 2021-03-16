@@ -6,7 +6,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.jackson.JacksonJsonFormatter;
 import ch.qos.logback.contrib.json.JsonLayoutBase;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.ServiceOptions;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.Tracer;
@@ -57,18 +60,23 @@ import org.springframework.util.StringUtils;
  */
 class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
-  private Tracer tracer = Tracing.getTracer();
-
   // A reference to the current Spring app context, on order to pull out the spring.application.name
   // and spring.application.version variable for inclusion in JSON output.
   private ConfigurableApplicationContext applicationContext;
+  // A Gson instance to support converting Gson-type payloads into Jackson nodes.
+  private Gson gson;
+  // A Jackson ObjectMapper to support converting Gson-type payloads into Jackson nodes.
+  private ObjectMapper objectMapper;
   // A Logback utility class to assist with handling stack traces.
   private ThrowableProxyConverter throwableProxyConverter;
+  private Tracer tracer = Tracing.getTracer();
 
   public GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
     super();
 
     this.applicationContext = applicationContext;
+    this.gson = new Gson();
+    this.objectMapper = new ObjectMapper();
     this.throwableProxyConverter = new ThrowableProxyConverter();
     // "full" is a magic string used by the TPC to indicate we want a full stack trace, rather
     // than a truncated version.
@@ -99,33 +107,33 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
    */
   @Override
   protected Map<String, Object> toJsonMap(ILoggingEvent event) {
-    Map<String, Object> map = new LinkedHashMap<>();
+    Map<String, Object> outputMap = new LinkedHashMap<>();
 
-    map.put("timestampSeconds", TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
-    map.put("timestampNanos", TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
+    outputMap.put("timestampSeconds", TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
+    outputMap.put("timestampNanos", TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
 
-    map.put("severity", String.valueOf(event.getLevel()));
-    map.put("message", getMessage(event));
+    outputMap.put("severity", String.valueOf(event.getLevel()));
+    outputMap.put("message", getMessage(event));
     Map<String, Object> serviceContextMap = new HashMap<>();
     serviceContextMap.put(
         "service", applicationContext.getEnvironment().getProperty("spring.application.name"));
     serviceContextMap.put(
         "version", applicationContext.getEnvironment().getProperty("spring.application.version"));
-    map.put("serviceContext", serviceContextMap);
+    outputMap.put("serviceContext", serviceContextMap);
 
-    map.put("context", event.getLoggerContextVO().getName());
-    map.put("thread", event.getThreadName());
-    map.put("logger", event.getLoggerName());
-    map.put("logging.googleapis.com/sourceLocation", getSourceLocation(event));
+    outputMap.put("context", event.getLoggerContextVO().getName());
+    outputMap.put("thread", event.getThreadName());
+    outputMap.put("logger", event.getLoggerName());
+    outputMap.put("logging.googleapis.com/sourceLocation", getSourceLocation(event));
 
-    addTraceId(map);
-    addSpanId(map);
-    addTraceSampled(map);
+    addTraceId(outputMap);
+    addSpanId(outputMap);
+    addTraceSampled(outputMap);
 
     // All MDC properties will be directly splatted onto the JSON map. This is how the MDC
     // 'requestId' property ends up in the JSON output, and ultimately into jsonPayload.requestId
     // in cloud logging.
-    event.getMDCPropertyMap().forEach(map::put);
+    outputMap.putAll(event.getMDCPropertyMap());
 
     // Generically splat any map-like or JSON-like argument to the log call onto the output JSON.
     // This is how e.g. the RequestLoggingFilter adds the 'httpRequest' object to the JSON output.
@@ -133,11 +141,25 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
       for (Object arg : event.getArgumentArray()) {
         try {
           if (arg instanceof Map) {
+            // Handle arbitrary Map by splatting each key-value pair into the main output map.
             Map<String, Object> jsonMap = (Map<String, Object>) arg;
-            jsonMap.forEach(map::put);
+            outputMap.putAll(jsonMap);
           } else if (arg instanceof JsonNode) {
+            // Handle Jackson JsonNode by splatting each property sub-tree into the main output map.
             JsonNode jsonNode = (JsonNode) arg;
-            jsonNode.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
+            jsonNode
+                .fields()
+                .forEachRemaining(entry -> outputMap.put(entry.getKey(), entry.getValue()));
+          } else if (arg instanceof JsonObject) {
+            // Some libraries use GSON rather than Jackson for arbitrary JSON data, and we should
+            // support that too. Since we're using Jackson for top-level serialization, we need to
+            // convert this gson.JsonObject into a jackson.databind.JsonNode for storage in the
+            // output map. The simplest way to do this is by using a JSON string as intermediary.
+            JsonObject jsonObject = (JsonObject) arg;
+            JsonNode jsonNode = objectMapper.readTree(jsonObject.toString());
+            jsonNode
+                .fields()
+                .forEachRemaining(entry -> outputMap.put(entry.getKey(), entry.getValue()));
           }
         } catch (Exception e) {
           System.err.println(String.format("Error parsing JSON: %s", e));
@@ -147,12 +169,12 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
     // If the generic JSON splatting above caused a 'labels' entry to exist, move the value to
     // the well-known key that Cloud Logging will ingest as proper labels key-value pairs.
-    if (map.get("labels") != null) {
-      map.put("logging.googleapis.com/labels", map.get("labels"));
-      map.remove("labels");
+    if (outputMap.containsKey("labels")) {
+      outputMap.put("logging.googleapis.com/labels", outputMap.get("labels"));
+      outputMap.remove("labels");
     }
 
-    return map;
+    return outputMap;
   }
 
   // Pulls the log event message, and appends a stack trace if the event contains a throwable.
