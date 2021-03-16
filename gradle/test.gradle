@@ -14,7 +14,11 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    maxParallelForks = Runtime.runtime.availableProcessors()
+    // N.B. we can't run test suites in parallel, as two different logging test
+    // suites (LoggingTest and HumanReadableLoggingTest) both depend on sole
+    // ownership of the console output. This might be fixed by redirecting
+    // output to uniquely-named files and reading from there.
+    maxParallelForks = 1
 }
 
 tasks.withType(Test) {
