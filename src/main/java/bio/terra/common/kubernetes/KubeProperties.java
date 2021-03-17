@@ -1,14 +1,9 @@
 package bio.terra.common.kubernetes;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-/** Configurations for running Buffer Services in Kubernetes and support multi-instance Stairway. */
-@Configuration
-@EnableConfigurationProperties
 @ConfigurationProperties(prefix = "terra.common.kubernetes")
-public class KubernetesConfiguration {
+public class KubeProperties {
   // The pod that host the Buffer service app.
   private String podNameFilter;
 
@@ -20,6 +15,8 @@ public class KubernetesConfiguration {
 
   // Whether the app is running in Kubernetes.
   private boolean inKubernetes;
+
+  private String namespaceSuffix;
 
   public String getPodName() {
     return podName;
@@ -43,5 +40,13 @@ public class KubernetesConfiguration {
 
   public void setInKubernetes(boolean inKubernetes) {
     this.inKubernetes = inKubernetes;
+  }
+
+  public String getNamespaceSuffix() {
+    return namespaceSuffix;
+  }
+
+  public void setNamespaceSuffix(String namespaceSuffix) {
+    this.namespaceSuffix = namespaceSuffix;
   }
 }

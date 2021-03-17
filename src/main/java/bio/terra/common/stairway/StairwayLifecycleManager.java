@@ -1,21 +1,19 @@
 package bio.terra.common.stairway;
 
-import static com.google.cloud.ServiceOptions.getDefaultProjectId;
-
 import bio.terra.common.kubernetes.KubeService;
-import bio.terra.common.kubernetes.KubernetesComponent;
 import bio.terra.stairway.Stairway;
 import bio.terra.stairway.exception.StairwayException;
-import bio.terra.stairway.exception.StairwayExecutionException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.dbcp2.PoolableConnection;
+import org.apache.commons.dbcp2.PoolingDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
@@ -23,10 +21,12 @@ import org.springframework.stereotype.Component;
 public class StairwayLifecycleManager {
   private final Logger logger = LoggerFactory.getLogger(StairwayLifecycleManager.class);
 
-  private final StairwayConfiguration stairwayConfiguration;
-  private final StairwayJdbcConfiguration stairwayJdbcConfiguration;
-  private final Stairway stairway;
   private final KubeService kubeService;
+  private final PoolingDataSource<PoolableConnection> dataSource;
+  private final Stairway stairway;
+  private final StairwayJdbcConfig stairwayJdbcConfiguration;
+  private final StairwayJdbcProperties stairwayJdbcProperties;
+  private final StairwayProperties stairwayProperties;
 
   public enum Status {
     INITIALIZING,
@@ -39,48 +39,33 @@ public class StairwayLifecycleManager {
 
   @Autowired
   public StairwayLifecycleManager(
-      ApplicationContext applicationContext,
-      StairwayConfiguration stairwayConfiguration,
-      StairwayJdbcConfiguration stairwayJdbcConfiguration,
-      KubernetesComponent kubernetesComponent) {
-    this.stairwayConfiguration = stairwayConfiguration;
+      @Qualifier("stairway.cluster.name") String clusterName,
+      KubeService kubeService,
+      PoolingDataSource<PoolableConnection> dataSource,
+      Stairway stairway,
+      StairwayJdbcConfig stairwayJdbcConfiguration,
+      StairwayJdbcProperties stairwayJdbcProperties,
+      StairwayProperties stairwayProperties) {
     this.stairwayJdbcConfiguration = stairwayJdbcConfiguration;
-    this.kubeService = kubernetesComponent.get();
-    String stairwayClusterName = kubeService.getNamespace() + "buffer--stairwaycluster";
+    this.kubeService = kubeService;
+    this.stairway = stairway;
+    this.stairwayProperties = stairwayProperties;
+    this.stairwayJdbcProperties = stairwayJdbcProperties;
+    this.dataSource = dataSource;
     logger.info(
-        "Creating Stairway: name: [{}]  cluster name: [{}]",
-        kubeService.getPodName(),
-        stairwayClusterName);
-
-    // TODO(PF-314): Cleanup old flightlogs.
-    // TODO(PF-456):
-    Stairway.Builder builder =
-        Stairway.newBuilder()
-            .maxParallelFlights(stairwayConfiguration.getMaxParallelFlights())
-            .applicationContext(applicationContext)
-            .keepFlightLog(true)
-            .stairwayName(kubeService.getPodName())
-            .stairwayClusterName(stairwayClusterName)
-            .workQueueProjectId(getDefaultProjectId())
-            .enableWorkQueue(kubernetesComponent.isInKubernetes())
-            .stairwayHook(new TracingHook());
-    try {
-      stairway = builder.build();
-    } catch (StairwayExecutionException e) {
-      throw new IllegalArgumentException("Failed to build Stairway.", e);
-    }
+        "Creating Stairway: name: [{}]  cluster name: [{}]", kubeService.getPodName(), clusterName);
   }
 
   public void initialize() {
     logger.info("Initializing Stairway...");
-    logger.info("stairway username {}", stairwayJdbcConfiguration.getUsername());
+    logger.info("stairway username {}", stairwayJdbcProperties.getUsername());
     try {
       // TODO(PF-161): Determine if Stairway and buffer database migrations need to be coordinated.
       List<String> recordedStairways =
           stairway.initialize(
-              stairwayJdbcConfiguration.getDataSource(),
-              stairwayConfiguration.isForceCleanStart(),
-              stairwayConfiguration.isMigrateUpgrade());
+              dataSource,
+              stairwayProperties.isForceCleanStart(),
+              stairwayProperties.isMigrateUpgrade());
 
       kubeService.startPodListener(stairway);
 
@@ -117,17 +102,18 @@ public class StairwayLifecycleManager {
     logger.info("Request Stairway shutdown");
     boolean shutdownSuccess =
         stairway.quietDown(
-            stairwayConfiguration.getQuietDownTimeout().toMillis(), TimeUnit.MILLISECONDS);
+            stairwayProperties.getQuietDownTimeout().toMillis(), TimeUnit.MILLISECONDS);
     if (!shutdownSuccess) {
       logger.info("Request Stairway terminate");
       shutdownSuccess =
           stairway.terminate(
-              stairwayConfiguration.getTerminateTimeout().toMillis(), TimeUnit.MILLISECONDS);
+              stairwayProperties.getTerminateTimeout().toMillis(), TimeUnit.MILLISECONDS);
     }
     logger.info("Finished Stairway shutdown?: {}", shutdownSuccess);
     return shutdownSuccess;
   }
 
+  // TODO: remove this - inject stairway if you want it
   public Stairway get() {
     return stairway;
   }
