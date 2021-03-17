@@ -1,8 +1,13 @@
 package bio.terra.common.stairway;
 
+import static com.google.cloud.ServiceOptions.getDefaultProjectId;
+
+import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
 import bio.terra.stairway.Stairway;
+import bio.terra.stairway.StairwayHook;
 import bio.terra.stairway.exception.StairwayException;
+import bio.terra.stairway.exception.StairwayExecutionException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -21,10 +26,11 @@ import org.springframework.stereotype.Component;
 public class StairwayLifecycleManager {
   private final Logger logger = LoggerFactory.getLogger(StairwayLifecycleManager.class);
 
+  private final String clusterName;
   private final KubeService kubeService;
   private final PoolingDataSource<PoolableConnection> dataSource;
-  private final Stairway stairway;
-  private final StairwayJdbcConfig stairwayJdbcConfiguration;
+  private final KubeProperties kubeProperties;
+  private Stairway stairway;
   private final StairwayJdbcProperties stairwayJdbcProperties;
   private final StairwayProperties stairwayProperties;
 
@@ -41,14 +47,13 @@ public class StairwayLifecycleManager {
   public StairwayLifecycleManager(
       @Qualifier("stairway.cluster.name") String clusterName,
       KubeService kubeService,
+      KubeProperties kubeProperties,
       PoolingDataSource<PoolableConnection> dataSource,
-      Stairway stairway,
-      StairwayJdbcConfig stairwayJdbcConfiguration,
       StairwayJdbcProperties stairwayJdbcProperties,
       StairwayProperties stairwayProperties) {
-    this.stairwayJdbcConfiguration = stairwayJdbcConfiguration;
+    this.clusterName = clusterName;
     this.kubeService = kubeService;
-    this.stairway = stairway;
+    this.kubeProperties = kubeProperties;
     this.stairwayProperties = stairwayProperties;
     this.stairwayJdbcProperties = stairwayJdbcProperties;
     this.dataSource = dataSource;
@@ -56,9 +61,25 @@ public class StairwayLifecycleManager {
         "Creating Stairway: name: [{}]  cluster name: [{}]", kubeService.getPodName(), clusterName);
   }
 
-  public void initialize() {
+  public void initialize(Object context, Set<StairwayHook> hooks) {
     logger.info("Initializing Stairway...");
     logger.info("stairway username {}", stairwayJdbcProperties.getUsername());
+    final Stairway.Builder builder =
+        Stairway.newBuilder()
+            .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
+            .applicationContext(context) // not necessarily a Spring ApplicationContext
+            .keepFlightLog(true)
+            .stairwayName(kubeProperties.getPodName())
+            .stairwayClusterName(clusterName)
+            .workQueueProjectId(getDefaultProjectId())
+            .enableWorkQueue(kubeProperties.isInKubernetes());
+    hooks.forEach(builder::stairwayHook);
+    try {
+      this.stairway = builder.build();
+    } catch (StairwayExecutionException e) {
+      throw new IllegalArgumentException("Failed to build Stairway.", e);
+    }
+
     try {
       // TODO(PF-161): Determine if Stairway and buffer database migrations need to be coordinated.
       List<String> recordedStairways =

@@ -13,16 +13,18 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @EnableConfigurationProperties(value = JdbcProperties.class)
 public class JdbcConfig {
 
-  private final JdbcProperties jdbcProperties;
+  private final BaseJdbcProperties jdbcProperties;
   // Not a property
   private PoolingDataSource<PoolableConnection> dataSource;
 
-  public JdbcConfig(JdbcProperties jdbcProperties) {
+  public JdbcConfig(BaseJdbcProperties jdbcProperties) {
     this.jdbcProperties = jdbcProperties;
   }
 
@@ -54,5 +56,10 @@ public class JdbcConfig {
     poolableConnectionFactory.setPool(connectionPool);
 
     dataSource = new PoolingDataSource<>(connectionPool);
+  }
+
+  @Bean("transactionManager")
+  public PlatformTransactionManager getTransactionManager() {
+    return new DataSourceTransactionManager(getDataSource());
   }
 }

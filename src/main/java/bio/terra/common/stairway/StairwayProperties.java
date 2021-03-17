@@ -10,6 +10,7 @@ public class StairwayProperties {
   private int maxParallelFlights;
   private Duration quietDownTimeout;
   private Duration terminateTimeout;
+  private boolean tracingEnabled;
 
   public boolean isForceCleanStart() {
     return forceCleanStart;
@@ -49,5 +50,13 @@ public class StairwayProperties {
 
   public void setTerminateTimeout(Duration terminateTimeout) {
     this.terminateTimeout = terminateTimeout;
+  }
+
+  public boolean isTracingEnabled() {
+    return tracingEnabled;
+  }
+
+  public void setTracingEnabled(boolean tracingEnabled) {
+    this.tracingEnabled = tracingEnabled;
   }
 }
