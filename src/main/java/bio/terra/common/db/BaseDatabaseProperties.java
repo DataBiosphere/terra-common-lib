@@ -6,8 +6,8 @@ import org.apache.commons.dbcp2.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-/** Defines configuration properties for using {@link DatabaseConfiguration} use. */
-public class DatabaseProperties {
+/** The base class that defines configuration properties for using {@link BaseDatabaseConfiguration} use. */
+public abstract class BaseDatabaseProperties {
   private boolean jmxEnabled = true;
   private String uri;
   private String username;

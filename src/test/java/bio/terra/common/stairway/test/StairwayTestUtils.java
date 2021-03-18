@@ -21,8 +21,8 @@ public class StairwayTestUtils {
       StairwayDatabaseConfiguration dbConfiguration = makeDbConfiguration();
       stairway.initialize(
           dbConfiguration.getDataSource(),
-          dbConfiguration.getDatabaseProperties().isInitializeOnStart(),
-          dbConfiguration.getDatabaseProperties().isUpgradeOnStart());
+          dbConfiguration.getBaseDatabaseProperties().isInitializeOnStart(),
+          dbConfiguration.getBaseDatabaseProperties().isUpgradeOnStart());
       stairway.recoverAndStart(/* obsoleteStairways =*/ null);
       return stairway;
     } catch (StairwayException | InterruptedException e) {
