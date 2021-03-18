@@ -52,22 +52,19 @@ psql -f local-dev/local-postgres-init.sql
 
 ### Local testing
 When working on a TCL package, it is often helpful to be able to quickly test out changes
-in the context of a service repo (e.g. terra-workspace-manager or terra-resource-buffer)
+in the context of a service repo (e.g. `terra-workspace-manager` or `terra-resource-buffer`)
 running a local server.
 
-The recommended way to iterate on local testing is by publishing TCL to a local Maven repo
-and loading the package from within the service repo:
+Gradle makes this very easy with a `mavenLocal` target for publishing and loading packages:
 
-1. Bump the TCL version number locally:
+1. Publish from TCL to your machine's local Maven cache.
    
-   `'0.0.22-SNAPSHOT' -> '0.0.23-SNAPSHOT'`
-
-2. Publish to your machine's local Maven cache:
-   
-   ```./gradlew publishToMavenLocal```
+   ```
+   ./gradlew publishToMavenLocal
+   ```
     
-3. From the service repo, add `mavenLocal()` to the _first_ repository location
-build.gradle file, and update the referenced TCL version:
+2. From the service repo, add `mavenLocal()` to the _first_ repository location
+build.gradle file (e.g. before `mavenCentral()`.
 
    ```
    # terra-workspace-manager/build.gradle
@@ -77,10 +74,7 @@ build.gradle file, and update the referenced TCL version:
      mavenCentral()
      ...
    }
-   
-   dependencies {
-     implementation group: "bio.terra", name: 'terra-common-lib', version: "0.0.23-SNAPSHOT"      
-     ...
-   }
    ```
-   
+
+That's it! Your service should pick up locally-published changes. If your changes involved bumping 
+a minor version of a TCL package, be careful to update version numbers accordingly.
