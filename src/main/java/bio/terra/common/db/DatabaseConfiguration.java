@@ -1,35 +1,33 @@
 package bio.terra.common.db;
 
 import java.util.Properties;
+import javax.sql.DataSource;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 /**
- * Base class to config JDBC data source. Client can entend along with customized {@link DatabaseProperties} to
- * build their data source. See {@link bio.terra.common.stairway.StairwayDatabaseConfiguration} to understand how to
- * use in SpringBoot.
+ * Base class to config JDBC data source. Client can entend along with customized {@link
+ * DatabaseProperties} to build their data source. See {@link
+ * bio.terra.common.stairway.StairwayDatabaseConfiguration} to understand how to use in SpringBoot.
  */
 public class DatabaseConfiguration {
   private final DatabaseProperties databaseProperties;
 
   // Not a property
-  private PoolingDataSource<PoolableConnection> dataSource;
+  private DataSource dataSource;
 
   public DatabaseConfiguration(DatabaseProperties databaseProperties) {
     this.databaseProperties = databaseProperties;
+    configureDataSource();
   }
 
   public DatabaseProperties getDatabaseProperties() {
     return databaseProperties;
   }
   // Main use of the configuration is this pooling data source object.
-  public PoolingDataSource<PoolableConnection> getDataSource() {
-    // Lazy allocation of the data source
-    if (dataSource == null) {
-      configureDataSource();
-    }
+  public DataSource getDataSource() {
     return dataSource;
   }
 
@@ -46,7 +44,8 @@ public class DatabaseConfiguration {
 
     GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
     config.setJmxEnabled(databaseProperties.isJmxEnabled());
-
+    config.setMaxTotal(databaseProperties.getPoolMaxTotal());
+    config.setMaxIdle(databaseProperties.getPoolMaxIdle());
     ObjectPool<PoolableConnection> connectionPool =
         new GenericObjectPool<>(poolableConnectionFactory, config);
 
