@@ -2,30 +2,25 @@ package bio.terra.common.db;
 
 import static org.apache.commons.pool2.impl.GenericObjectPoolConfig.DEFAULT_MAX_TOTAL;
 
-import org.apache.commons.dbcp2.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-/** The base class that defines configuration properties for using {@link BaseDatabaseConfiguration} use. */
-public abstract class BaseDatabaseProperties {
+/**
+ * The base class that defines configuration properties for {@link DataSourceInitializer} use.
+ *
+ * <p>Extend this if they want to define their own SpringBoot configuration properties.
+ */
+public class BaseDatabaseProperties {
   private boolean jmxEnabled = true;
   private String uri;
   private String username;
   private String password;
-
-  // If true, the database will be wiped when start
-  private boolean initializeOnStart;
-  // If true, the database will have changesets applied when start
-  private boolean upgradeOnStart;
 
   // Maximum number of database connections in the connection pool; -1 means no limit The goal of
   // these parameters is to prevent waiting for a database connection.
   private int poolMaxTotal = DEFAULT_MAX_TOTAL;
   // Maximum number of database connections to keep idle.
   private int poolMaxIdle = DEFAULT_MAX_TOTAL;
-
-  // Not a property
-  private PoolingDataSource<PoolableConnection> dataSource;
 
   /**
    * Returns a boolean indicating whether JMX should be enabled when creating connection pools. If
@@ -69,22 +64,6 @@ public abstract class BaseDatabaseProperties {
     this.password = password;
   }
 
-  public boolean isInitializeOnStart() {
-    return initializeOnStart;
-  }
-
-  public void setInitializeOnStart(boolean initializeOnStart) {
-    this.initializeOnStart = initializeOnStart;
-  }
-
-  public boolean isUpgradeOnStart() {
-    return upgradeOnStart;
-  }
-
-  public void setUpgradeOnStart(boolean upgradeOnStart) {
-    this.upgradeOnStart = upgradeOnStart;
-  }
-
   public int getPoolMaxTotal() {
     return poolMaxTotal;
   }
@@ -106,8 +85,6 @@ public abstract class BaseDatabaseProperties {
     return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
         .append("uri", uri)
         .append("username", username)
-        .append("initializeOnStart", initializeOnStart)
-        .append("upgradeOnStart", upgradeOnStart)
         .append("jmxEnabled", jmxEnabled)
         .append("poolMaxTotal", poolMaxTotal)
         .append("poolMaxIdle", poolMaxIdle)

@@ -1,7 +1,7 @@
 package bio.terra.common.stairway.test;
 
-import bio.terra.common.stairway.StairwayDatabaseConfiguration;
-import bio.terra.common.stairway.StairwayDatabaseProperties;
+import bio.terra.common.db.BaseDatabaseProperties;
+import bio.terra.common.db.DataSourceInitializer;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.FlightState;
@@ -10,6 +10,7 @@ import bio.terra.stairway.exception.DatabaseOperationException;
 import bio.terra.stairway.exception.StairwayException;
 import java.time.Duration;
 import java.time.Instant;
+import javax.sql.DataSource;
 
 /** Test utilities for testing integrations with {@link Stairway}. */
 public class StairwayTestUtils {
@@ -18,11 +19,8 @@ public class StairwayTestUtils {
   public static Stairway setupStairway(Stairway.Builder builder) {
     try {
       Stairway stairway = builder.build();
-      StairwayDatabaseConfiguration dbConfiguration = makeDbConfiguration();
       stairway.initialize(
-          dbConfiguration.getDataSource(),
-          dbConfiguration.getBaseDatabaseProperties().isInitializeOnStart(),
-          dbConfiguration.getBaseDatabaseProperties().isUpgradeOnStart());
+          makeDataSource(), /* forceCleanStart =*/ true, /* migrateUpgrade =*/ true);
       stairway.recoverAndStart(/* obsoleteStairways =*/ null);
       return stairway;
     } catch (StairwayException | InterruptedException e) {
@@ -31,14 +29,12 @@ public class StairwayTestUtils {
     }
   }
 
-  private static StairwayDatabaseConfiguration makeDbConfiguration() {
-    StairwayDatabaseProperties databaseProperties = new StairwayDatabaseProperties();
+  private static DataSource makeDataSource() {
+    BaseDatabaseProperties databaseProperties = new BaseDatabaseProperties();
     databaseProperties.setUri("jdbc:postgresql://127.0.0.1:5432/tclstairway");
     databaseProperties.setUsername("tclstairwayuser");
     databaseProperties.setPassword("tclstairwaypwd");
-    databaseProperties.setInitializeOnStart(true);
-    databaseProperties.setUpgradeOnStart(true);
-    return new StairwayDatabaseConfiguration(databaseProperties);
+    return DataSourceInitializer.initializeDataSource(databaseProperties);
   }
 
   private static String getEnvVar(String name, String defaultValue) {
