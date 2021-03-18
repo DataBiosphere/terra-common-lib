@@ -31,9 +31,10 @@ public class StairwayTestUtils {
 
   private static DataSource makeDataSource() {
     BaseDatabaseProperties databaseProperties = new BaseDatabaseProperties();
-    databaseProperties.setUri("jdbc:postgresql://127.0.0.1:5432/tclstairway");
-    databaseProperties.setUsername("tclstairwayuser");
-    databaseProperties.setPassword("tclstairwaypwd");
+    databaseProperties.setUri(
+        getEnvVar("STAIRWAY_URI", "jdbc:postgresql://127.0.0.1:5432/tclstairway"));
+    databaseProperties.setUsername(getEnvVar("STAIRWAY_USERNAME", "tclstairwayuser"));
+    databaseProperties.setPassword(getEnvVar("STAIRWAY_PASSWORD", "tclstairwaypwd"));
     return DataSourceInitializer.initializeDataSource(databaseProperties);
   }
 
