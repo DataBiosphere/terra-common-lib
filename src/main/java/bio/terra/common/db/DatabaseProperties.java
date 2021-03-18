@@ -4,7 +4,7 @@ import org.apache.commons.dbcp2.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-/** Base class for accessing JDBC configuration properties. */
+/** Defines configuration properties for using {@link DatabaseConfiguration} use. */
 public class DatabaseProperties {
   private boolean jmxEnabled = true;
   private String uri;
