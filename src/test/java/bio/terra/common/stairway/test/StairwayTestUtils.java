@@ -1,5 +1,7 @@
 package bio.terra.common.stairway.test;
 
+import bio.terra.common.stairway.StairwayDatabaseConfiguration;
+import bio.terra.common.stairway.StairwayDatabaseProperties;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.FlightState;
@@ -8,17 +10,19 @@ import bio.terra.stairway.exception.DatabaseOperationException;
 import bio.terra.stairway.exception.StairwayException;
 import java.time.Duration;
 import java.time.Instant;
-import javax.sql.DataSource;
-import org.apache.commons.dbcp2.BasicDataSource;
 
 /** Test utilities for testing integrations with {@link Stairway}. */
 public class StairwayTestUtils {
+
   /** Returns an initialized and started Stairway instance from the Stairway.Builder. */
   public static Stairway setupStairway(Stairway.Builder builder) {
     try {
       Stairway stairway = builder.build();
+      StairwayDatabaseConfiguration dbConfiguration = makeDbConfiguration();
       stairway.initialize(
-          makeDataSource(), /* forceCleanStart =*/ true, /* migrateUpgrade =*/ true);
+          dbConfiguration.getDataSource(),
+          /* forceCleanStart =*/ dbConfiguration.getDatabaseProperties().isInitializeOnStart(),
+          /* migrateUpgrade =*/ dbConfiguration.getDatabaseProperties().isUpgradeOnStart());
       stairway.recoverAndStart(/* obsoleteStairways =*/ null);
       return stairway;
     } catch (StairwayException | InterruptedException e) {
@@ -27,13 +31,14 @@ public class StairwayTestUtils {
     }
   }
 
-  private static DataSource makeDataSource() {
-    BasicDataSource bds = new BasicDataSource();
-    bds.setDriverClassName("org.postgresql.Driver");
-    bds.setUrl(getEnvVar("STAIRWAY_URI", "jdbc:postgresql://127.0.0.1:5432/tclstairway"));
-    bds.setUsername(getEnvVar("STAIRWAY_USERNAME", "tclstairwayuser"));
-    bds.setPassword(getEnvVar("STAIRWAY_PASSWORD", "tclstairwaypwd"));
-    return bds;
+  private static StairwayDatabaseConfiguration makeDbConfiguration() {
+    StairwayDatabaseProperties databaseProperties = new StairwayDatabaseProperties();
+    databaseProperties.setUri("jdbc:postgresql://127.0.0.1:5432/tclstairway");
+    databaseProperties.setUsername("tclstairwayuser");
+    databaseProperties.setPassword("tclstairwaypwd");
+    databaseProperties.setInitializeOnStart(true);
+    databaseProperties.setUpgradeOnStart(true);
+    return new StairwayDatabaseConfiguration(databaseProperties);
   }
 
   private static String getEnvVar(String name, String defaultValue) {
