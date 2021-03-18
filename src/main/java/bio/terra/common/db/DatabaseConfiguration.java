@@ -9,18 +9,18 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 /** Base class for accessing JDBC configuration properties. */
-public class JdbcConfiguration {
-  private final JdbcProperties jdbcProperties;
+public class DatabaseConfiguration {
+  private final DatabaseProperties databaseProperties;
 
   // Not a property
   private PoolingDataSource<PoolableConnection> dataSource;
 
-  public JdbcConfiguration(JdbcProperties jdbcProperties) {
-    this.jdbcProperties = jdbcProperties;
+  public DatabaseConfiguration(DatabaseProperties databaseProperties) {
+    this.databaseProperties = databaseProperties;
   }
 
-  public JdbcProperties getJdbcProperties() {
-    return jdbcProperties;
+  public DatabaseProperties getDatabaseProperties() {
+    return databaseProperties;
   }
   // Main use of the configuration is this pooling data source object.
   public PoolingDataSource<PoolableConnection> getDataSource() {
@@ -33,17 +33,17 @@ public class JdbcConfiguration {
 
   private void configureDataSource() {
     Properties props = new Properties();
-    props.setProperty("user", jdbcProperties.getUsername());
-    props.setProperty("password", jdbcProperties.getPassword());
+    props.setProperty("user", databaseProperties.getUsername());
+    props.setProperty("password", databaseProperties.getPassword());
 
     ConnectionFactory connectionFactory =
-        new DriverManagerConnectionFactory(jdbcProperties.getUri(), props);
+        new DriverManagerConnectionFactory(databaseProperties.getUri(), props);
 
     PoolableConnectionFactory poolableConnectionFactory =
         new PoolableConnectionFactory(connectionFactory, null);
 
     GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
-    config.setJmxEnabled(jdbcProperties.isJmxEnabled());
+    config.setJmxEnabled(databaseProperties.isJmxEnabled());
 
     ObjectPool<PoolableConnection> connectionPool =
         new GenericObjectPool<>(poolableConnectionFactory, config);
@@ -56,8 +56,8 @@ public class JdbcConfiguration {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-        .append("uri", jdbcProperties.getUri())
-        .append("username", jdbcProperties.getUsername())
+        .append("uri", databaseProperties.getUri())
+        .append("username", databaseProperties.getUsername())
         .toString();
   }
 }

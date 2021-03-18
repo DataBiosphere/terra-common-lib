@@ -3,11 +3,16 @@ package bio.terra.common.db;
 import org.apache.commons.dbcp2.*;
 
 /** Base class for accessing JDBC configuration properties. */
-public class JdbcProperties {
+public class DatabaseProperties {
   private boolean jmxEnabled = true;
   private String uri;
   private String username;
   private String password;
+
+  // If true, the database will be wiped when start
+  private boolean initializeOnStart;
+  // If true, the database will have changesets applied when start
+  private boolean upgradeOnStart;
 
   // Not a property
   private PoolingDataSource<PoolableConnection> dataSource;
@@ -52,5 +57,21 @@ public class JdbcProperties {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public boolean isInitializeOnStart() {
+    return initializeOnStart;
+  }
+
+  public void setInitializeOnStart(boolean initializeOnStart) {
+    this.initializeOnStart = initializeOnStart;
+  }
+
+  public boolean isUpgradeOnStart() {
+    return upgradeOnStart;
+  }
+
+  public void setUpgradeOnStart(boolean upgradeOnStart) {
+    this.upgradeOnStart = upgradeOnStart;
   }
 }
