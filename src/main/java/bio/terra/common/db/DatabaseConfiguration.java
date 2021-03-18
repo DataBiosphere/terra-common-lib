@@ -2,13 +2,11 @@ package bio.terra.common.db;
 
 import java.util.Properties;
 import org.apache.commons.dbcp2.*;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-/** Base class for accessing JDBC configuration properties. */
+/** Base class to config JDBC Data Source. */
 public class DatabaseConfiguration {
   private final DatabaseProperties databaseProperties;
 
@@ -51,13 +49,5 @@ public class DatabaseConfiguration {
     poolableConnectionFactory.setPool(connectionPool);
 
     dataSource = new PoolingDataSource<>(connectionPool);
-  }
-
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-        .append("uri", databaseProperties.getUri())
-        .append("username", databaseProperties.getUsername())
-        .toString();
   }
 }

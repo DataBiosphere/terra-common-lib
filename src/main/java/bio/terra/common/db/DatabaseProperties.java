@@ -1,6 +1,8 @@
 package bio.terra.common.db;
 
 import org.apache.commons.dbcp2.*;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /** Base class for accessing JDBC configuration properties. */
 public class DatabaseProperties {
@@ -73,5 +75,13 @@ public class DatabaseProperties {
 
   public void setUpgradeOnStart(boolean upgradeOnStart) {
     this.upgradeOnStart = upgradeOnStart;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
+            .append("uri", uri)
+            .append("username", username)
+            .toString();
   }
 }
