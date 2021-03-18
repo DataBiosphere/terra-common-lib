@@ -10,7 +10,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 /**
  * Base class to config JDBC data source. Client can entend along with customized {@link
  * DatabaseProperties} to build their data source. See {@link
- * bio.terra.common.stairway.StairwayDatabaseConfiguration} to understand how to use in SpringBoot.
+ * bio.terra.common.stairway.StairwayDatabaseConfiguration} to understand how to use it in SpringBoot.
  */
 public class DatabaseConfiguration {
   private final DatabaseProperties databaseProperties;
