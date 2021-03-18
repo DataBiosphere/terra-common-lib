@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(value = {StairwayProperties.class, KubeProperties.class})
+@EnableConfigurationProperties(value = {StairwayProperties.class})
 public class StairwayConfig {
 
   //  private final StairwayProperties stairwayProperties;
