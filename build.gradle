@@ -22,7 +22,7 @@ repositories {
 }
 
 group 'bio.terra'
-version '0.0.22-SNAPSHOT'
+version '0.0.29-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 def OPENCENSUS_VERSION = '0.28.+'
