@@ -1,5 +1,6 @@
 package bio.terra.common.logging;
 
+import ch.qos.logback.classic.util.ContextInitializer;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Logging utility methods intended for use by service / app developers. These are generally aimed
@@ -82,9 +84,23 @@ public class LoggingUtils {
     ConfigurableEnvironment environment = applicationContext.getEnvironment();
 
     if (Arrays.stream(environment.getActiveProfiles()).anyMatch("human-readable-logging"::equals)) {
-      System.out.println("Human-readable logging enabled, skipping Google JSON layout");
-      // No action needed. The logback.xml file on the classpath contains a default human-readable
-      // logging layout.
+      System.out.println("Human-readable logging enabled, re-applying original logback.xml config");
+      try {
+        // Note: there is some nuance in how best to reset the logback context. This code path is
+        // only encountered in (1) unit tests, where we actively need to reset the context since
+        // prior tests may have enabled the JSON layout, and (2) local testing of a service, where
+        // we want to disrupt as little of the original logging config as possible (e.g. Spring-
+        // configured log levels via "logging.level.foo.bar=DEBUG".
+        //
+        // Empirically, detaching all appenders and reloading the context via this logback file
+        // seems to work. But if we encounter future issues in human-readable logging control, this
+        // is a reasonable place to look more closely.
+        logbackLogger.detachAndStopAllAppenders();
+        new ContextInitializer(logbackLogger.getLoggerContext())
+            .configureByResource(ResourceUtils.getURL("classpath:logback.xml"));
+      } catch (Exception e) {
+        throw new RuntimeException("Error loading human-readable logging", e);
+      }
     } else {
       GoogleJsonLayout layout = new GoogleJsonLayout(applicationContext);
       layout.start();

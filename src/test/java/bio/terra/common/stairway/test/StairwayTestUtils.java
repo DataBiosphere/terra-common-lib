@@ -1,5 +1,7 @@
 package bio.terra.common.stairway.test;
 
+import bio.terra.common.db.BaseDatabaseProperties;
+import bio.terra.common.db.DataSourceInitializer;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.FlightState;
@@ -9,10 +11,10 @@ import bio.terra.stairway.exception.StairwayException;
 import java.time.Duration;
 import java.time.Instant;
 import javax.sql.DataSource;
-import org.apache.commons.dbcp2.BasicDataSource;
 
 /** Test utilities for testing integrations with {@link Stairway}. */
 public class StairwayTestUtils {
+
   /** Returns an initialized and started Stairway instance from the Stairway.Builder. */
   public static Stairway setupStairway(Stairway.Builder builder) {
     try {
@@ -28,12 +30,12 @@ public class StairwayTestUtils {
   }
 
   private static DataSource makeDataSource() {
-    BasicDataSource bds = new BasicDataSource();
-    bds.setDriverClassName("org.postgresql.Driver");
-    bds.setUrl(getEnvVar("STAIRWAY_URI", "jdbc:postgresql://127.0.0.1:5432/tclstairway"));
-    bds.setUsername(getEnvVar("STAIRWAY_USERNAME", "tclstairwayuser"));
-    bds.setPassword(getEnvVar("STAIRWAY_PASSWORD", "tclstairwaypwd"));
-    return bds;
+    BaseDatabaseProperties databaseProperties = new BaseDatabaseProperties();
+    databaseProperties.setUri(
+        getEnvVar("STAIRWAY_URI", "jdbc:postgresql://127.0.0.1:5432/tclstairway"));
+    databaseProperties.setUsername(getEnvVar("STAIRWAY_USERNAME", "tclstairwayuser"));
+    databaseProperties.setPassword(getEnvVar("STAIRWAY_PASSWORD", "tclstairwaypwd"));
+    return DataSourceInitializer.initializeDataSource(databaseProperties);
   }
 
   private static String getEnvVar(String name, String defaultValue) {

@@ -9,6 +9,7 @@ The publishing procedure is:
 3. To bump major version, we need manually update `version` in [build.gradle](build.gradle) value first then create the release.
  
 ## Development 
+
 ### Dependencies
 We use [Gradle's dependency locking](https://docs.gradle.org/current/userguide/dependency_locking.html)
 to ensure that builds use the same transitive dependencies, so they're reproducible. This means that
@@ -18,8 +19,6 @@ that mention "dependency lock state" after changing a dep, you need to do this s
 ```sh
 ./gradlew dependencies --write-locks
 ```
-
-### Setup
 
 ### Database Configuration
 Terra Common Lib includes functionality using [Stairway](https://github.com/DataBiosphere/stairway).
@@ -34,7 +33,7 @@ To start a postgres container configured with the necessary databases:
 ```
 To stop the container:
 ```sh
-./local-dev/run_postgres.sh start
+./local-dev/run_postgres.sh stop
 ```
 Note that the contents of the database is not saved between container runs.
 
@@ -45,9 +44,37 @@ PGPASSWORD=tclstairwaypwd psql postgresql://127.0.0.1:5432/tclstairway -U tclsta
 ```
 
 #### Option B: Local Postgres 
-##### Database Configuration
 Set up a local Postgres instance. To set up TCL's required database for unit tests, run the following command, which will create the DB's and users:
 
 ```sh
 psql -f local-dev/local-postgres-init.sql
 ```
+
+### Local testing
+When working on a TCL package, it is often helpful to be able to quickly test out changes
+in the context of a service repo (e.g. `terra-workspace-manager` or `terra-resource-buffer`)
+running a local server.
+
+Gradle makes this very easy with a `mavenLocal` target for publishing and loading packages:
+
+1. Publish from TCL to your machine's local Maven cache.
+   
+   ```
+   ./gradlew publishToMavenLocal
+   ```
+    
+2. From the service repo, add `mavenLocal()` to the _first_ repository location
+build.gradle file (e.g. before `mavenCentral()`.
+
+   ```
+   # terra-workspace-manager/build.gradle
+   
+   repositories {
+     mavenLocal()
+     mavenCentral()
+     ...
+   }
+   ```
+
+That's it! Your service should pick up locally-published changes. If your changes involved bumping 
+a minor version of a TCL package, be careful to update version numbers accordingly.
