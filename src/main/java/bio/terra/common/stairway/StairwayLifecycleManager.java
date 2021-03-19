@@ -18,7 +18,6 @@ import org.apache.commons.dbcp2.PoolingDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
@@ -26,12 +25,9 @@ import org.springframework.stereotype.Component;
 public class StairwayLifecycleManager {
   private final Logger logger = LoggerFactory.getLogger(StairwayLifecycleManager.class);
 
-  private final String clusterName;
   private final KubeService kubeService;
-  private final PoolingDataSource<PoolableConnection> dataSource;
   private final KubeProperties kubeProperties;
   private Stairway stairway;
-  private final StairwayJdbcProperties stairwayJdbcProperties;
   private final StairwayProperties stairwayProperties;
 
   public enum Status {
@@ -45,32 +41,29 @@ public class StairwayLifecycleManager {
 
   @Autowired
   public StairwayLifecycleManager(
-      @Qualifier("stairway.cluster.name") String clusterName,
       KubeService kubeService,
       KubeProperties kubeProperties,
-      PoolingDataSource<PoolableConnection> dataSource,
-      StairwayJdbcProperties stairwayJdbcProperties,
       StairwayProperties stairwayProperties) {
-    this.clusterName = clusterName;
     this.kubeService = kubeService;
     this.kubeProperties = kubeProperties;
     this.stairwayProperties = stairwayProperties;
-    this.stairwayJdbcProperties = stairwayJdbcProperties;
-    this.dataSource = dataSource;
     logger.info(
-        "Creating Stairway: name: [{}]  cluster name: [{}]", kubeService.getPodName(), clusterName);
+        "Creating Stairway: name: [{}]  cluster name: [{}]",
+        kubeService.getPodName(),
+        stairwayProperties.getClusterName());
   }
 
-  public void initialize(Object context, Set<StairwayHook> hooks) {
+  public void initialize(
+      Object context, PoolingDataSource<PoolableConnection> dataSource, Set<StairwayHook> hooks) {
     logger.info("Initializing Stairway...");
-    logger.info("stairway username {}", stairwayJdbcProperties.getUsername());
+    logger.info("stairway username {}", stairwayProperties.getDbUsername());
     final Stairway.Builder builder =
         Stairway.newBuilder()
             .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
             .applicationContext(context) // not necessarily a Spring ApplicationContext
             .keepFlightLog(true)
             .stairwayName(kubeProperties.getPodName())
-            .stairwayClusterName(clusterName)
+            .stairwayClusterName(stairwayProperties.getClusterName())
             .workQueueProjectId(getDefaultProjectId())
             .enableWorkQueue(kubeProperties.isInKubernetes());
     hooks.forEach(builder::stairwayHook);
@@ -134,7 +127,6 @@ public class StairwayLifecycleManager {
     return shutdownSuccess;
   }
 
-  // TODO: remove this - inject stairway if you want it
   public Stairway get() {
     return stairway;
   }

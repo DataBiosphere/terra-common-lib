@@ -12,6 +12,14 @@ public class StairwayProperties {
   private Duration terminateTimeout;
   private boolean tracingEnabled;
 
+  // database properties
+  private String dbUri;
+  private String dbUsername;
+  private String dbPassword;
+
+  // cluster properties
+  private String clusterName;
+
   public boolean isForceCleanStart() {
     return forceCleanStart;
   }
@@ -58,5 +66,37 @@ public class StairwayProperties {
 
   public void setTracingEnabled(boolean tracingEnabled) {
     this.tracingEnabled = tracingEnabled;
+  }
+
+  public String getDbUri() {
+    return dbUri;
+  }
+
+  public void setDbUri(String dbUri) {
+    this.dbUri = dbUri;
+  }
+
+  public String getDbUsername() {
+    return dbUsername;
+  }
+
+  public void setDbUsername(String dbUsername) {
+    this.dbUsername = dbUsername;
+  }
+
+  public String getDbPassword() {
+    return dbPassword;
+  }
+
+  public void setDbPassword(String dbPassword) {
+    this.dbPassword = dbPassword;
+  }
+
+  public String getClusterName() {
+    return clusterName;
+  }
+
+  public void setClusterName(String clusterName) {
+    this.clusterName = clusterName;
   }
 }
