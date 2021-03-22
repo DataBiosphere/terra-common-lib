@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolingDataSource;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,8 @@ import org.springframework.stereotype.Component;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
 @Component
-public class StairwayLifecycleManager {
-  private final Logger logger = LoggerFactory.getLogger(StairwayLifecycleManager.class);
+public class StairwayComponent {
+  private final Logger logger = LoggerFactory.getLogger(StairwayComponent.class);
 
   private final KubeService kubeService;
   private final KubeProperties kubeProperties;
@@ -40,7 +39,7 @@ public class StairwayLifecycleManager {
   private final AtomicReference<Status> status = new AtomicReference<>(Status.INITIALIZING);
 
   @Autowired
-  public StairwayLifecycleManager(
+  public StairwayComponent(
       KubeService kubeService,
       KubeProperties kubeProperties,
       StairwayProperties stairwayProperties) {
@@ -53,10 +52,15 @@ public class StairwayLifecycleManager {
         stairwayProperties.getClusterName());
   }
 
-  public void initialize(
-      Object context, PoolingDataSource<PoolableConnection> dataSource, Set<StairwayHook> hooks) {
+  /**
+   * Build and initialize the Stairway object
+   * @param dataSource data source for the Stairway DB
+   * @param context application context or other service-specific contextual object
+   * @param hooks list of Stairway hooks to install when building Stairway
+   */
+  public void initialize(DataSource dataSource, Object context, List<StairwayHook> hooks) {
     logger.info("Initializing Stairway...");
-    logger.info("stairway username {}", stairwayProperties.getDbUsername());
+    //    logger.info("stairway username {}", stairwayProperties.getUsername());
     final Stairway.Builder builder =
         Stairway.newBuilder()
             .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
@@ -131,7 +135,7 @@ public class StairwayLifecycleManager {
     return stairway;
   }
 
-  public StairwayLifecycleManager.Status getStatus() {
+  public StairwayComponent.Status getStatus() {
     return status.get();
   }
 }

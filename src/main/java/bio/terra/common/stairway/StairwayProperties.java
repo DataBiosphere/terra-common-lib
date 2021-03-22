@@ -3,19 +3,15 @@ package bio.terra.common.stairway;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/** This class includes the standard database properties. */
 @ConfigurationProperties(prefix = "terra.common.stairway")
-public class StairwayProperties {
+public class StairwayProperties /* extends BaseDatabaseProperties */ {
   private boolean forceCleanStart;
   private boolean migrateUpgrade;
   private int maxParallelFlights;
   private Duration quietDownTimeout;
   private Duration terminateTimeout;
   private boolean tracingEnabled;
-
-  // database properties
-  private String dbUri;
-  private String dbUsername;
-  private String dbPassword;
 
   // cluster properties
   private String clusterName;
@@ -66,30 +62,6 @@ public class StairwayProperties {
 
   public void setTracingEnabled(boolean tracingEnabled) {
     this.tracingEnabled = tracingEnabled;
-  }
-
-  public String getDbUri() {
-    return dbUri;
-  }
-
-  public void setDbUri(String dbUri) {
-    this.dbUri = dbUri;
-  }
-
-  public String getDbUsername() {
-    return dbUsername;
-  }
-
-  public void setDbUsername(String dbUsername) {
-    this.dbUsername = dbUsername;
-  }
-
-  public String getDbPassword() {
-    return dbPassword;
-  }
-
-  public void setDbPassword(String dbPassword) {
-    this.dbPassword = dbPassword;
   }
 
   public String getClusterName() {
