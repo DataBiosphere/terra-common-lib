@@ -22,7 +22,7 @@ repositories {
 }
 
 group 'bio.terra'
-version '0.0.36-SNAPSHOT' // DO NOT CHECK IN
+version '0.0.37-SNAPSHOT' // DO NOT CHECK IN
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 def OPENCENSUS_VERSION = '0.28.+'
@@ -51,8 +51,6 @@ dependencies {
     implementation group: 'org.springframework' , name: 'spring-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-    // https://mvnrepository.com/artifact/javax.inject/javax.inject
-    implementation group: 'javax.inject', name: 'javax.inject', version: '1'
     runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
 
     api group: 'com.google.guava', name: 'guava', version: '29.0-jre'
@@ -184,8 +182,4 @@ artifactory {
             publishPom = true
         }
     }
-}
-
-java {
-    withSourcesJar() // for publish plugin
 }

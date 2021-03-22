@@ -54,6 +54,7 @@ public class StairwayComponent {
 
   /**
    * Build and initialize the Stairway object
+   *
    * @param dataSource data source for the Stairway DB
    * @param context application context or other service-specific contextual object
    * @param hooks list of Stairway hooks to install when building Stairway
