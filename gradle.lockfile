@@ -1,7 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-bio.terra:stairway:0.0.37-SNAPSHOT=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+bio.terra:stairway:0.0.41-SNAPSHOT=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 ch.qos.logback.contrib:logback-jackson:0.1.5=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 ch.qos.logback.contrib:logback-json-classic:0.1.5=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 ch.qos.logback.contrib:logback-json-core:0.1.5=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
@@ -32,7 +32,7 @@ com.google.api:gax-grpc:1.47.1=compileClasspath,testCompileClasspath
 com.google.api:gax-grpc:1.56.0=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath
 com.google.api:gax:1.56.0=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath
 com.google.api:gax:1.62.0=compileClasspath,testCompileClasspath
-com.google.apis:google-api-services-logging:v2-rev20210217-1.31.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+com.google.apis:google-api-services-logging:v2-rev20210312-1.31.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 com.google.auth:google-auth-library-credentials:0.20.0=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath
 com.google.auth:google-auth-library-credentials:0.24.1=compileClasspath,testCompileClasspath
 com.google.auth:google-auth-library-oauth2-http:0.20.0=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath
