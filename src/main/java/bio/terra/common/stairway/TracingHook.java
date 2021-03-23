@@ -96,7 +96,7 @@ public class TracingHook implements StairwayHook {
 
     @Override
     public HookAction start(FlightContext flightContext) throws InterruptedException {
-      SpanContext submissionContext = getOrSubmissionContext(flightContext);
+      SpanContext submissionContext = getOrCreateSubmissionContext(flightContext);
       // Start the Flight Span and its Scope. We rely on implicit propagation to get this Flight
       // Span as the current span during Step execution. We must remember to close the Flight Scope
       // at the end of the Flight's current run.
@@ -174,7 +174,7 @@ public class TracingHook implements StairwayHook {
    * Gets or creates the context of the submission Span. Each Flight span is linked to the
    * submission span to correlate all Flight Spans.
    */
-  private SpanContext getOrSubmissionContext(FlightContext flightContext) {
+  private SpanContext getOrCreateSubmissionContext(FlightContext flightContext) {
     // Check the input parameters for a submission span to link for the Flight.
     String encodedContext =
         flightContext.getInputParameters().get(SUBMISSION_SPAN_CONTEXT_MAP_KEY, String.class);

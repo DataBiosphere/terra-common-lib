@@ -38,9 +38,10 @@ dependencies {
     api group: 'io.opencensus', name: 'opencensus-api', version: OPENCENSUS_VERSION
     api group: "io.opencensus", name: "opencensus-contrib-spring", version: OPENCENSUS_VERSION
     implementation group: "io.opencensus", name: "opencensus-exporter-trace-stackdriver", version: OPENCENSUS_VERSION
-    // commons-lang3 version is managed by the Spring Boot plugin
-    implementation group: 'org.apache.commons', name: 'commons-lang3'
+
+    // commons-dbcp2 and -lang3 versions are managed by the Spring Boot plugin
     implementation group: 'org.apache.commons', name: 'commons-dbcp2'
+    implementation group: 'org.apache.commons', name: 'commons-lang3'
     implementation group: 'org.apache.commons', name: 'commons-pool2'
     implementation group: 'org.hashids', name: 'hashids', version: '1.+'
     implementation group: 'org.liquibase' , name: 'liquibase-core', version: '3.10.0'
@@ -49,7 +50,6 @@ dependencies {
     implementation group: 'org.springframework' , name: 'spring-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-
     runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
 
     api group: 'com.google.guava', name: 'guava', version: '29.0-jre'
@@ -57,7 +57,6 @@ dependencies {
     // Jsonpath version is managed by the Spring Boot plugin
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path'
     testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
-    testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     // Jupiter version is managed by the Spring Boot plugin
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter'
