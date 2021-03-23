@@ -7,13 +7,15 @@ public class KubeProperties {
   // The pod that host the Buffer service app.
   private String podNameFilter;
 
-  // Name of the Kubernetes pods we are running in. We uses common library uses this to list all
-  // pods in the deployment, then uses podNameFilter to find the pod that host the app.
-  // e.g.m podName can gives us buffer-service, buffer-cloudsql-proxy, and we use podNameFilter to
-  // find buffer-service.
+  /**
+   * Name of the Kubernetes pods we are running in. We uses common library uses this to list all
+   * pods in the deployment, then uses podNameFilter to find the pod that host the app. e.g.m
+   * podName can gives us buffer-service, buffer-cloudsql-proxy, and we use podNameFilter to find
+   * buffer-service.
+   */
   private String podName;
 
-  // Whether the app is running in Kubernetes.
+  /** Whether the app is running in Kubernetes. */
   private boolean inKubernetes;
 
   private String namespaceSuffix;

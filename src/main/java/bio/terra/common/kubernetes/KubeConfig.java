@@ -12,10 +12,10 @@ public class KubeConfig {
 
   @Bean
   @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-  public KubeService getKubeService(KubeProperties kubernetesProperties) {
+  public KubeService getKubeService(KubeProperties kubeProperties) {
     return new KubeService(
-        kubernetesProperties.getPodName(),
-        kubernetesProperties.isInKubernetes(),
-        kubernetesProperties.getPodNameFilter());
+        kubeProperties.getPodName(),
+        kubeProperties.isInKubernetes(),
+        kubeProperties.getPodNameFilter());
   }
 }

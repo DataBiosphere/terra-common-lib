@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** This class includes the standard database properties. */
 @ConfigurationProperties(prefix = "terra.common.stairway")
-public class StairwayProperties /* extends BaseDatabaseProperties */ {
+public class StairwayProperties {
   private boolean forceCleanStart;
   private boolean migrateUpgrade;
   private int maxParallelFlights;

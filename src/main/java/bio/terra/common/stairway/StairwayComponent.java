@@ -61,7 +61,6 @@ public class StairwayComponent {
    */
   public void initialize(DataSource dataSource, Object context, List<StairwayHook> hooks) {
     logger.info("Initializing Stairway...");
-    //    logger.info("stairway username {}", stairwayProperties.getUsername());
     final Stairway.Builder builder =
         Stairway.newBuilder()
             .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
@@ -75,11 +74,10 @@ public class StairwayComponent {
     try {
       this.stairway = builder.build();
     } catch (StairwayExecutionException e) {
-      throw new IllegalArgumentException("Failed to build Stairway.", e);
+      throw new RuntimeException("Failed to build Stairway.", e);
     }
 
     try {
-      // TODO(PF-161): Determine if Stairway and buffer database migrations need to be coordinated.
       List<String> recordedStairways =
           stairway.initialize(
               dataSource,

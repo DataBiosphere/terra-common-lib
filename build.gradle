@@ -22,7 +22,7 @@ repositories {
 }
 
 group 'bio.terra'
-version '0.0.37-SNAPSHOT' // DO NOT CHECK IN
+version '0.0.22-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 def OPENCENSUS_VERSION = '0.28.+'
@@ -42,7 +42,6 @@ dependencies {
     // commons-dbcp2 and -lang3 versions are managed by the Spring Boot plugin
     implementation group: 'org.apache.commons', name: 'commons-dbcp2'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
-    implementation group: 'org.apache.commons', name: 'commons-dbcp2'
     implementation group: 'org.apache.commons', name: 'commons-pool2'
     implementation group: 'org.hashids', name: 'hashids', version: '1.+'
     implementation group: 'org.liquibase' , name: 'liquibase-core', version: '3.10.0'
