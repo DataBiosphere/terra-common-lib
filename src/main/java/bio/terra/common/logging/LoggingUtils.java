@@ -21,9 +21,11 @@ import org.springframework.util.ResourceUtils;
  * around providing well-known mechanisms for supplementing logs with structured data that can be
  * read by Cloud Logging.
  */
-public class LoggingUtils {
+public final class LoggingUtils {
 
   public static final String TERRA_APPENDER_NAME = "terra-common";
+
+  private LoggingUtils() {}
 
   /**
    * Parses a JSON string and returns a Jackson JsonNode object which can be passed as an argument
@@ -78,6 +80,8 @@ public class LoggingUtils {
    * <p>If the "human-readable-logging" Spring profile is active, no changes will be made and the
    * default Spring logging config (see resources/logback.xml) will be used.
    */
+  // System.out.println is OK since this is a message relating to the logging system initialization.
+  @SuppressWarnings("PMD.SystemPrintln")
   protected static void initializeLogging(ConfigurableApplicationContext applicationContext) {
     ch.qos.logback.classic.Logger logbackLogger =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);

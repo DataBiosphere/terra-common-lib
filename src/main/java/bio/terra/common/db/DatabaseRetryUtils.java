@@ -10,13 +10,13 @@ import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.dao.TransientDataAccessException;
 
 /** Utilities to execute database operations with retry support. */
-public class DatabaseRetryUtils {
+public final class DatabaseRetryUtils {
   private static final Logger logger = LoggerFactory.getLogger(DatabaseRetryUtils.class);
 
   private DatabaseRetryUtils() {}
 
   /**
-   * Executes a database operation and retries if retryable.
+   * Executes a database operation and retries if retryable
    *
    * @param execute database operation to execute
    * @param retrySleep fixed retry sleep interval
@@ -45,7 +45,7 @@ public class DatabaseRetryUtils {
   }
 
   /**
-   * Tests an exception to see if it is retryable
+   * Tests an exception to see if it is retryable.
    *
    * @param dataAccessException execption to test
    * @return {@code true} if that is retryable {@link DataAccessException}.

@@ -14,6 +14,12 @@ public class AuthenticatedUserRequest {
   private final String subjectId;
   private final String token;
 
+  private AuthenticatedUserRequest(Builder builder) {
+    this.email = builder.email;
+    this.subjectId = builder.subjectId;
+    this.token = builder.token;
+  }
+
   /**
    * Returns the email address of the authenticated user, corresponding to the OIDC 'email' claim.
    */
@@ -39,8 +45,6 @@ public class AuthenticatedUserRequest {
     private String email;
     private String subjectId;
     private String token;
-
-    public Builder() {}
 
     /** Sets the value for {@link #getEmail()}. */
     public Builder setEmail(String email) {
@@ -86,12 +90,6 @@ public class AuthenticatedUserRequest {
 
   public Builder toBuilder() {
     return builder().setEmail(this.email).setSubjectId(this.subjectId).setToken(this.token);
-  }
-
-  protected AuthenticatedUserRequest(Builder builder) {
-    this.email = builder.email;
-    this.subjectId = builder.subjectId;
-    this.token = builder.token;
   }
 
   @Override

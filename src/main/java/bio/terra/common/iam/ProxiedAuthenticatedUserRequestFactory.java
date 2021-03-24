@@ -17,6 +17,7 @@ public class ProxiedAuthenticatedUserRequestFactory implements AuthenticatedUser
   static final String OIDC_CLAIM_EMAIL = "OIDC_CLAIM_email";
   static final String OIDC_CLAIM_USER_ID = "OIDC_CLAIM_user_id";
 
+  @Override
   public AuthenticatedUserRequest from(HttpServletRequest servletRequest) {
     AuthenticatedUserRequest.Builder builder =
         AuthenticatedUserRequest.builder()
@@ -33,7 +34,7 @@ public class ProxiedAuthenticatedUserRequestFactory implements AuthenticatedUser
         builder.setToken(BearerTokenParser.parse(authHeader));
       }
     }
-    AuthenticatedUserRequest request = null;
+    AuthenticatedUserRequest request;
     try {
       request = builder.build();
     } catch (final IllegalStateException e) {

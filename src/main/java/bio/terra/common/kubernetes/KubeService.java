@@ -34,13 +34,13 @@ import org.slf4j.LoggerFactory;
     value = "DMI_HARDCODED_ABSOLUTE_FILENAME",
     justification = "The K8s namespace file is a valid absolute filename")
 public class KubeService {
-  private static final Logger logger = LoggerFactory.getLogger(KubeService.class);
-
   // Location in the container where Kubernetes stores service account and
   // namespace information. Kubernetes mints a service account for the container (pod?)
   // that can be used to make requests of Kubernetes.
   static final String KUBE_DIR = "/var/run/secrets/kubernetes.io/serviceaccount";
   static final String KUBE_NAMESPACE_FILE = KUBE_DIR + "/namespace";
+
+  private static final Logger logger = LoggerFactory.getLogger(KubeService.class);
 
   private final String podName;
   private final boolean inKubernetes;

@@ -71,9 +71,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   private ThrowableProxyConverter throwableProxyConverter;
   private Tracer tracer = Tracing.getTracer();
 
-  public GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
-    super();
-
+  GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
     this.applicationContext = applicationContext;
     this.gson = new Gson();
     this.objectMapper = new ObjectMapper();
@@ -106,6 +104,8 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
    * @return the map which should get rendered as JSON
    */
   @Override
+  // System.err.println is OK here, since this is happening from within the logging infra.
+  @SuppressWarnings("PMD.SystemPrintln")
   protected Map<String, Object> toJsonMap(ILoggingEvent event) {
     Map<String, Object> outputMap = new LinkedHashMap<>();
 
