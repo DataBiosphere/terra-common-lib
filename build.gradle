@@ -26,11 +26,10 @@ group 'bio.terra'
 version '0.0.32-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
-ext {
-    OPENCENSUS_VERSION = '0.28.+'
-}
-
 dependencies {
+    ext {
+        opencensus = '0.28.+'
+    }
     implementation group: 'bio.terra', name: 'stairway', version: '0.0.41-SNAPSHOT'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.+'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.+'
@@ -38,11 +37,7 @@ dependencies {
     implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.+'
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2+'
     implementation group: 'io.kubernetes', name: 'client-java', version: '10.0.0'
-    api group: 'io.opencensus', name: 'opencensus-api', version: OPENCENSUS_VERSION
-    api group: "io.opencensus", name: "opencensus-contrib-spring", version: OPENCENSUS_VERSION
-    implementation group: "io.opencensus", name: "opencensus-exporter-trace-stackdriver", version: OPENCENSUS_VERSION
-
-    implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: project.ext.OPENCENSUS_VERSION
+    implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: opencensus
     // commons-dbcp2 and -lang3 versions are managed by the Spring Boot plugin
     implementation group: 'org.apache.commons', name: 'commons-dbcp2'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
@@ -55,15 +50,18 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
 
-    runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: project.ext.OPENCENSUS_VERSION
+    runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
 
     api group: 'com.google.guava', name: 'guava', version: '29.0-jre'
-    api group: 'io.opencensus', name: 'opencensus-api', version: project.ext.OPENCENSUS_VERSION
-    api group: 'io.opencensus', name: 'opencensus-contrib-spring', version: project.ext.OPENCENSUS_VERSION
+    api group: 'io.opencensus', name: 'opencensus-api', version: opencensus
+    api group: 'io.opencensus', name: 'opencensus-contrib-spring', version: opencensus
+
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
 
     // Jsonpath version is managed by the Spring Boot plugin
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path'
-    testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: OPENCENSUS_VERSION
+    testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
+    testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.7.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     // Jupiter version is managed by the Spring Boot plugin
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter'
@@ -71,10 +69,6 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.+'
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'
-
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
-
-    // Test dependencies are split out into gradle/test.gradle
 }
 
 // We use Spring Boot gradle plugin in a non-Spring Boot environment to manage Spring Boot dependency.

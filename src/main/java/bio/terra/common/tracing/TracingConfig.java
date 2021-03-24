@@ -89,8 +89,7 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
     TraceParams origParams = Tracing.getTraceConfig().getActiveTraceParams();
     Tracing.getTraceConfig()
         .updateActiveTraceParams(
-            origParams
-                .toBuilder()
+            origParams.toBuilder()
                 .setSampler(Samplers.probabilitySampler(tracingProperties.getSamplingRate()))
                 .build());
   }

@@ -11,6 +11,10 @@
   <!--
     Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
   -->
+  <suppress checks="CyclomaticComplexity"/>
+  <!--
+    Terra: complexity measures are squishy and vague. Prefer to catch complexity in code review.
+  -->
   <suppress checks="ExecutableStatementCount"/>
   <!--
     Terra: final is considered optional for local vars.

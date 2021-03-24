@@ -14,7 +14,7 @@ public class AuthenticatedUserRequest {
   private final String subjectId;
   private final String token;
 
-  protected AuthenticatedUserRequest(Builder builder) {
+  private AuthenticatedUserRequest(Builder builder) {
     this.email = builder.email;
     this.subjectId = builder.subjectId;
     this.token = builder.token;
