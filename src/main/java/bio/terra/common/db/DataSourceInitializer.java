@@ -9,7 +9,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 /** Utility class to create {@link DataSource}. */
 public class DataSourceInitializer {
-  private DataSourceInitializer() {};
+  private DataSourceInitializer() {}
+  ;
 
   /** Create a {@link DataSource} by providing a {@link BaseDatabaseProperties}. */
   public static DataSource initializeDataSource(BaseDatabaseProperties baseDatabaseProperties) {
