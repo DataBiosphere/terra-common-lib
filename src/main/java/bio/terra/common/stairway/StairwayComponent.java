@@ -49,7 +49,7 @@ public class StairwayComponent {
     logger.info(
         "Creating Stairway: name: [{}]  cluster name: [{}]",
         kubeService.getPodName(),
-        stairwayProperties.getClusterName());
+        getClusterName());
   }
 
   /**
@@ -67,7 +67,7 @@ public class StairwayComponent {
             .applicationContext(context) // not necessarily a Spring ApplicationContext
             .keepFlightLog(true)
             .stairwayName(kubeProperties.getPodName())
-            .stairwayClusterName(stairwayProperties.getClusterName())
+            .stairwayClusterName(getClusterName())
             .workQueueProjectId(getDefaultProjectId())
             .enableWorkQueue(kubeProperties.isInKubernetes());
     hooks.forEach(builder::stairwayHook);
@@ -136,5 +136,10 @@ public class StairwayComponent {
 
   public StairwayComponent.Status getStatus() {
     return status.get();
+  }
+
+  private String getClusterName() {
+    return String.format(
+        "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
   }
 }
