@@ -14,7 +14,7 @@ public class StairwayProperties {
   private boolean tracingEnabled;
 
   // cluster properties
-  private String clusterName;
+  private String clusterNameSuffix;
 
   public boolean isForceCleanStart() {
     return forceCleanStart;
@@ -64,11 +64,11 @@ public class StairwayProperties {
     this.tracingEnabled = tracingEnabled;
   }
 
-  public String getClusterName() {
-    return clusterName;
+  public String getClusterNameSuffix() {
+    return clusterNameSuffix;
   }
 
-  public void setClusterName(String clusterName) {
-    this.clusterName = clusterName;
+  public void setClusterNameSuffix(String clusterNameSuffix) {
+    this.clusterNameSuffix = clusterNameSuffix;
   }
 }
