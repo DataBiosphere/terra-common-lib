@@ -18,8 +18,6 @@ public class KubeProperties {
   /** Whether the app is running in Kubernetes. */
   private boolean inKubernetes;
 
-  private String namespaceSuffix;
-
   public String getPodName() {
     return podName;
   }
@@ -42,13 +40,5 @@ public class KubeProperties {
 
   public void setInKubernetes(boolean inKubernetes) {
     this.inKubernetes = inKubernetes;
-  }
-
-  public String getNamespaceSuffix() {
-    return namespaceSuffix;
-  }
-
-  public void setNamespaceSuffix(String namespaceSuffix) {
-    this.namespaceSuffix = namespaceSuffix;
   }
 }
