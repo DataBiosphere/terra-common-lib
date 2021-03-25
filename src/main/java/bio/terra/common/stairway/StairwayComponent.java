@@ -139,6 +139,7 @@ public class StairwayComponent {
   }
 
   private String getClusterName() {
-    return String.format("%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
+    return String.format(
+        "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
   }
 }
