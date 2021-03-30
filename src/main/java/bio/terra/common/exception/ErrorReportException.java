@@ -1,7 +1,8 @@
 package bio.terra.common.exception;
 
-import com.google.common.html.HtmlEscapers;
+import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpStatus;
 
@@ -11,44 +12,44 @@ import org.springframework.http.HttpStatus;
  * REST response.
  */
 public abstract class ErrorReportException extends RuntimeException {
+  private static final HttpStatus DEFAULT_STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
+
   private final List<String> causes;
   private final HttpStatus statusCode;
 
   public ErrorReportException(String message) {
-    super(encodeMessage(message));
-    this.causes = null;
-    this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    super(message);
+    this.causes = Collections.emptyList();
+    this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(String message, Throwable cause) {
-    super(encodeMessage(message), cause);
-    this.causes = null;
-    this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    super(message, cause);
+    this.causes = Collections.emptyList();
+    this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(Throwable cause) {
     super(cause);
-    this.causes = null;
-    this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-  }
-
-  public ErrorReportException(Throwable cause, HttpStatus statusCode) {
-    super(cause);
-    this.causes = null;
-    this.statusCode = statusCode;
-  }
-
-  public ErrorReportException(String message, List<String> causes, HttpStatus statusCode) {
-    super(encodeMessage(message));
-    this.causes = causes;
-    this.statusCode = statusCode;
+    this.causes = Collections.emptyList();
+    this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(
-      String message, Throwable cause, List<String> causes, HttpStatus statusCode) {
-    super(encodeMessage(message), cause);
-    this.causes = causes;
-    this.statusCode = statusCode;
+      String message, @Nullable List<String> causes, @Nullable HttpStatus statusCode) {
+    super(message);
+    this.causes = causes != null ? causes : Collections.emptyList();
+    this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
+  }
+
+  public ErrorReportException(
+      String message,
+      Throwable cause,
+      @Nullable List<String> causes,
+      @Nullable HttpStatus statusCode) {
+    super(message, cause);
+    this.causes = causes != null ? causes : Collections.emptyList();
+    this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
   }
 
   public List<String> getCauses() {
@@ -65,9 +66,5 @@ public abstract class ErrorReportException extends RuntimeException {
         .append("causes", causes)
         .append("statusCode", statusCode)
         .toString();
-  }
-
-  private static String encodeMessage(String message) {
-    return HtmlEscapers.htmlEscaper().escape(message);
   }
 }
