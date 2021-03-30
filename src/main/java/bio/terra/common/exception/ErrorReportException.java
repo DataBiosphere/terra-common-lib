@@ -3,6 +3,7 @@ package bio.terra.common.exception;
 import com.google.common.html.HtmlEscapers;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpStatus;
@@ -39,14 +40,14 @@ public abstract class ErrorReportException extends RuntimeException {
   public ErrorReportException(Throwable cause, HttpStatus statusCode) {
     super(cause);
     this.causes = Collections.emptyList();
-    this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
+    this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
   }
 
   public ErrorReportException(
       String message, @Nullable List<String> causes, @Nullable HttpStatus statusCode) {
     super(encodeMessage(message));
-    this.causes = causes != null ? causes : Collections.emptyList();
-    this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
+    this.causes = Optional.ofNullable(causes).orElse(Collections.emptyList());
+    this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
   }
 
   public ErrorReportException(
@@ -55,8 +56,8 @@ public abstract class ErrorReportException extends RuntimeException {
       @Nullable List<String> causes,
       @Nullable HttpStatus statusCode) {
     super(encodeMessage(message), cause);
-    this.causes = causes != null ? causes : Collections.emptyList();
-    this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
+    this.causes = Optional.ofNullable(causes).orElse(Collections.emptyList());
+    this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
   }
 
   public List<String> getCauses() {
