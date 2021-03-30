@@ -1,5 +1,6 @@
 package bio.terra.common.exception;
 
+import com.google.common.html.HtmlEscapers;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -18,13 +19,13 @@ public abstract class ErrorReportException extends RuntimeException {
   private final HttpStatus statusCode;
 
   public ErrorReportException(String message) {
-    super(message);
+    super(encodeMessage(message));
     this.causes = Collections.emptyList();
     this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(String message, Throwable cause) {
-    super(message, cause);
+    super(encodeMessage(message), cause);
     this.causes = Collections.emptyList();
     this.statusCode = DEFAULT_STATUS;
   }
@@ -35,9 +36,15 @@ public abstract class ErrorReportException extends RuntimeException {
     this.statusCode = DEFAULT_STATUS;
   }
 
+  public ErrorReportException(Throwable cause, HttpStatus statusCode) {
+    super(cause);
+    this.causes = Collections.emptyList();
+    this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
+  }
+
   public ErrorReportException(
       String message, @Nullable List<String> causes, @Nullable HttpStatus statusCode) {
-    super(message);
+    super(encodeMessage(message));
     this.causes = causes != null ? causes : Collections.emptyList();
     this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
   }
@@ -47,7 +54,7 @@ public abstract class ErrorReportException extends RuntimeException {
       Throwable cause,
       @Nullable List<String> causes,
       @Nullable HttpStatus statusCode) {
-    super(message, cause);
+    super(encodeMessage(message), cause);
     this.causes = causes != null ? causes : Collections.emptyList();
     this.statusCode = statusCode != null ? statusCode : DEFAULT_STATUS;
   }
@@ -66,5 +73,9 @@ public abstract class ErrorReportException extends RuntimeException {
         .append("causes", causes)
         .append("statusCode", statusCode)
         .toString();
+  }
+
+  private static String encodeMessage(String message) {
+    return HtmlEscapers.htmlEscaper().escape(message);
   }
 }
