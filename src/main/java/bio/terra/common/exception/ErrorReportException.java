@@ -1,7 +1,10 @@
 package bio.terra.common.exception;
 
 import com.google.common.html.HtmlEscapers;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpStatus;
 
@@ -11,44 +14,50 @@ import org.springframework.http.HttpStatus;
  * REST response.
  */
 public abstract class ErrorReportException extends RuntimeException {
+  private static final HttpStatus DEFAULT_STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
+
   private final List<String> causes;
   private final HttpStatus statusCode;
 
   public ErrorReportException(String message) {
     super(encodeMessage(message));
-    this.causes = null;
-    this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    this.causes = Collections.emptyList();
+    this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(String message, Throwable cause) {
     super(encodeMessage(message), cause);
-    this.causes = null;
-    this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    this.causes = Collections.emptyList();
+    this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(Throwable cause) {
     super(cause);
-    this.causes = null;
-    this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    this.causes = Collections.emptyList();
+    this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(Throwable cause, HttpStatus statusCode) {
     super(cause);
-    this.causes = null;
-    this.statusCode = statusCode;
-  }
-
-  public ErrorReportException(String message, List<String> causes, HttpStatus statusCode) {
-    super(encodeMessage(message));
-    this.causes = causes;
-    this.statusCode = statusCode;
+    this.causes = Collections.emptyList();
+    this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
   }
 
   public ErrorReportException(
-      String message, Throwable cause, List<String> causes, HttpStatus statusCode) {
+      String message, @Nullable List<String> causes, @Nullable HttpStatus statusCode) {
+    super(encodeMessage(message));
+    this.causes = Optional.ofNullable(causes).orElse(Collections.emptyList());
+    this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
+  }
+
+  public ErrorReportException(
+      String message,
+      Throwable cause,
+      @Nullable List<String> causes,
+      @Nullable HttpStatus statusCode) {
     super(encodeMessage(message), cause);
-    this.causes = causes;
-    this.statusCode = statusCode;
+    this.causes = Optional.ofNullable(causes).orElse(Collections.emptyList());
+    this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
   }
 
   public List<String> getCauses() {
