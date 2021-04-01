@@ -49,6 +49,7 @@ dependencies {
     implementation group: 'org.springframework' , name: 'spring-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.12", version: "0.1-61135c7"
 
     runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
 
@@ -69,6 +70,8 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.+'
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'
+
+    compile 'org.broadinstitute.dsde.workbench:sam-client_2.12:0.1-343dfff-SNAP'
 }
 
 // We use Spring Boot gradle plugin in a non-Spring Boot environment to manage Spring Boot dependency.
