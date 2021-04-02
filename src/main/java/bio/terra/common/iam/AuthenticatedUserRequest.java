@@ -1,8 +1,16 @@
 package bio.terra.common.iam;
 
+import bio.terra.common.exception.InternalServerErrorException;
 import bio.terra.common.exception.UnauthorizedException;
+import bio.terra.common.iam.proto.AuthenticatedUserRequestModel;
+import bio.terra.stairway.FlightMap;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import com.google.protobuf.Parser;
 import java.util.Objects;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -38,6 +46,58 @@ public class AuthenticatedUserRequest {
   /** Returns a JSON Web Token (JWT) possessed by the authenticated user. */
   public String getToken() {
     return token;
+  }
+
+  public FlightMap putIn(FlightMap flightMap, String key) {
+    return putMessage(flightMap, key, toModel());
+  }
+
+  public static AuthenticatedUserRequest getFrom(FlightMap flightMap, String key) {
+    AuthenticatedUserRequestModel model =
+        getMessage(flightMap, key, AuthenticatedUserRequestModel.parser());
+    return fromModel(model);
+  }
+
+  /**
+   * This could be put on FlightMap as a part of Stairway. Broken out to a separate function here to
+   * illustrate.
+   */
+  @VisibleForTesting
+  static FlightMap putMessage(FlightMap flightMap, String key, Message message) {
+    // We could add Stairway native support for a ByteString or byte array encoding to avoid some
+    // copies. Using String for now.
+    flightMap.put(key, message.toByteString().toStringUtf8());
+    return flightMap;
+  }
+
+  /**
+   * This could be put on FlightMap as a part of Stairway. Broken out to a separate function here to
+   * illustrate.
+   */
+  @VisibleForTesting
+  static <T extends Message> T getMessage(FlightMap flightMap, String key, Parser<T> parser) {
+    try {
+      return parser.parseFrom(ByteString.copyFromUtf8(flightMap.get(key, String.class)));
+    } catch (InvalidProtocolBufferException e) {
+      throw new InternalServerErrorException(
+          String.format("Unable to parse message at key %s", key));
+    }
+  }
+
+  private AuthenticatedUserRequestModel toModel() {
+    return AuthenticatedUserRequestModel.newBuilder()
+        .setEmail(email)
+        .setSubjectId(subjectId)
+        .setToken(token)
+        .build();
+  }
+
+  private static AuthenticatedUserRequest fromModel(AuthenticatedUserRequestModel model) {
+    return builder()
+        .setEmail(model.getEmail())
+        .setSubjectId(model.getSubjectId())
+        .setToken(model.getToken())
+        .build();
   }
 
   @JsonPOJOBuilder(withPrefix = "set")

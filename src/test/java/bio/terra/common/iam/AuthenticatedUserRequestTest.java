@@ -1,9 +1,15 @@
 package bio.terra.common.iam;
 
+import static bio.terra.common.iam.AuthenticatedUserRequest.getMessage;
+import static bio.terra.common.iam.AuthenticatedUserRequest.putMessage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import bio.terra.common.iam.proto.AuthenticatedUserRequestModel;
+import bio.terra.common.iam.proto.AuthenticatedUserRequestModelV2;
+import bio.terra.stairway.FlightMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -118,5 +124,70 @@ public class AuthenticatedUserRequestTest {
             .setSubjectId("Subject")
             .setToken("0123.456-789AbCd")
             .build());
+  }
+
+  @Test
+  public void testProtoInFlightMap() {
+    AuthenticatedUserRequest request =
+        AuthenticatedUserRequest.builder()
+            .setEmail(EMAIL_ADDRESS)
+            .setSubjectId(SUBJECT_ID)
+            .setToken(TOKEN)
+            .build();
+
+    FlightMap inMap = request.putIn(new FlightMap(), "foo");
+    FlightMap outMap = new FlightMap();
+    outMap.fromJson(inMap.toJson());
+
+    AuthenticatedUserRequest retrieved = AuthenticatedUserRequest.getFrom(outMap, "foo");
+    assertEquals(request, retrieved);
+  }
+
+  /**
+   * Show backwards/forward compatibility of protobuf messages. This does not relate to
+   * AuthenticatedUserRequests directly.
+   *
+   * <p>See
+   * https://developers.google.com/protocol-buffers/docs/javatutorial#extending-a-protocol-buffer
+   */
+  @Test
+  public void protoCompatibility() {
+    AuthenticatedUserRequestModel messageV1 =
+        AuthenticatedUserRequestModel.newBuilder()
+            .setEmail(EMAIL_ADDRESS)
+            .setSubjectId(SUBJECT_ID)
+            .setToken(TOKEN)
+            .build();
+
+    AuthenticatedUserRequestModelV2 messageV2 =
+        AuthenticatedUserRequestModelV2.newBuilder()
+            .setEmail(EMAIL_ADDRESS)
+            .setSubjectId(SUBJECT_ID)
+            .setRenamedToken(TOKEN)
+            .setAdditionalField("foo")
+            .build();
+
+    FlightMap inMap = new FlightMap();
+    putMessage(inMap, "v1", messageV1);
+    putMessage(inMap, "v2", messageV2);
+    FlightMap outMap = new FlightMap();
+    outMap.fromJson(inMap.toJson());
+
+    // Use the V2 parser to extract the V1 serialized message.
+    AuthenticatedUserRequestModelV2 message1AsV2 =
+        getMessage(outMap, "v1", AuthenticatedUserRequestModelV2.parser());
+    assertEquals(EMAIL_ADDRESS, message1AsV2.getEmail());
+    assertEquals(SUBJECT_ID, message1AsV2.getSubjectId());
+    assertEquals(TOKEN, message1AsV2.getRenamedToken());
+    // The new field gets the default value, the empty string.
+    assertFalse(message1AsV2.hasAdditionalField());
+    assertEquals("", message1AsV2.getAdditionalField());
+
+    // Use the V1 parser to extract the V2 serialized message.
+    AuthenticatedUserRequestModel message2AsV1 =
+        getMessage(outMap, "v2", AuthenticatedUserRequestModel.parser());
+    assertEquals(EMAIL_ADDRESS, message2AsV1.getEmail());
+    assertEquals(SUBJECT_ID, message2AsV1.getSubjectId());
+    assertEquals(TOKEN, message2AsV1.getToken());
   }
 }
