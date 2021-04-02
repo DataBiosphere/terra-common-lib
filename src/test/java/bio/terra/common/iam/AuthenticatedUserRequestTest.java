@@ -172,12 +172,13 @@ public class AuthenticatedUserRequestTest {
     putMessage(inMap, "v2", messageV2);
     FlightMap outMap = new FlightMap();
     outMap.fromJson(inMap.toJson());
-    // The protobuf binary encoding is not particularly human readable: https://developers.google.com/protocol-buffers/docs/encoding
+    // The protobuf binary encoding is not particularly human readable:
+    // https://developers.google.com/protocol-buffers/docs/encoding
     // ["java.util.HashMap",{"v1":"\n\u0010test@example.com\u0012\u0007Subject\u001A\u00100123.456-789AbCd","v2":"\n\u0010test@example.com\u0012\u0007Subject\u001A\u00100123.456-789AbCd\"\u0003foo"}]
     logger.info(inMap.toJson());
     // {v1=
-    //test@example.comSubject0123.456-789AbCd, v2=
-    //test@example.comSubject0123.456-789AbCd"foo}
+    // test@example.comSubject0123.456-789AbCd, v2=
+    // test@example.comSubject0123.456-789AbCd"foo}
     logger.info(outMap.toString());
 
     // Use the V2 parser to extract the V1 serialized message.
