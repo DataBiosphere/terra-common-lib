@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package bio.terra.common.iam;
+option java_package = "bio.terra.common.iam.proto";
+option java_multiple_files = true;
+
+message AuthenticatedUserRequestModel {
+  optional string email = 1;
+  optional string subject_id = 2;
+  optional string token = 3;
+}
+
+// DON'T DO THIS
+// This is not the correct way to change a proto schema - you would always modify the message in
+// place, e.g. add the 'additional_field'. For illustrative purposes only, we define two schemas to
+// be compiled into the same binary to show forward/backwards compatibility.
+message AuthenticatedUserRequestModelV2 {
+  optional string email = 1;
+  optional string subject_id = 2;
+  optional string renamed_token = 3;
+
+  optional string additional_field = 4;
+}
