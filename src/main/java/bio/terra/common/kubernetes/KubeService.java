@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,11 @@ import org.slf4j.LoggerFactory;
     value = "DMI_HARDCODED_ABSOLUTE_FILENAME",
     justification = "The K8s namespace file is a valid absolute filename")
 public class KubeService {
+  // The maximum retry when calling Kubernetes.
+  private static final int MAX_RETRY = 10;
+  // Time to sleep between each call.
+  private static final Duration RETRY_SLEEP = Duration.ofSeconds(5);
+
   // Location in the container where Kubernetes stores service account and
   // namespace information. Kubernetes mints a service account for the container (pod?)
   // that can be used to make requests of Kubernetes.
@@ -92,22 +98,32 @@ public class KubeService {
       return pods;
     }
 
-    try {
-      CoreV1Api api = makeCoreApi();
-      V1PodList list =
-          api.listNamespacedPod(namespace, null, null, null, null, null, null, null, null, null);
-      for (V1Pod item : list.getItems()) {
-        if (item.getMetadata() != null) {
-          String podName = item.getMetadata().getName();
-          if (StringUtils.contains(podName, podNameFilter)) {
-            pods.add(podName);
+    int numAttempts = 1;
+    while (numAttempts <= MAX_RETRY) {
+      try {
+        CoreV1Api api = makeCoreApi();
+        V1PodList list =
+                api.listNamespacedPod(namespace, null, null, null, null, null, null, null, null, null);
+        for (V1Pod item : list.getItems()) {
+          if (item.getMetadata() != null) {
+            String podName = item.getMetadata().getName();
+            if (StringUtils.contains(podName, podNameFilter)) {
+              pods.add(podName);
+            }
           }
         }
+        return pods;
+      } catch (ApiException e) {
+        logger.info("Caught exception, retrying... Attempts so far: {}", numAttempts, e);
       }
-      return pods;
-    } catch (ApiException ex) {
-      throw new KubeApiException("Error listing pods", ex);
+      ++numAttempts;
+      try {
+        TimeUnit.MILLISECONDS.sleep(RETRY_SLEEP.toMillis());
+      } catch (InterruptedException e) {
+        throw new KubeApiException("Error listing pods", e);
+      }
     }
+    throw new KubeApiException("Unable to get Podlist");
   }
 
   /**
