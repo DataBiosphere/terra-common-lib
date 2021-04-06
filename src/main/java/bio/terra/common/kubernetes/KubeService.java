@@ -125,7 +125,7 @@ public class KubeService {
         throw new KubeApiException("Error listing pods", e);
       }
     }
-    throw new KubeApiException("Unable to get Podlist with exception", apiException);
+    throw new KubeApiException("Unable to get Pod list with exception", apiException);
   }
 
   /**
