@@ -99,6 +99,7 @@ public class KubeService {
     }
 
     int numAttempts = 1;
+    ApiException apiException = null;
     while (numAttempts <= MAX_RETRY) {
       try {
         CoreV1Api api = makeCoreApi();
@@ -115,6 +116,7 @@ public class KubeService {
         return pods;
       } catch (ApiException e) {
         logger.info("Caught exception, retrying... Attempts so far: {}", numAttempts, e);
+        apiException = e;
       }
       ++numAttempts;
       try {
@@ -123,7 +125,7 @@ public class KubeService {
         throw new KubeApiException("Error listing pods", e);
       }
     }
-    throw new KubeApiException("Unable to get Podlist");
+    throw new KubeApiException("Unable to get Podlist with exception", apiException);
   }
 
   /**
