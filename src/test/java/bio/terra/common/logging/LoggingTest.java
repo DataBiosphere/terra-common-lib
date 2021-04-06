@@ -164,7 +164,7 @@ public class LoggingTest {
     String event3 = null;
     String event4 = null;
     for (String line : lines) {
-      String message = (String) readJson(line, "$.message");
+      String message = readJson(line, "$.message");
       if (message != null && message.contains("Some event happened")) {
         event1 = line;
       } else if (message != null && message.contains("Another event")) {
@@ -194,6 +194,10 @@ public class LoggingTest {
 
   // Uses the JsonPath library to extract data from a given path within a JSON string.
   private <T> T readJson(String line, String path) {
+    if (line.isEmpty()) {
+      // JsonPath does not allow empty strings to be parsed.
+      return null;
+    }
     // Suppress exceptions, otherwise JsonPath will throw an exception when we look for a path that
     // doesn't exist. It's better to assert a null return value in that case.
     return (T)
