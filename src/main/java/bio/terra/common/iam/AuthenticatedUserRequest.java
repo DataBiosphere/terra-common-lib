@@ -1,10 +1,20 @@
 package bio.terra.common.iam;
 
 import bio.terra.common.exception.UnauthorizedException;
+import bio.terra.common.iam.thrift.AuthenticatedUserRequestModel;
+import bio.terra.stairway.FlightMap;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.annotations.VisibleForTesting;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.thrift.TBase;
+import org.apache.thrift.TDeserializer;
+import org.apache.thrift.TException;
+import org.apache.thrift.TFieldIdEnum;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
 
 /** Class representing the identity of an authenticated user. */
 @JsonDeserialize(builder = AuthenticatedUserRequest.Builder.class)
@@ -38,6 +48,61 @@ public class AuthenticatedUserRequest {
   /** Returns a JSON Web Token (JWT) possessed by the authenticated user. */
   public String getToken() {
     return token;
+  }
+
+  public FlightMap putIn(FlightMap flightMap, String key) {
+    return putMessage(flightMap, key, toModel());
+  }
+
+  public static AuthenticatedUserRequest getFrom(FlightMap flightMap, String key) {
+    AuthenticatedUserRequestModel model =
+        getMessage(flightMap, key, new AuthenticatedUserRequestModel());
+    return AuthenticatedUserRequest.builder()
+        .setEmail(model.getEmail())
+        .setSubjectId(model.getSubjectId())
+        .setToken(model.getToken())
+        .build();
+  }
+
+  @VisibleForTesting
+  static <T extends TBase<T, F>, F extends TFieldIdEnum> FlightMap putMessage(
+      FlightMap flightMap, String key, TBase<T, F> message) {
+    try {
+      TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+      byte[] serialized = serializer.serialize(message);
+      flightMap.put(key, new String(serialized, StandardCharsets.UTF_8));
+      return flightMap;
+    } catch (final TException ex) {
+      throw new RuntimeException("Serialization failed.", ex);
+    }
+  }
+
+  @VisibleForTesting
+  static <T extends TBase<T, F>, F extends TFieldIdEnum> T getMessage(
+      FlightMap flightMap, String key, T message) {
+    try {
+      byte[] serialized = flightMap.get(key, String.class).getBytes();
+      TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+      deserializer.deserialize(message, serialized);
+      return message;
+    } catch (final TException ex) {
+      throw new RuntimeException("Deserialization failed.", ex);
+    }
+  }
+
+  private AuthenticatedUserRequestModel toModel() {
+    return new AuthenticatedUserRequestModel()
+        .setEmail(getEmail())
+        .setSubjectId(getSubjectId())
+        .setToken(getToken());
+  }
+
+  private AuthenticatedUserRequest fromModel(AuthenticatedUserRequestModel model) {
+    return AuthenticatedUserRequest.builder()
+        .setEmail(model.getEmail())
+        .setSubjectId(model.getSubjectId())
+        .setToken(model.getToken())
+        .build();
   }
 
   @JsonPOJOBuilder(withPrefix = "set")
