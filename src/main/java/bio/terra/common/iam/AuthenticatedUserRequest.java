@@ -1,9 +1,29 @@
 package bio.terra.common.iam;
 
+import bio.terra.common.exception.InternalServerErrorException;
 import bio.terra.common.exception.UnauthorizedException;
+import bio.terra.stairway.FlightMap;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.annotations.VisibleForTesting;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericRecordBuilder;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /** Class representing the identity of an authenticated user. */
@@ -38,6 +58,109 @@ public class AuthenticatedUserRequest {
   /** Returns a JSON Web Token (JWT) possessed by the authenticated user. */
   public String getToken() {
     return token;
+  }
+
+  public FlightMap putIn(FlightMap flightMap, String key) {
+    return putRecord(flightMap, key, toModel());
+  }
+
+  public static AuthenticatedUserRequest getFrom(FlightMap flightMap, String key) {
+    GenericRecord model = getRecord(flightMap, key, getSchema());
+    return fromModel(model);
+  }
+
+  /**
+   * This could be put on FlightMap as a part of Stairway. Broken out to a separate function here to
+   * illustrate.
+   */
+  @VisibleForTesting
+  static FlightMap putRecord(FlightMap flightMap, String key, GenericRecord record) {
+    try {
+
+      // Encode the object with the "writer" schema into the byte stream.
+      Schema schema = record.getSchema();
+      OutputStream stream = new ByteArrayOutputStream();
+      Encoder jsonEncoder = EncoderFactory.get().jsonEncoder(schema, stream);
+      GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
+      writer.write(record, jsonEncoder);
+      jsonEncoder.flush();
+
+      // Avro requires "writer" schema to be stored in order be able to evolve schema.  Normally
+      // schema versions are stored in a "schema repository" and a "schema fingerprint" is stored
+      // with the data instead of the actual schema.  In this case we'll store the schema as a
+      // string along with the data itself in an array.
+      List<String> value = Arrays.asList(schema.toString(), stream.toString());
+      flightMap.put(key, value);
+
+      return flightMap;
+    } catch (final IOException ex) {
+      throw new InternalServerErrorException(
+          String.format("Unable to write message for key %s", key));
+    }
+  }
+
+  /**
+   * This could be put on FlightMap as a part of Stairway. Broken out to a separate function here to
+   * illustrate.
+   */
+  @VisibleForTesting
+  static GenericRecord getRecord(FlightMap flightMap, String key, Schema readerSchema) {
+    try {
+      // Schema evolution requires the "reader" and "writer" schemas in order to resolve
+      // differences.  Parse the "writer" schema from the stored data, the "reader" schema is
+      // passed.
+      List<String> value = flightMap.get(key, ArrayList.class);
+      Schema.Parser parser = new Schema.Parser();
+      Schema writerSchema = parser.parse(value.get(0));
+
+      // Pass both schemas and decode the data.
+      DatumReader<GenericRecord> reader = new GenericDatumReader<>(writerSchema, readerSchema);
+      Decoder decoder = DecoderFactory.get().jsonDecoder(writerSchema, value.get(1));
+      return reader.read(null, decoder);
+    } catch (final IOException ex) {
+      throw new InternalServerErrorException(
+          String.format("Unable to parse message at key %s", key));
+    }
+  }
+
+  @VisibleForTesting
+  static Schema getSchema() {
+    return SchemaBuilder.record("AuthenticatedUserRequestModel")
+        .namespace("bio.terra.common.iam.avro")
+        .fields()
+        .requiredString("email")
+        .requiredString("subject_id")
+        .requiredString("token")
+        .nullableInt("to_remove", 99)
+        .endRecord();
+  }
+
+  @VisibleForTesting
+  static Schema getSchemaV2() {
+    return SchemaBuilder.record("AuthenticatedUserRequestModel")
+        .namespace("bio.terra.common.iam.avro")
+        .fields()
+        .requiredString("email")
+        .requiredString("subject_id")
+        .requiredString("token")
+        .nullableString("additional_field", "")
+        .endRecord();
+  }
+
+  private GenericRecord toModel() {
+    return new GenericRecordBuilder(getSchema())
+        .set("email", getEmail())
+        .set("subject_id", getSubjectId())
+        .set("token", getToken())
+        .build();
+  }
+
+  private static AuthenticatedUserRequest fromModel(GenericRecord model) {
+    return builder()
+        .setEmail(String.valueOf(model.get("email")))
+        .setSubjectId(String.valueOf(model.get("subject_id")))
+        .setToken(String.valueOf(model.get("token")))
+        .build();
   }
 
   @JsonPOJOBuilder(withPrefix = "set")

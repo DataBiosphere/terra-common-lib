@@ -131,6 +131,7 @@ net.jcip:jcip-annotations:1.0=compileClasspath,productionRuntimeClasspath,runtim
 net.minidev:accessors-smart:1.2=testCompileClasspath,testRuntimeClasspath
 net.minidev:json-smart:2.3=testCompileClasspath,testRuntimeClasspath
 net.sf.saxon:Saxon-HE:10.1=spotbugs
+org.apache.avro:avro:1.10.2=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.apache.bcel:bcel:6.5.0=spotbugs
 org.apache.commons:commons-collections4:4.4=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.apache.commons:commons-compress:1.20=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
