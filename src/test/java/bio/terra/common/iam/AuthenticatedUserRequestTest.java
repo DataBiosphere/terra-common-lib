@@ -1,13 +1,13 @@
 package bio.terra.common.iam;
 
 import static bio.terra.common.iam.AuthenticatedUserRequest.getRecord;
+import static bio.terra.common.iam.AuthenticatedUserRequest.getSchema;
+import static bio.terra.common.iam.AuthenticatedUserRequest.getSchemaV2;
 import static bio.terra.common.iam.AuthenticatedUserRequest.putRecord;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import bio.terra.common.iam.avro.AuthenticatedUserRequestModel;
-import bio.terra.common.iam.avro.AuthenticatedUserRequestModelV2;
 import bio.terra.stairway.FlightMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -16,6 +16,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericRecordBuilder;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullableModule;
@@ -127,7 +129,7 @@ public class AuthenticatedUserRequestTest {
   }
 
   @Test
-  public void testProtoInFlightMap() throws IOException {
+  public void testAvroInFlightMap() throws IOException {
     AuthenticatedUserRequest request =
         AuthenticatedUserRequest.builder()
             .setEmail(EMAIL_ADDRESS)
@@ -138,6 +140,7 @@ public class AuthenticatedUserRequestTest {
     FlightMap inMap = request.putIn(new FlightMap(), "foo");
     FlightMap outMap = new FlightMap();
     outMap.fromJson(inMap.toJson());
+    logger.info(inMap.toJson());
 
     AuthenticatedUserRequest retrieved = AuthenticatedUserRequest.getFrom(outMap, "foo");
     assertEquals(request, retrieved);
@@ -152,35 +155,27 @@ public class AuthenticatedUserRequestTest {
    */
   @Test
   public void avroCompatibility() throws IOException {
-    AuthenticatedUserRequestModel messageV1 =
-        AuthenticatedUserRequestModel.newBuilder()
-            .setEmail(EMAIL_ADDRESS)
-            .setSubjectId(SUBJECT_ID)
-            .setToken(TOKEN)
-            .setToRemove(44)
+
+    GenericRecord messageV1 =
+        new GenericRecordBuilder(getSchema())
+            .set("email", EMAIL_ADDRESS)
+            .set("subject_id", SUBJECT_ID)
+            .set("token", TOKEN)
+            .set("to_remove", 44)
             .build();
 
-    AuthenticatedUserRequestModelV2 messageV2 =
-        AuthenticatedUserRequestModelV2.newBuilder()
-            .setEmail(EMAIL_ADDRESS)
-            .setSubjectId(SUBJECT_ID)
-            .setToken(TOKEN)
-            .setAdditionalField("foo")
+    GenericRecord messageV2 =
+        new GenericRecordBuilder(getSchemaV2())
+            .set("email", EMAIL_ADDRESS)
+            .set("subject_id", SUBJECT_ID)
+            .set("token", TOKEN)
+            .set("additional_field", "foo")
             .build();
 
     FlightMap inMap = new FlightMap();
-    putRecord(
-        inMap,
-        "v1",
-        AuthenticatedUserRequestModel.getClassSchema(),
-        messageV1,
-        AuthenticatedUserRequestModel.class);
-    putRecord(
-        inMap,
-        "v2",
-        AuthenticatedUserRequestModelV2.getClassSchema(),
-        messageV2,
-        AuthenticatedUserRequestModelV2.class);
+    putRecord(inMap, "v1", messageV1);
+    putRecord(inMap, "v2", messageV2);
+
     FlightMap outMap = new FlightMap();
     outMap.fromJson(inMap.toJson());
 
@@ -204,29 +199,19 @@ public class AuthenticatedUserRequestTest {
     logger.info(outMap.toString());
 
     // Use the V2 parser to extract the V1 serialized message.
-    AuthenticatedUserRequestModelV2 message1AsV2 =
-        getRecord(
-            outMap,
-            "v1",
-            AuthenticatedUserRequestModelV2.getClassSchema(),
-            AuthenticatedUserRequestModelV2.class);
-    assertEquals(EMAIL_ADDRESS, message1AsV2.getEmail());
-    assertEquals(SUBJECT_ID, message1AsV2.getSubjectId());
-    assertEquals(TOKEN, message1AsV2.getToken());
+    GenericRecord message1AsV2 = getRecord(outMap, "v1", getSchemaV2());
+    assertEquals(EMAIL_ADDRESS, String.valueOf(message1AsV2.get("email")));
+    assertEquals(SUBJECT_ID, String.valueOf(message1AsV2.get("subject_id")));
+    assertEquals(TOKEN, String.valueOf(message1AsV2.get("token")));
     // The new field gets the default value, the empty string.
-    assertEquals("", message1AsV2.getAdditionalField());
+    assertEquals("", String.valueOf(message1AsV2.get("additional_field")));
 
     // Use the V1 parser to extract the V2 serialized message.
-    AuthenticatedUserRequestModel message2AsV1 =
-        getRecord(
-            outMap,
-            "v2",
-            AuthenticatedUserRequestModel.getClassSchema(),
-            AuthenticatedUserRequestModel.class);
-    assertEquals(EMAIL_ADDRESS, message2AsV1.getEmail());
-    assertEquals(SUBJECT_ID, message2AsV1.getSubjectId());
-    assertEquals(TOKEN, message2AsV1.getToken());
+    GenericRecord message2AsV1 = getRecord(outMap, "v2", getSchema());
+    assertEquals(EMAIL_ADDRESS, String.valueOf(message2AsV1.get("email")));
+    assertEquals(SUBJECT_ID, String.valueOf(message2AsV1.get("subject_id")));
+    assertEquals(TOKEN, String.valueOf(message2AsV1.get("token")));
     // The missing field gets the default value, 99.
-    assertEquals(99, message2AsV1.getToRemove());
+    assertEquals(99, (Integer) message2AsV1.get("to_remove"));
   }
 }

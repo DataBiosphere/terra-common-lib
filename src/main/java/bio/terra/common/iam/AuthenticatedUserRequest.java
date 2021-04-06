@@ -2,7 +2,6 @@ package bio.terra.common.iam;
 
 import bio.terra.common.exception.InternalServerErrorException;
 import bio.terra.common.exception.UnauthorizedException;
-import bio.terra.common.iam.avro.AuthenticatedUserRequestModel;
 import bio.terra.stairway.FlightMap;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -15,13 +14,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericRecordBuilder;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /** Class representing the identity of an authenticated user. */
@@ -59,21 +61,11 @@ public class AuthenticatedUserRequest {
   }
 
   public FlightMap putIn(FlightMap flightMap, String key) {
-    return putRecord(
-        flightMap,
-        key,
-        AuthenticatedUserRequestModel.getClassSchema(),
-        toModel(),
-        AuthenticatedUserRequestModel.class);
+    return putRecord(flightMap, key, toModel());
   }
 
   public static AuthenticatedUserRequest getFrom(FlightMap flightMap, String key) {
-    AuthenticatedUserRequestModel model =
-        getRecord(
-            flightMap,
-            key,
-            AuthenticatedUserRequestModel.getClassSchema(),
-            AuthenticatedUserRequestModel.class);
+    GenericRecord model = getRecord(flightMap, key, getSchema());
     return fromModel(model);
   }
 
@@ -82,14 +74,14 @@ public class AuthenticatedUserRequest {
    * illustrate.
    */
   @VisibleForTesting
-  static <T> FlightMap putRecord(
-      FlightMap flightMap, String key, Schema schema, T record, Class<T> type) {
+  static FlightMap putRecord(FlightMap flightMap, String key, GenericRecord record) {
     try {
 
       // Encode the object with the "writer" schema into the byte stream.
+      Schema schema = record.getSchema();
       OutputStream stream = new ByteArrayOutputStream();
       Encoder jsonEncoder = EncoderFactory.get().jsonEncoder(schema, stream);
-      SpecificDatumWriter<T> writer = new SpecificDatumWriter<T>(schema);
+      GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
       writer.write(record, jsonEncoder);
       jsonEncoder.flush();
 
@@ -112,7 +104,7 @@ public class AuthenticatedUserRequest {
    * illustrate.
    */
   @VisibleForTesting
-  static <T> T getRecord(FlightMap flightMap, String key, Schema readerSchema, Class<T> type) {
+  static GenericRecord getRecord(FlightMap flightMap, String key, Schema readerSchema) {
     try {
       // Schema evolution requires the "reader" and "writer" schemas in order to resolve
       // differences.  Parse the "writer" schema from the stored data, the "reader" schema is
@@ -122,7 +114,7 @@ public class AuthenticatedUserRequest {
       Schema writerSchema = parser.parse(value.get(0));
 
       // Pass both schemas and decode the data.
-      DatumReader<T> reader = new SpecificDatumReader<T>(writerSchema, readerSchema);
+      DatumReader<GenericRecord> reader = new GenericDatumReader<>(writerSchema, readerSchema);
       Decoder decoder = DecoderFactory.get().jsonDecoder(writerSchema, value.get(1));
       return reader.read(null, decoder);
     } catch (final IOException ex) {
@@ -131,19 +123,43 @@ public class AuthenticatedUserRequest {
     }
   }
 
-  private AuthenticatedUserRequestModel toModel() {
-    return AuthenticatedUserRequestModel.newBuilder()
-        .setEmail(email)
-        .setSubjectId(subjectId)
-        .setToken(token)
+  @VisibleForTesting
+  static Schema getSchema() {
+    return SchemaBuilder.record("AuthenticatedUserRequestModel")
+        .namespace("bio.terra.common.iam.avro")
+        .fields()
+        .requiredString("email")
+        .requiredString("subject_id")
+        .requiredString("token")
+        .nullableInt("to_remove", 99)
+        .endRecord();
+  }
+
+  @VisibleForTesting
+  static Schema getSchemaV2() {
+    return SchemaBuilder.record("AuthenticatedUserRequestModel")
+        .namespace("bio.terra.common.iam.avro")
+        .fields()
+        .requiredString("email")
+        .requiredString("subject_id")
+        .requiredString("token")
+        .nullableString("additional_field", "")
+        .endRecord();
+  }
+
+  private GenericRecord toModel() {
+    return new GenericRecordBuilder(getSchema())
+        .set("email", getEmail())
+        .set("subject_id", getSubjectId())
+        .set("token", getToken())
         .build();
   }
 
-  private static AuthenticatedUserRequest fromModel(AuthenticatedUserRequestModel model) {
+  private static AuthenticatedUserRequest fromModel(GenericRecord model) {
     return builder()
-        .setEmail(model.getEmail())
-        .setSubjectId(model.getSubjectId())
-        .setToken(model.getToken())
+        .setEmail(String.valueOf(model.get("email")))
+        .setSubjectId(String.valueOf(model.get("subject_id")))
+        .setToken(String.valueOf(model.get("token")))
         .build();
   }
 
