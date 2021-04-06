@@ -1,0 +1,25 @@
+{
+  "type": "record",
+  "name": "AuthenticatedUserRequestModelV2",
+  "aliases": ["AuthenticatedUserRequestModel"],
+  "namespace": "bio.terra.common.iam.avro",
+  "fields": [
+    {
+      "name": "email",
+      "type": "string"
+    },
+    {
+      "name": "subject_id",
+      "type": "string"
+    },
+    {
+      "name": "token",
+      "type": "string"
+    },
+    {
+      "name": "additional_field",
+      "type": "string",
+      "default": ""
+    }
+  ]
+}
