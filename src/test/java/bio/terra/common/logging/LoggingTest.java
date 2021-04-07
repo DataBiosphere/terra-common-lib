@@ -11,6 +11,7 @@ import com.jayway.jsonpath.Option;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
+import javax.annotation.Nullable;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -193,6 +194,7 @@ public class LoggingTest {
   }
 
   // Uses the JsonPath library to extract data from a given path within a JSON string.
+  @Nullable
   private <T> T readJson(String line, String path) {
     if (line.isEmpty()) {
       // JsonPath does not allow empty strings to be parsed.
