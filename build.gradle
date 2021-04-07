@@ -10,6 +10,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'org.springframework.boot' version '2.3.1.RELEASE'
     id 'ru.vyarus.quality' version '4.5.0'
+    id 'org.jruyi.thrift' version '0.4.1'
 }
 
 repositories {
@@ -19,6 +20,9 @@ repositories {
     }
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
+    }
+    maven {
+        url 'https://plugins.gradle.org/m2/'
     }
 }
 
@@ -49,6 +53,8 @@ dependencies {
     implementation group: 'org.springframework' , name: 'spring-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    implementation group: 'org.apache.thrift', name: 'libthrift', version: '0.13.0'
+    implementation group: 'gradle.plugin.org.jruyi.gradle', name: 'thrift-gradle-plugin', version: '0.4.1'
 
     runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
 
