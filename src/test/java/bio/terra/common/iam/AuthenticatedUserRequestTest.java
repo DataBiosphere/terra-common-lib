@@ -1,11 +1,17 @@
 package bio.terra.common.iam;
 
+import static bio.terra.common.iam.AuthenticatedUserRequest.getJson;
+import static bio.terra.common.iam.AuthenticatedUserRequest.putJson;
+import static bio.terra.common.iam.AuthenticatedUserRequest.toJson;
+import static bio.terra.common.iam.AuthenticatedUserRequest.toJsonV2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import bio.terra.stairway.FlightMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -118,5 +124,79 @@ public class AuthenticatedUserRequestTest {
             .setSubjectId("Subject")
             .setToken("0123.456-789AbCd")
             .build());
+  }
+
+  @Test
+  public void testJsonInFlightMap() {
+    AuthenticatedUserRequest request =
+        AuthenticatedUserRequest.builder()
+            .setEmail(EMAIL_ADDRESS)
+            .setSubjectId(SUBJECT_ID)
+            .setToken(TOKEN)
+            .build();
+
+    FlightMap inMap = request.putIn(new FlightMap(), "foo");
+    FlightMap outMap = new FlightMap();
+    outMap.fromJson(inMap.toJson());
+
+    AuthenticatedUserRequest retrieved = AuthenticatedUserRequest.getFrom(outMap, "foo");
+    assertEquals(request, retrieved);
+  }
+
+  /**
+   * Demonstrate backwards/forward compatibility with manual JSON serialization.
+   */
+  @Test
+  public void jsonCompatibility() {
+    AuthenticatedUserRequest request =
+        AuthenticatedUserRequest.builder()
+            .setEmail(EMAIL_ADDRESS)
+            .setSubjectId(SUBJECT_ID)
+            .setToken(TOKEN)
+            .build();
+
+    request.toRemove = AuthenticatedUserRequest.DefaultToRemove + 1;
+    request.additionalField = "non-default";
+
+    JsonNode jsonV1 = toJson(request);
+    JsonNode jsonV2 = toJsonV2(request);
+
+    FlightMap inMap = new FlightMap();
+    putJson(inMap, "v1", jsonV1);
+    putJson(inMap, "v2", jsonV2);
+    FlightMap outMap = new FlightMap();
+    outMap.fromJson(inMap.toJson());
+
+    // ["java.util.HashMap",{"v1":"{\"email\":\"test@example.com\",\"subject_id\":\"Subject\",\"token\":\"0123.456-789AbCd\",\"to_remove\":100}","v2":"{\"email\":\"test@example.com\",\"subject_id\":\"Subject\",\"token\":\"0123.456-789AbCd\",\"additional_field\":\"non-default\"}"}]
+    logger.info(inMap.toJson());
+
+    // {v1=
+    //
+    // {"email":"test@example.com","subject_id":"Subject","token":"0123.456-789AbCd","to_remove":100},
+    //  v2=
+    //
+    // {"email":"test@example.com","subject_id":"Subject","token":"0123.456-789AbCd","additional_field":"non-default"}
+    //  }
+    logger.info(outMap.toString());
+
+    AuthenticatedUserRequest reqV1fromV1 =
+        getJson(outMap, "v1", AuthenticatedUserRequest::fromJson);
+    assertEquals(request, reqV1fromV1);
+    assertEquals(request.toRemove, reqV1fromV1.toRemove);
+
+    AuthenticatedUserRequest reqV1fromV2 =
+        getJson(outMap, "v2", AuthenticatedUserRequest::fromJson);
+    assertEquals(request, reqV1fromV2);
+    assertEquals(AuthenticatedUserRequest.DefaultToRemove, reqV1fromV2.toRemove);
+
+    AuthenticatedUserRequest reqV2fromV1 =
+        getJson(outMap, "v1", AuthenticatedUserRequest::fromJson);
+    assertEquals(request, reqV2fromV1);
+    assertEquals(AuthenticatedUserRequest.DefaultAdditionalField, reqV2fromV1.additionalField);
+
+    AuthenticatedUserRequest reqV2fromV2 =
+        getJson(outMap, "v2", AuthenticatedUserRequest::fromJson);
+    assertEquals(request, reqV2fromV2);
+    assertEquals(request.additionalField, reqV2fromV2.additionalField);
   }
 }
