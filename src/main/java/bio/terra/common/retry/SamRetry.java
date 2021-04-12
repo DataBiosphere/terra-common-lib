@@ -111,22 +111,22 @@ public class SamRetry {
    * Given an exception from Sam, either timeout and rethrow the error from Sam or sleep for
    * retryDuration. If the thread times out while sleeping, throw the initial exception.
    *
-   * @param samApiException The error Sam threw
+   * @param previousException The error Sam threw
    * @throws SamApiException
    */
-  private void sleepOrTimeoutBeforeRetrying(SamApiException samApiException)
+  private void sleepOrTimeoutBeforeRetrying(SamApiException previousException)
       throws SamApiException {
     if (operationTimeout.minus(retryDuration).isBefore(now())) {
       logger.error("SamRetry: operation timed out after " + operationTimeout.toString());
       // If we timed out, throw the error from Sam that caused us to need to retry.
-      throw samApiException;
+      throw previousException;
     }
     logger.info("SamRetry: sleeping " + retryDuration.getSeconds() + " seconds");
     try {
       TimeUnit.SECONDS.sleep(retryDuration.getSeconds());
     } catch (InterruptedException ex) {
       logger.error("SamRetry: thread interrupted while sleeping: ", ex);
-      throw samApiException;
+      throw previousException;
     }
     retryDuration = retryDuration.plus(INITIAL_WAIT);
     if (retryDuration.compareTo(MAXIMUM_WAIT) > 0) {
