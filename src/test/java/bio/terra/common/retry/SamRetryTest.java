@@ -2,12 +2,10 @@ package bio.terra.common.retry;
 
 import static org.junit.Assert.assertThrows;
 
-import bio.terra.common.exception.InternalServerErrorException;
 import bio.terra.common.exception.SamApiException;
 import com.google.api.client.http.HttpStatusCodes;
 import java.time.Duration;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
-import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -36,9 +34,7 @@ public class SamRetryTest {
 
   @Test
   public void testRetrySamError() throws Exception {
-    assertThrows(
-        SamApiException.class,
-        () -> SamRetry.retry(() -> testRetryThrows()));
+    assertThrows(SamApiException.class, () -> SamRetry.retry(() -> testRetryThrows()));
   }
 
   @Test

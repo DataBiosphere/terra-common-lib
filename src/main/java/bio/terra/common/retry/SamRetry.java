@@ -5,7 +5,6 @@ import static java.time.Instant.now;
 import bio.terra.common.exception.InternalServerErrorException;
 import bio.terra.common.exception.SamApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -17,8 +16,9 @@ import org.springframework.http.HttpStatus;
 /**
  * SamRetry encapsulates logic needed for retrying Sam API calls. All constants are hard-coded, as
  * Sam failures are generally just short periods of down-time.
- * SamRetry always throws a SamApiException, which extracts the error message from Sam (which can be
- * found in two different places) and stores the HTTP Status from Sam.
+ *
+ * <p>SamRetry always throws a SamApiException, which extracts the error message from Sam (which can
+ * be found in two different places) and stores the HTTP Status from Sam.
  */
 public class SamRetry {
   private static Logger logger = LoggerFactory.getLogger(SamRetry.class);
@@ -108,9 +108,9 @@ public class SamRetry {
   }
 
   /**
-   * Given an exception from Sam, either timeout and rethrow the error from Sam
-   * or sleep for retryDuration. If the thread times out while sleeping, throw the initial
-   * exception.
+   * Given an exception from Sam, either timeout and rethrow the error from Sam or sleep for
+   * retryDuration. If the thread times out while sleeping, throw the initial exception.
+   *
    * @param samApiException The error Sam threw
    * @throws SamApiException
    */
