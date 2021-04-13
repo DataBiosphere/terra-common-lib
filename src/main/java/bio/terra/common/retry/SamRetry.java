@@ -86,8 +86,6 @@ public class SamRetry {
         } else {
           throw ex;
         }
-      } catch (Exception ex) {
-        throw new InternalServerErrorException("Unexpected exception type: " + ex.toString(), ex);
       }
     }
   }

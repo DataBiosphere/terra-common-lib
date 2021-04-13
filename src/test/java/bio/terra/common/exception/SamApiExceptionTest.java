@@ -22,30 +22,26 @@ public class SamApiExceptionTest {
   public void extractsMessageFromSamTopLevel() {
     String message = "Top level message";
     ApiException apiException = new ApiException("Top level message");
-    SamApiException samApiException = SamApiException.createSamApiException(apiException);
+    SamApiException samApiException = SamApiException.create(apiException);
     assertEquals("Error from Sam: " + message, samApiException.getMessage());
   }
 
   @Test
-  public void extractsMessageBuriedInSam() {
+  public void extractsMessageBuriedInSam() throws Exception {
     String message = "Buried message";
     ErrorReport errorReport = new ErrorReport().message(message);
-    try {
-      String errorReportString = objectMapper.writeValueAsString(errorReport);
-      ApiException apiException =
-          new ApiException(
-              "", HttpStatusCodes.STATUS_CODE_BAD_REQUEST, new HashMap<>(), errorReportString);
-      SamApiException samApiException = SamApiException.createSamApiException(apiException);
-      assertEquals("Error from Sam: " + message, samApiException.getMessage());
-    } catch (JsonProcessingException e) {
-      // FAIL
-    }
+    String errorReportString = objectMapper.writeValueAsString(errorReport);
+    ApiException apiException =
+        new ApiException(
+            "", HttpStatusCodes.STATUS_CODE_BAD_REQUEST, new HashMap<>(), errorReportString);
+    SamApiException samApiException = SamApiException.create(apiException);
+    assertEquals("Error from Sam: " + message, samApiException.getMessage());
   }
 
   @Test
   public void toErrorReportExceptionBadRequest() {
     ErrorReportException errorReportException =
-        SamApiException.createSamApiException(
+        SamApiException.create(
                 new ApiException(HttpStatusCodes.STATUS_CODE_BAD_REQUEST, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof BadRequestException);
@@ -54,7 +50,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionUnauthorized() {
     ErrorReportException errorReportException =
-        SamApiException.createSamApiException(
+        SamApiException.create(
                 new ApiException(HttpStatusCodes.STATUS_CODE_UNAUTHORIZED, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof UnauthorizedException);
@@ -63,7 +59,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionForbidden() {
     ErrorReportException errorReportException =
-        SamApiException.createSamApiException(
+        SamApiException.create(
                 new ApiException(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof ForbiddenException);
@@ -72,7 +68,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionNotFound() {
     ErrorReportException errorReportException =
-        SamApiException.createSamApiException(
+        SamApiException.create(
                 new ApiException(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof NotFoundException);
@@ -81,7 +77,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionConflict() {
     ErrorReportException errorReportException =
-        SamApiException.createSamApiException(
+        SamApiException.create(
                 new ApiException(HttpStatusCodes.STATUS_CODE_CONFLICT, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof ConflictException);
@@ -90,7 +86,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionServerError() {
     ErrorReportException errorReportException =
-        SamApiException.createSamApiException(
+        SamApiException.create(
                 new ApiException(HttpStatusCodes.STATUS_CODE_SERVER_ERROR, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof InternalServerErrorException);
@@ -99,7 +95,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionNoStatusCode() {
     ErrorReportException errorReportException =
-        SamApiException.createSamApiException(new ApiException("test")).toErrorReportException();
+        SamApiException.create(new ApiException("test")).toErrorReportException();
     assertTrue(errorReportException instanceof InternalServerErrorException);
   }
 }

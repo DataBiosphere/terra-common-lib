@@ -21,7 +21,7 @@ public class SamApiException extends Exception {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static Logger logger = LoggerFactory.getLogger(SamApiException.class);
 
-  public static SamApiException createSamApiException(ApiException apiException) {
+  public static SamApiException create(ApiException apiException) {
     // Sometimes the sam message is buried one level down inside of the error report object.
     // If we find an empty message then we try to deserialize the error report and use that message.
     String message = apiException.getMessage();
