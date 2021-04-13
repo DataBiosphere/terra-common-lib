@@ -3,7 +3,6 @@ package bio.terra.common.retry;
 import static java.time.Instant.now;
 
 import bio.terra.common.exception.InternalServerErrorException;
-import bio.terra.common.exception.SamApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.Instant;
@@ -17,8 +16,7 @@ import org.springframework.http.HttpStatus;
  * SamRetry encapsulates logic needed for retrying Sam API calls. All constants are hard-coded, as
  * Sam failures are generally just short periods of down-time.
  *
- * <p>SamRetry always throws a SamApiException, which extracts the error message from Sam (which can
- * be found in two different places) and stores the HTTP Status from Sam.
+ * <p>SamRetry throws either the underlying ApiException from Sam or an InterruptedException.
  */
 public class SamRetry {
   private static Logger logger = LoggerFactory.getLogger(SamRetry.class);
@@ -55,39 +53,38 @@ public class SamRetry {
     R apply() throws ApiException, InterruptedException;
   }
 
-  public static <T> T retry(SamFunction<T> function) throws SamApiException {
+  public static <T> T retry(SamFunction<T> function) throws ApiException, InterruptedException {
     SamRetry samRetry = new SamRetry();
     return samRetry.perform(function);
   }
 
-  // Version of the retry function for testing so that we can override timeout
-  protected static <T> T retry(SamFunction<T> function, Duration timeout) throws SamApiException {
+  public static <T> T retry(SamFunction<T> function, Duration timeout)
+      throws ApiException, InterruptedException {
     SamRetry samRetry = new SamRetry(timeout);
     return samRetry.perform(function);
   }
 
-  public static void retry(SamVoidFunction function) throws SamApiException {
+  public static void retry(SamVoidFunction function) throws ApiException, InterruptedException {
     SamRetry samRetry = new SamRetry();
     samRetry.performVoid(function);
   }
 
-  // Version of the retry function for testing so that we can override timeout
-  protected static void retry(SamVoidFunction function, Duration timeout) throws SamApiException {
+  public static void retry(SamVoidFunction function, Duration timeout)
+      throws ApiException, InterruptedException {
     SamRetry samRetry = new SamRetry(timeout);
     samRetry.performVoid(function);
   }
 
-  private <T> T perform(SamFunction<T> function) throws SamApiException {
+  private <T> T perform(SamFunction<T> function) throws ApiException, InterruptedException {
     while (true) {
       try {
         return function.apply();
       } catch (ApiException ex) {
-        SamApiException samApiException = SamApiException.createSamApiException(ex);
-        if (isRetryable(samApiException)) {
+        if (isRetryable(ex)) {
           logger.info("SamRetry: caught retry-able exception: ", ex);
-          sleepOrTimeoutBeforeRetrying(samApiException);
+          sleepOrTimeoutBeforeRetrying(ex);
         } else {
-          throw samApiException;
+          throw ex;
         }
       } catch (Exception ex) {
         throw new InternalServerErrorException("Unexpected exception type: " + ex.toString(), ex);
@@ -95,11 +92,11 @@ public class SamRetry {
     }
   }
 
-  private boolean isRetryable(SamApiException samApiException) {
-    return (samApiException.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR);
+  private boolean isRetryable(ApiException apiException) {
+    return (apiException.getCode() == HttpStatus.INTERNAL_SERVER_ERROR.value());
   }
 
-  private void performVoid(SamVoidFunction function) throws SamApiException {
+  private void performVoid(SamVoidFunction function) throws ApiException, InterruptedException {
     perform(
         () -> {
           function.apply();
@@ -112,22 +109,17 @@ public class SamRetry {
    * retryDuration. If the thread times out while sleeping, throw the initial exception.
    *
    * @param previousException The error Sam threw
-   * @throws SamApiException
+   * @throws ApiException, InterruptedException
    */
-  private void sleepOrTimeoutBeforeRetrying(SamApiException previousException)
-      throws SamApiException {
+  private void sleepOrTimeoutBeforeRetrying(ApiException previousException)
+      throws ApiException, InterruptedException {
     if (operationTimeout.minus(retryDuration).isBefore(now())) {
       logger.error("SamRetry: operation timed out after " + operationTimeout.toString());
       // If we timed out, throw the error from Sam that caused us to need to retry.
       throw previousException;
     }
     logger.info("SamRetry: sleeping " + retryDuration.getSeconds() + " seconds");
-    try {
-      TimeUnit.SECONDS.sleep(retryDuration.getSeconds());
-    } catch (InterruptedException ex) {
-      logger.error("SamRetry: thread interrupted while sleeping: ", ex);
-      throw previousException;
-    }
+    TimeUnit.SECONDS.sleep(retryDuration.getSeconds());
     retryDuration = retryDuration.plus(INITIAL_WAIT);
     if (retryDuration.compareTo(MAXIMUM_WAIT) > 0) {
       retryDuration = MAXIMUM_WAIT;

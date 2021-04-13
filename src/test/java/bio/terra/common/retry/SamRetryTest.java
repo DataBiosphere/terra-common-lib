@@ -2,7 +2,6 @@ package bio.terra.common.retry;
 
 import static org.junit.Assert.assertThrows;
 
-import bio.terra.common.exception.SamApiException;
 import com.google.api.client.http.HttpStatusCodes;
 import java.time.Duration;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
@@ -23,7 +22,7 @@ public class SamRetryTest {
   @Test
   public void testRetryTimeout() throws Exception {
     assertThrows(
-        SamApiException.class,
+        ApiException.class,
         () -> SamRetry.retry(() -> testRetryFinishInner(100), Duration.ofSeconds(10)));
   }
 
@@ -34,7 +33,7 @@ public class SamRetryTest {
 
   @Test
   public void testRetrySamError() throws Exception {
-    assertThrows(SamApiException.class, () -> SamRetry.retry(() -> testRetryThrows()));
+    assertThrows(ApiException.class, () -> SamRetry.retry(() -> testRetryThrows()));
   }
 
   @Test
@@ -42,7 +41,7 @@ public class SamRetryTest {
     assertThrows(
         // The SamRetry class will catch timeouts and throw a SamApiException that wraps the initial
         // failure from Sam that caused us to need to retry.
-        SamApiException.class,
+        ApiException.class,
         () -> SamRetry.retry(() -> testRetryVoidFinishInner(100), Duration.ofSeconds(10)));
   }
 
