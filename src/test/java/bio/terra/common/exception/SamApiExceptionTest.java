@@ -40,8 +40,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionBadRequest() {
     ErrorReportException errorReportException =
-        SamApiException.create(
-                new ApiException(HttpStatusCodes.STATUS_CODE_BAD_REQUEST, "test"))
+        SamApiException.create(new ApiException(HttpStatusCodes.STATUS_CODE_BAD_REQUEST, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof BadRequestException);
   }
@@ -49,8 +48,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionUnauthorized() {
     ErrorReportException errorReportException =
-        SamApiException.create(
-                new ApiException(HttpStatusCodes.STATUS_CODE_UNAUTHORIZED, "test"))
+        SamApiException.create(new ApiException(HttpStatusCodes.STATUS_CODE_UNAUTHORIZED, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof UnauthorizedException);
   }
@@ -58,8 +56,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionForbidden() {
     ErrorReportException errorReportException =
-        SamApiException.create(
-                new ApiException(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test"))
+        SamApiException.create(new ApiException(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof ForbiddenException);
   }
@@ -67,8 +64,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionNotFound() {
     ErrorReportException errorReportException =
-        SamApiException.create(
-                new ApiException(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "test"))
+        SamApiException.create(new ApiException(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof NotFoundException);
   }
@@ -76,8 +72,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionConflict() {
     ErrorReportException errorReportException =
-        SamApiException.create(
-                new ApiException(HttpStatusCodes.STATUS_CODE_CONFLICT, "test"))
+        SamApiException.create(new ApiException(HttpStatusCodes.STATUS_CODE_CONFLICT, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof ConflictException);
   }
@@ -85,8 +80,7 @@ public class SamApiExceptionTest {
   @Test
   public void toErrorReportExceptionServerError() {
     ErrorReportException errorReportException =
-        SamApiException.create(
-                new ApiException(HttpStatusCodes.STATUS_CODE_SERVER_ERROR, "test"))
+        SamApiException.create(new ApiException(HttpStatusCodes.STATUS_CODE_SERVER_ERROR, "test"))
             .toErrorReportException();
     assertTrue(errorReportException instanceof InternalServerErrorException);
   }

@@ -2,7 +2,6 @@ package bio.terra.common.retry;
 
 import static java.time.Instant.now;
 
-import bio.terra.common.exception.InternalServerErrorException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.Instant;
