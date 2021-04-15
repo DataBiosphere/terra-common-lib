@@ -10,6 +10,12 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'org.springframework.boot' version '2.3.1.RELEASE'
     id 'ru.vyarus.quality' version '4.5.0'
+
+    // Important: Plugin relies on ext parameters that cannot be set
+    //            at the time that plugins are loaded, so defer
+    //            applying this now by appending "apply false".
+
+    id 'com.cinnober.gradle.semver-git' version '3.0.0' apply false
 }
 
 repositories {
@@ -23,7 +29,6 @@ repositories {
 }
 
 group 'bio.terra'
-version '0.0.39-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
@@ -91,6 +96,22 @@ if (hasProperty('buildScan')) {
         termsOfServiceAgree = 'yes'
     }
 }
+
+// TODO: Move to a versioning.gradle file
+ext {
+    nextVersion = 'patch'
+    gitDescribeArgs = '--tags --match *[0-9].[0-9]*.[0-9]*'
+    dirty='-SNAPSHOT'
+}
+apply plugin: 'com.cinnober.gradle.semver-git'
+
+// TODO: Allow a local version config file to specify major/minor
+//       and override project.version as set by the semver-git
+//       plugin (implicitly at patch level 0).  Add a bumpVersion
+//       task (with --major/--minor args) to automate updating
+//       this file.
+
+// TODO: End versioning.gradle content
 
 apply from: "$rootDir/gradle/dependency-locking.gradle"
 apply from: "$rootDir/gradle/javadoc.gradle"
