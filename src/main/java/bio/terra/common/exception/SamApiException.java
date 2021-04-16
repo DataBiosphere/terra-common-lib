@@ -22,7 +22,7 @@ public class SamApiException extends Exception {
   private static Logger logger = LoggerFactory.getLogger(SamApiException.class);
 
   public static SamApiException create(ApiException apiException) {
-    return SamApiException.create("", apiException);
+    return SamApiException.create(null, apiException);
   }
 
   public static SamApiException create(String messagePrefix, ApiException apiException) {
@@ -38,7 +38,7 @@ public class SamApiException extends Exception {
         logger.debug("Unable to deserialize sam exception response body");
       }
     }
-    if (!messagePrefix.isEmpty()) {
+    if (!StringUtils.isEmpty(messagePrefix)) {
       return new SamApiException(messagePrefix + ": " + message, apiException);
     } else {
       return new SamApiException(message, apiException);
