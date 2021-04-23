@@ -1,23 +1,26 @@
 package bio.terra.common.stairway;
 
-import static com.google.cloud.ServiceOptions.getDefaultProjectId;
-
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
+import bio.terra.stairway.ExceptionSerializer;
 import bio.terra.stairway.Stairway;
 import bio.terra.stairway.StairwayHook;
 import bio.terra.stairway.exception.StairwayException;
 import bio.terra.stairway.exception.StairwayExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
+import static com.google.cloud.ServiceOptions.getDefaultProjectId;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
 @Component
@@ -26,17 +29,9 @@ public class StairwayComponent {
 
   private final KubeService kubeService;
   private final KubeProperties kubeProperties;
-  private Stairway stairway;
   private final StairwayProperties stairwayProperties;
-
-  public enum Status {
-    INITIALIZING,
-    OK,
-    ERROR,
-    SHUTDOWN,
-  }
-
   private final AtomicReference<Status> status = new AtomicReference<>(Status.INITIALIZING);
+  private Stairway stairway;
 
   @Autowired
   public StairwayComponent(
@@ -52,6 +47,11 @@ public class StairwayComponent {
         getClusterName());
   }
 
+  /** convenience for getting a parameter builder for initialize */
+  public InitializerBuilder newInitializeBuilder() {
+    return new InitializerBuilder();
+  }
+
   /**
    * Build and initialize the Stairway object
    *
@@ -60,17 +60,28 @@ public class StairwayComponent {
    * @param hooks list of Stairway hooks to install when building Stairway
    */
   public void initialize(DataSource dataSource, Object context, List<StairwayHook> hooks) {
+    initialize(newInitializeBuilder().dataSource(dataSource).context(context).hooks(hooks));
+  }
+
+  /**
+   * Build and initialize the Stairway object - extensible version
+   *
+   * @param initializeBuilder collection of Stairway initialization parameters
+   */
+  public void initialize(InitializerBuilder initializeBuilder) {
     logger.info("Initializing Stairway...");
     final Stairway.Builder builder =
         Stairway.newBuilder()
             .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
-            .applicationContext(context) // not necessarily a Spring ApplicationContext
+            .applicationContext(
+                initializeBuilder.getContext()) // not necessarily a Spring ApplicationContext
             .keepFlightLog(true)
             .stairwayName(kubeProperties.getPodName())
             .stairwayClusterName(getClusterName())
             .workQueueProjectId(getDefaultProjectId())
-            .enableWorkQueue(kubeProperties.isInKubernetes());
-    hooks.forEach(builder::stairwayHook);
+            .enableWorkQueue(kubeProperties.isInKubernetes())
+            .exceptionSerializer(initializeBuilder.getExceptionSerializer());
+    initializeBuilder.getHooks().forEach(builder::stairwayHook);
     try {
       this.stairway = builder.build();
     } catch (StairwayExecutionException e) {
@@ -80,7 +91,7 @@ public class StairwayComponent {
     try {
       List<String> recordedStairways =
           stairway.initialize(
-              dataSource,
+              initializeBuilder.getDataSource(),
               stairwayProperties.isForceCleanStart(),
               stairwayProperties.isMigrateUpgrade());
 
@@ -141,5 +152,64 @@ public class StairwayComponent {
   private String getClusterName() {
     return String.format(
         "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
+  }
+
+  public enum Status {
+    INITIALIZING,
+    OK,
+    ERROR,
+    SHUTDOWN,
+  }
+
+  /**
+   * Builder for providing inputs to the initialize method. This allows us to add parameters without
+   * adding new methods to the Stairway component.
+   */
+  public static class InitializerBuilder {
+    private DataSource dataSource;
+    private Object context;
+    private List<StairwayHook> hooks = new ArrayList<>();
+    private ExceptionSerializer exceptionSerializer;
+
+    public DataSource getDataSource() {
+      return dataSource;
+    }
+
+    public InitializerBuilder dataSource(DataSource dataSource) {
+      this.dataSource = dataSource;
+      return this;
+    }
+
+    public Object getContext() {
+      return context;
+    }
+
+    public InitializerBuilder context(Object context) {
+      this.context = context;
+      return this;
+    }
+
+    public List<StairwayHook> getHooks() {
+      return hooks;
+    }
+
+    public InitializerBuilder hooks(List<StairwayHook> hooks) {
+      this.hooks = hooks;
+      return this;
+    }
+
+    public ExceptionSerializer getExceptionSerializer() {
+      return exceptionSerializer;
+    }
+
+    public InitializerBuilder exceptionSerializer(ExceptionSerializer exceptionSerializer) {
+      this.exceptionSerializer = exceptionSerializer;
+      return this;
+    }
+
+    public InitializerBuilder addHook(StairwayHook hook) {
+      hooks.add(hook);
+      return this;
+    }
   }
 }
