@@ -1,4 +1,4 @@
-package bio.terra.common.retry;
+package bio.terra.common.sam;
 
 import static java.time.Instant.now;
 
