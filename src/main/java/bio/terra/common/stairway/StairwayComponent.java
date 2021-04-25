@@ -4,10 +4,12 @@ import static com.google.cloud.ServiceOptions.getDefaultProjectId;
 
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
+import bio.terra.stairway.ExceptionSerializer;
 import bio.terra.stairway.Stairway;
 import bio.terra.stairway.StairwayHook;
 import bio.terra.stairway.exception.StairwayException;
 import bio.terra.stairway.exception.StairwayExecutionException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -26,17 +28,9 @@ public class StairwayComponent {
 
   private final KubeService kubeService;
   private final KubeProperties kubeProperties;
-  private Stairway stairway;
   private final StairwayProperties stairwayProperties;
-
-  public enum Status {
-    INITIALIZING,
-    OK,
-    ERROR,
-    SHUTDOWN,
-  }
-
   private final AtomicReference<Status> status = new AtomicReference<>(Status.INITIALIZING);
+  private Stairway stairway;
 
   @Autowired
   public StairwayComponent(
@@ -52,25 +46,42 @@ public class StairwayComponent {
         getClusterName());
   }
 
+  /** convenience for getting a builder for initialize input */
+  public StairwayOptionsBuilder newStairwayOptionsBuilder() {
+    return new StairwayOptionsBuilder();
+  }
+
   /**
-   * Build and initialize the Stairway object
+   * Build and initialize the Stairway object Deprecated. Use the
    *
    * @param dataSource data source for the Stairway DB
    * @param context application context or other service-specific contextual object
    * @param hooks list of Stairway hooks to install when building Stairway
    */
+  @Deprecated
   public void initialize(DataSource dataSource, Object context, List<StairwayHook> hooks) {
+    initialize(newStairwayOptionsBuilder().dataSource(dataSource).context(context).hooks(hooks));
+  }
+
+  /**
+   * Build and initialize the Stairway object - extensible version
+   *
+   * @param initializeBuilder collection of Stairway initialization parameters
+   */
+  public void initialize(StairwayOptionsBuilder initializeBuilder) {
     logger.info("Initializing Stairway...");
     final Stairway.Builder builder =
         Stairway.newBuilder()
             .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
-            .applicationContext(context) // not necessarily a Spring ApplicationContext
+            .applicationContext(
+                initializeBuilder.getContext()) // not necessarily a Spring ApplicationContext
             .keepFlightLog(true)
             .stairwayName(kubeProperties.getPodName())
             .stairwayClusterName(getClusterName())
             .workQueueProjectId(getDefaultProjectId())
-            .enableWorkQueue(kubeProperties.isInKubernetes());
-    hooks.forEach(builder::stairwayHook);
+            .enableWorkQueue(kubeProperties.isInKubernetes())
+            .exceptionSerializer(initializeBuilder.getExceptionSerializer());
+    initializeBuilder.getHooks().forEach(builder::stairwayHook);
     try {
       this.stairway = builder.build();
     } catch (StairwayExecutionException e) {
@@ -80,7 +91,7 @@ public class StairwayComponent {
     try {
       List<String> recordedStairways =
           stairway.initialize(
-              dataSource,
+              initializeBuilder.getDataSource(),
               stairwayProperties.isForceCleanStart(),
               stairwayProperties.isMigrateUpgrade());
 
@@ -141,5 +152,65 @@ public class StairwayComponent {
   private String getClusterName() {
     return String.format(
         "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
+  }
+
+  public enum Status {
+    INITIALIZING,
+    OK,
+    ERROR,
+    SHUTDOWN,
+  }
+
+  /**
+   * Builder to supply Stairway settings to the {@link #initialize(StairwayOptionsBuilder)} method.
+   * Using a builder model allows us to add parameters without adding new methods to the Stairway
+   * component.
+   */
+  public static class StairwayOptionsBuilder {
+    private DataSource dataSource;
+    private Object context;
+    private List<StairwayHook> hooks = new ArrayList<>();
+    private ExceptionSerializer exceptionSerializer;
+
+    public DataSource getDataSource() {
+      return dataSource;
+    }
+
+    public StairwayOptionsBuilder dataSource(DataSource dataSource) {
+      this.dataSource = dataSource;
+      return this;
+    }
+
+    public Object getContext() {
+      return context;
+    }
+
+    public StairwayOptionsBuilder context(Object context) {
+      this.context = context;
+      return this;
+    }
+
+    public List<StairwayHook> getHooks() {
+      return hooks;
+    }
+
+    public StairwayOptionsBuilder hooks(List<StairwayHook> hooks) {
+      this.hooks = hooks;
+      return this;
+    }
+
+    public ExceptionSerializer getExceptionSerializer() {
+      return exceptionSerializer;
+    }
+
+    public StairwayOptionsBuilder exceptionSerializer(ExceptionSerializer exceptionSerializer) {
+      this.exceptionSerializer = exceptionSerializer;
+      return this;
+    }
+
+    public StairwayOptionsBuilder addHook(StairwayHook hook) {
+      hooks.add(hook);
+      return this;
+    }
   }
 }
