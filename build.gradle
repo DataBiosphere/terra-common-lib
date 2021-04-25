@@ -23,7 +23,7 @@ repositories {
 }
 
 group 'bio.terra'
-version '0.0.41-SNAPSHOT'
+version '0.0.42-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
