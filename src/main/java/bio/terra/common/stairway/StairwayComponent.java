@@ -46,20 +46,21 @@ public class StairwayComponent {
         getClusterName());
   }
 
-  /** convenience for getting a parameter builder for initialize */
-  public InitializerBuilder newInitializeBuilder() {
-    return new InitializerBuilder();
+  /** convenience for getting a builder for initialize input */
+  public StairwayOptionsBuilder newStairwayOptionsBuilder() {
+    return new StairwayOptionsBuilder();
   }
 
   /**
-   * Build and initialize the Stairway object
+   * Build and initialize the Stairway object Deprecated. Use the
    *
    * @param dataSource data source for the Stairway DB
    * @param context application context or other service-specific contextual object
    * @param hooks list of Stairway hooks to install when building Stairway
    */
+  @Deprecated
   public void initialize(DataSource dataSource, Object context, List<StairwayHook> hooks) {
-    initialize(newInitializeBuilder().dataSource(dataSource).context(context).hooks(hooks));
+    initialize(newStairwayOptionsBuilder().dataSource(dataSource).context(context).hooks(hooks));
   }
 
   /**
@@ -67,7 +68,7 @@ public class StairwayComponent {
    *
    * @param initializeBuilder collection of Stairway initialization parameters
    */
-  public void initialize(InitializerBuilder initializeBuilder) {
+  public void initialize(StairwayOptionsBuilder initializeBuilder) {
     logger.info("Initializing Stairway...");
     final Stairway.Builder builder =
         Stairway.newBuilder()
@@ -161,10 +162,11 @@ public class StairwayComponent {
   }
 
   /**
-   * Builder for providing inputs to the initialize method. This allows us to add parameters without
-   * adding new methods to the Stairway component.
+   * Builder to supply Stairway settings to the {@link #initialize(StairwayOptionsBuilder)} method.
+   * Using a builder model allows us to add parameters without adding new methods to the Stairway
+   * component.
    */
-  public static class InitializerBuilder {
+  public static class StairwayOptionsBuilder {
     private DataSource dataSource;
     private Object context;
     private List<StairwayHook> hooks = new ArrayList<>();
@@ -174,7 +176,7 @@ public class StairwayComponent {
       return dataSource;
     }
 
-    public InitializerBuilder dataSource(DataSource dataSource) {
+    public StairwayOptionsBuilder dataSource(DataSource dataSource) {
       this.dataSource = dataSource;
       return this;
     }
@@ -183,7 +185,7 @@ public class StairwayComponent {
       return context;
     }
 
-    public InitializerBuilder context(Object context) {
+    public StairwayOptionsBuilder context(Object context) {
       this.context = context;
       return this;
     }
@@ -192,7 +194,7 @@ public class StairwayComponent {
       return hooks;
     }
 
-    public InitializerBuilder hooks(List<StairwayHook> hooks) {
+    public StairwayOptionsBuilder hooks(List<StairwayHook> hooks) {
       this.hooks = hooks;
       return this;
     }
@@ -201,12 +203,12 @@ public class StairwayComponent {
       return exceptionSerializer;
     }
 
-    public InitializerBuilder exceptionSerializer(ExceptionSerializer exceptionSerializer) {
+    public StairwayOptionsBuilder exceptionSerializer(ExceptionSerializer exceptionSerializer) {
       this.exceptionSerializer = exceptionSerializer;
       return this;
     }
 
-    public InitializerBuilder addHook(StairwayHook hook) {
+    public StairwayOptionsBuilder addHook(StairwayHook hook) {
       hooks.add(hook);
       return this;
     }
