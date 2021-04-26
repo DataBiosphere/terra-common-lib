@@ -1,4 +1,4 @@
-package bio.terra.common.retry;
+package bio.terra.common.sam;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
