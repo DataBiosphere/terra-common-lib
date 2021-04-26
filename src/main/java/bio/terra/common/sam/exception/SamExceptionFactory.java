@@ -59,4 +59,9 @@ public class SamExceptionFactory {
         return new SamInternalServerErrorException(message, apiException);
     }
   }
+
+  public static ErrorReportException create(
+      String messagePrefix, InterruptedException interruptedException) {
+    return new SamInterruptedException(messagePrefix, interruptedException);
+  }
 }
