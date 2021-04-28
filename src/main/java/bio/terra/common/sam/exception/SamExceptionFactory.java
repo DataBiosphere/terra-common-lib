@@ -60,6 +60,11 @@ public class SamExceptionFactory {
     }
   }
 
+  /**
+   * A SamInterruptedException is thrown when an Interrupted Exception is raised while Sam is
+   * retrying. This should be used in contexts outside of Stairway. In Stairway, the
+   * InterruptedException itself should be raised.
+   */
   public static ErrorReportException create(
       String messagePrefix, InterruptedException interruptedException) {
     return new SamInterruptedException(messagePrefix, interruptedException);
