@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -51,4 +52,10 @@ public class RequestIdFilter implements Filter {
 
     MDC.remove(REQUEST_ID_MDC_KEY);
   }
+
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {}
+
+  @Override
+  public void destroy() {}
 }

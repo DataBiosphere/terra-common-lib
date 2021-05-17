@@ -14,6 +14,7 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -86,6 +87,12 @@ public class LoggingTest {
       // entire RequestLoggingFilter lifetime. By not closing the scope here, we can ensure that the
       // tracing span is available as context when an inbound request ultimately gets logged.
     }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {}
+
+    @Override
+    public void destroy() {}
   }
 
   @TestConfiguration
