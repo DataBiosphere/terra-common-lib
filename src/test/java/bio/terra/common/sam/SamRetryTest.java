@@ -1,7 +1,7 @@
 package bio.terra.common.sam;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.api.client.http.HttpStatusCodes;
 import java.time.Duration;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 @Tag("unit")
 public class SamRetryTest {
 
-  private static Logger logger = LoggerFactory.getLogger(SamRetryTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(SamRetryTest.class);
   private int count;
 
   @BeforeEach
@@ -39,7 +39,7 @@ public class SamRetryTest {
 
   @Test
   public void testRetrySamError() throws Exception {
-    assertThrows(ApiException.class, () -> SamRetry.retry(() -> testRetryThrows()));
+    assertThrows(ApiException.class, () -> SamRetry.retry(this::testRetryThrows));
   }
 
   @Test

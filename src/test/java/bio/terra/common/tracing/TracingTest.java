@@ -9,19 +9,16 @@ import io.opencensus.trace.export.SpanData;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
-import org.junit.Test;
 import org.junit.jupiter.api.Tag;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /** Tests the functionality of the common tracing package. */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = TracingTestApplication.class)
 // Use a properties file to set tracing properties.
 @ActiveProfiles("tracing-test")

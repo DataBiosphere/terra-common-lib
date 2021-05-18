@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -98,6 +99,12 @@ class RequestLoggingFilter implements Filter {
 
     debugLogResponse(response);
   }
+
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {}
+
+  @Override
+  public void destroy() {}
 
   /**
    * Logs various details about the inbound request at DEBUG severity.
