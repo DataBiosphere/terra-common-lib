@@ -42,7 +42,7 @@ dependencies {
     }
     implementation platform('com.google.cloud:libraries-bom:20.2.0')
 
-    implementation group: 'bio.terra', name: 'stairway', version: '0.0.51-SNAPSHOT'
+    implementation group: 'bio.terra', name: 'stairway', version: '0.0.52-SNAPSHOT'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
 
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
