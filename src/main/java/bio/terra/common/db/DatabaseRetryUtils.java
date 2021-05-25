@@ -21,7 +21,7 @@ public final class DatabaseRetryUtils {
    *
    * @param execute database operation to execute
    * @param retrySleep fixed retry sleep interval
-   * @param maxNumAttempts maximum retries
+   * @param maxNumAttempts maximum times this operation will be run
    * @param <T> database operation class
    * @return database operation class
    * @throws InterruptedException on thread interruption
