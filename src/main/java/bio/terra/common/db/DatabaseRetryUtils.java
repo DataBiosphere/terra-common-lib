@@ -1,5 +1,6 @@
 package bio.terra.common.db;
 
+import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -20,20 +21,22 @@ public final class DatabaseRetryUtils {
    *
    * @param execute database operation to execute
    * @param retrySleep fixed retry sleep interval
-   * @param maxNumAttempts maximum retries
+   * @param maxNumAttempts maximum times this operation will be run
    * @param <T> database operation class
    * @return database operation class
    * @throws InterruptedException on thread interruption
+   * @throws DataAccessException throws the last DB operation error if maxNumAttempts is exceeded.
    */
   public static <T> T executeAndRetry(
       DatabaseOperation<T> execute, Duration retrySleep, int maxNumAttempts)
       throws InterruptedException {
+    Preconditions.checkArgument(maxNumAttempts > 0, "maxNumAttempts must be at least 1");
     int numAttempts = 1;
     while (numAttempts <= maxNumAttempts) {
       try {
         return execute.execute();
       } catch (DataAccessException e) {
-        if (!shouldRetryQuery(e)) {
+        if (!shouldRetryQuery(e) || (numAttempts == maxNumAttempts)) {
           throw e;
         }
         logger.info("Caught exception, retrying DB operation. Attempts so far: {}", numAttempts, e);
@@ -41,7 +44,8 @@ public final class DatabaseRetryUtils {
       ++numAttempts;
       TimeUnit.MILLISECONDS.sleep(retrySleep.toMillis());
     }
-    throw new InterruptedException("Exceeds maximum number of retries.");
+    throw new IllegalStateException(
+        "Exceeded maximum number of retries without throwing an exception. This should never happen.");
   }
 
   /**

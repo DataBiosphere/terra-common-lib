@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.dao.CannotSerializeTransactionException;
+import org.springframework.dao.DataAccessException;
 
 /** Test for {@link DatabaseRetryUtils} */
 @Tag("unit")
@@ -44,13 +45,13 @@ public class DatabaseRetryUtilsTest {
   @Test
   public void exceedMaxRetry() throws Exception {
     when(mockDatabaseOperation.execute()).thenThrow(RETRY_EXCEPTION);
-    InterruptedException finalException =
+    DataAccessException finalException =
         assertThrows(
-            InterruptedException.class,
+            DataAccessException.class,
             () ->
                 DatabaseRetryUtils.executeAndRetry(mockDatabaseOperation, Duration.ofMillis(1), 3));
     verify(mockDatabaseOperation, times(3)).execute();
-    assertEquals("Exceeds maximum number of retries.", finalException.getMessage());
+    assertEquals(RETRY_EXCEPTION, finalException);
   }
 
   @Test
@@ -64,5 +65,13 @@ public class DatabaseRetryUtilsTest {
 
     verify(mockDatabaseOperation, times(1)).execute();
     assertEquals("non-retryable", finalException.getMessage());
+  }
+
+  @Test
+  public void zeroMaxAttemptsInvalid() throws Exception {
+    when(mockDatabaseOperation.execute()).thenReturn(true);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> DatabaseRetryUtils.executeAndRetry(mockDatabaseOperation, Duration.ofMillis(1), 0));
   }
 }
