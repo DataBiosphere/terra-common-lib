@@ -4,7 +4,7 @@ import static org.springframework.http.HttpHeaders.REFERER;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.logging.v2.model.HttpRequest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -216,7 +216,7 @@ class RequestLoggingFilter implements Filter {
             .setRequestUrl(path)
             .setStatus(response.getStatus())
             .setUserAgent(request.getHeader(USER_AGENT));
-    httpRequest.setFactory(new JacksonFactory());
+    httpRequest.setFactory(new GsonFactory());
     return httpRequest;
   }
 }

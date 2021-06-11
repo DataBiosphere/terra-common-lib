@@ -63,7 +63,7 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
   @Bean
   public FilterRegistrationBean<OcHttpServletFilter> tracingServletFilter() {
     FilterRegistrationBean<OcHttpServletFilter> registration =
-        new FilterRegistrationBean(new OcHttpServletFilter());
+        new FilterRegistrationBean<>(new OcHttpServletFilter());
     registration.setUrlPatterns(tracingProperties.getUrlPatterns());
     return registration;
   }

@@ -142,6 +142,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
         try {
           if (arg instanceof Map) {
             // Handle arbitrary Map by splatting each key-value pair into the main output map.
+            @SuppressWarnings("unchecked")
             Map<String, Object> jsonMap = (Map<String, Object>) arg;
             outputMap.putAll(jsonMap);
           } else if (arg instanceof JsonNode) {
