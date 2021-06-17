@@ -73,9 +73,10 @@ public class StairwayComponent {
     final Stairway.Builder builder =
         Stairway.newBuilder()
             .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
+            .retentionCheckInterval(stairwayProperties.getRetentionCheckInterval())
+            .completedFlightRetention(stairwayProperties.getCompletedFlightRetention())
             .applicationContext(
                 initializeBuilder.getContext()) // not necessarily a Spring ApplicationContext
-            .keepFlightLog(true)
             .stairwayName(kubeProperties.getPodName())
             .stairwayClusterName(getClusterName())
             .workQueueProjectId(getDefaultProjectId())

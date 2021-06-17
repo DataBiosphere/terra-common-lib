@@ -12,8 +12,8 @@ public class StairwayProperties {
   private Duration quietDownTimeout;
   private Duration terminateTimeout;
   private boolean tracingEnabled;
-
-  // cluster properties
+  private Duration retentionCheckInterval;
+  private Duration completedFlightRetention;
   private String clusterNameSuffix;
 
   public boolean isForceCleanStart() {
@@ -70,5 +70,21 @@ public class StairwayProperties {
 
   public void setClusterNameSuffix(String clusterNameSuffix) {
     this.clusterNameSuffix = clusterNameSuffix;
+  }
+
+  public Duration getRetentionCheckInterval() {
+    return retentionCheckInterval;
+  }
+
+  public void setRetentionCheckInterval(Duration retentionCheckInterval) {
+    this.retentionCheckInterval = retentionCheckInterval;
+  }
+
+  public Duration getCompletedFlightRetention() {
+    return completedFlightRetention;
+  }
+
+  public void setCompletedFlightRetention(Duration completedFlightRetention) {
+    this.completedFlightRetention = completedFlightRetention;
   }
 }

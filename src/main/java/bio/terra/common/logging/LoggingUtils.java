@@ -81,13 +81,14 @@ public final class LoggingUtils {
    * default Spring logging config (see resources/logback.xml) will be used.
    */
   // System.out.println is OK since this is a message relating to the logging system initialization.
-  @SuppressWarnings("PMD.SystemPrintln")
+  // TODO (PF-709): fix rawtypes and unchecked issues
+  @SuppressWarnings({"PMD.SystemPrintln", "rawtypes", "unchecked"})
   protected static void initializeLogging(ConfigurableApplicationContext applicationContext) {
     ch.qos.logback.classic.Logger logbackLogger =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     ConfigurableEnvironment environment = applicationContext.getEnvironment();
 
-    if (Arrays.stream(environment.getActiveProfiles()).anyMatch("human-readable-logging"::equals)) {
+    if (Arrays.asList(environment.getActiveProfiles()).contains("human-readable-logging")) {
       System.out.println("Human-readable logging enabled, re-applying original logback.xml config");
       try {
         // Note: there is some nuance in how best to reset the logback context. This code path is
