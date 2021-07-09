@@ -1,3 +1,7 @@
+# these are mostly the right settings for production use with the exception of
+# fast-retry-max-attempts which should be more like 100,
+# slow-retry-initial-interval which should be more like 1s,
+# and slow-retry-multiplier which should be more like 2
 terra.common.retry.transaction:
   fast-retry-exceptions:
     - org.springframework.dao.TransientDataAccessException

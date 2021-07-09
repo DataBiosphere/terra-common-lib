@@ -34,9 +34,9 @@ public class TransactionRetryInterceptorFactory {
   }
 
   /**
-   * TransientDataAccessException retries with random delay between
+   * Fast retries with random delay between
    * config.getFastRetryMinBackOffPeriod and config.getFastRetryMaxBackOffPeriod.
-   * CannotCreateTransactionException retries with exponential back off with initial
+   * Slow retries with exponential back off with initial
    * config.getSlowRetryInitialInterval delay, multiplied by config.getSlowRetryMultiplier each
    * attempt.
    */
