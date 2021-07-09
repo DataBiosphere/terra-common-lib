@@ -1,13 +1,11 @@
 package bio.terra.common.retry.transaction;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.classify.BinaryExceptionClassifier;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.classify.BinaryExceptionClassifier;
 
 /**
  * Configuration settings for how database transactions are retried. There are 2 classes of retries,
@@ -30,9 +28,7 @@ public class TransactionRetryConfig implements InitializingBean {
   private BinaryExceptionClassifier slowRetryExceptionClassifier;
   private BinaryExceptionClassifier fastRetryExceptionClassifier;
 
-  /**
-   * Exceptions to retry FAST
-   */
+  /** Exceptions to retry FAST */
   public List<Class<? extends Throwable>> getFastRetryExceptions() {
     return fastRetryExceptions;
   }
@@ -41,9 +37,7 @@ public class TransactionRetryConfig implements InitializingBean {
     this.fastRetryExceptions = fastRetryExceptions;
   }
 
-  /**
-   * Max attempts for FAST retries (including initial attempt)
-   */
+  /** Max attempts for FAST retries (including initial attempt) */
   public int getFastRetryMaxAttempts() {
     return fastRetryMaxAttempts;
   }
@@ -52,9 +46,7 @@ public class TransactionRetryConfig implements InitializingBean {
     this.fastRetryMaxAttempts = fastRetryMaxAttempts;
   }
 
-  /**
-   * Minimum time to wait before the next FAST retry
-   */
+  /** Minimum time to wait before the next FAST retry */
   public Duration getFastRetryMinBackOffPeriod() {
     return fastRetryMinBackOffPeriod;
   }
@@ -63,9 +55,7 @@ public class TransactionRetryConfig implements InitializingBean {
     this.fastRetryMinBackOffPeriod = fastRetryMinBackOffPeriod;
   }
 
-  /**
-   * Maximum time to wait before the next FAST retry
-   */
+  /** Maximum time to wait before the next FAST retry */
   public Duration getFastRetryMaxBackOffPeriod() {
     return fastRetryMaxBackOffPeriod;
   }
@@ -74,9 +64,7 @@ public class TransactionRetryConfig implements InitializingBean {
     this.fastRetryMaxBackOffPeriod = fastRetryMaxBackOffPeriod;
   }
 
-  /**
-   * Exceptions to retry SLOW
-   */
+  /** Exceptions to retry SLOW */
   public List<Class<? extends Throwable>> getSlowRetryExceptions() {
     return slowRetryExceptions;
   }
@@ -85,9 +73,7 @@ public class TransactionRetryConfig implements InitializingBean {
     this.slowRetryExceptions = slowRetryExceptions;
   }
 
-  /**
-   * Max attempts for SLOW retries (including initial attempt)
-   */
+  /** Max attempts for SLOW retries (including initial attempt) */
   public int getSlowRetryMaxAttempts() {
     return slowRetryMaxAttempts;
   }
@@ -96,9 +82,7 @@ public class TransactionRetryConfig implements InitializingBean {
     this.slowRetryMaxAttempts = slowRetryMaxAttempts;
   }
 
-  /**
-   * Interval to wait for the initial SLOW retry
-   */
+  /** Interval to wait for the initial SLOW retry */
   public Duration getSlowRetryInitialInterval() {
     return slowRetryInitialInterval;
   }
@@ -107,9 +91,7 @@ public class TransactionRetryConfig implements InitializingBean {
     this.slowRetryInitialInterval = slowRetryInitialInterval;
   }
 
-  /**
-   * Multiplier applied to the last SLOW trial interval
-   */
+  /** Multiplier applied to the last SLOW trial interval */
   public double getSlowRetryMultiplier() {
     return slowRetryMultiplier;
   }
@@ -118,16 +100,12 @@ public class TransactionRetryConfig implements InitializingBean {
     this.slowRetryMultiplier = slowRetryMultiplier;
   }
 
-  /**
-   * BinaryExceptionClassifier created using slowRetryExceptions
-   */
+  /** BinaryExceptionClassifier created using slowRetryExceptions */
   public BinaryExceptionClassifier getSlowRetryExceptionClassifier() {
     return slowRetryExceptionClassifier;
   }
 
-  /**
-   * BinaryExceptionClassifier created using fastRetryExceptions
-   */
+  /** BinaryExceptionClassifier created using fastRetryExceptions */
   public BinaryExceptionClassifier getFastRetryExceptionClassifier() {
     return fastRetryExceptionClassifier;
   }

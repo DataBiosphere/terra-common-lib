@@ -1,9 +1,8 @@
 package bio.terra.common.retry.transaction;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class TransactionRetryProbe {
@@ -15,6 +14,11 @@ public class TransactionRetryProbe {
     throw e;
   }
 
-  public int getCount() { return count.get(); }
-  public void reset() { count.set(0); }
+  public int getCount() {
+    return count.get();
+  }
+
+  public void reset() {
+    count.set(0);
+  }
 }

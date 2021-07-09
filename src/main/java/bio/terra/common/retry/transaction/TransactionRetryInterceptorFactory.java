@@ -1,6 +1,7 @@
 package bio.terra.common.retry.transaction;
 
 import bio.terra.common.retry.CompositeBackOffPolicy;
+import java.util.LinkedHashMap;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.classify.BinaryExceptionClassifier;
@@ -14,16 +15,14 @@ import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
-import java.util.LinkedHashMap;
-
 @Configuration
 @EnableConfigurationProperties(TransactionRetryConfig.class)
 public class TransactionRetryInterceptorFactory {
   /**
    * Creates an interceptor that can be used in {@link
-   * org.springframework.retry.annotation.Retryable}:
-   * <code>@Retryable(interceptor = "transactionRetryInterceptor")</code>.
-   * Be sure to use {@link org.springframework.retry.annotation.EnableRetry}.
+   * org.springframework.retry.annotation.Retryable}: <code>
+   * @Retryable(interceptor = "transactionRetryInterceptor")</code>. Be sure to use {@link
+   * org.springframework.retry.annotation.EnableRetry}.
    */
   @Bean("transactionRetryInterceptor")
   public MethodInterceptor getTransactionRetryInterceptor(TransactionRetryConfig config) {
@@ -34,9 +33,8 @@ public class TransactionRetryInterceptorFactory {
   }
 
   /**
-   * Fast retries with random delay between
-   * config.getFastRetryMinBackOffPeriod and config.getFastRetryMaxBackOffPeriod.
-   * Slow retries with exponential back off with initial
+   * Fast retries with random delay between config.getFastRetryMinBackOffPeriod and
+   * config.getFastRetryMaxBackOffPeriod. Slow retries with exponential back off with initial
    * config.getSlowRetryInitialInterval delay, multiplied by config.getSlowRetryMultiplier each
    * attempt.
    */

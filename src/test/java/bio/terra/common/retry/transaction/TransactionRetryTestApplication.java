@@ -1,6 +1,5 @@
 package bio.terra.common.retry.transaction;
 
-import bio.terra.common.logging.LoggingInitializer;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
