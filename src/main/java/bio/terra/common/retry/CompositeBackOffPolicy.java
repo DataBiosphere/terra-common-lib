@@ -1,9 +1,8 @@
 package bio.terra.common.retry;
 
 import bio.terra.common.db.DatabaseRetryUtils;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.classify.BinaryExceptionClassifier;
@@ -27,35 +26,37 @@ public class CompositeBackOffPolicy implements BackOffPolicy {
     this.backOffPoliciesByClassifier = backOffPoliciesByClassifier;
   }
 
+  /**
+   * This method gets called on entry to a @Retryable function to set up the dynamic context for
+   * backing off on a retry. Since we have slow and fast retry, we need to setup context for both
+   * and package that inside a composite BackOffContext subclass.
+   */
   @Override
   public BackOffContext start(RetryContext context) {
-    Map<BinaryExceptionClassifier, BackOffContext> backOffContextMap = new HashMap<>();
+    List<Pair<BinaryExceptionClassifier, BackOffContext>> backOffContexts = new ArrayList<>();
     this.backOffPoliciesByClassifier.forEach(
-        (classifier, policy) -> backOffContextMap.put(classifier, policy.start(context)));
-    return new BackOffContextByClassifier(context, backOffContextMap);
+        (classifier, policy) -> backOffContexts.add(Pair.of(classifier, policy.start(context))));
+    return new CompositeBackOffContext(context, backOffContexts);
   }
 
   @Override
   public void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
-    BackOffContextByClassifier backOffContextByClassifier =
-        (BackOffContextByClassifier) backOffContext;
+    CompositeBackOffContext compositeBackOffContext = (CompositeBackOffContext) backOffContext;
 
-    for (BinaryExceptionClassifier classifier :
-        backOffContextByClassifier.backOffContexts.keySet()) {
-      if (classifier.classify(backOffContextByClassifier.retryContext.getLastThrowable())) {
+    for (var classifierAndContext : compositeBackOffContext.backOffContexts) {
+      BinaryExceptionClassifier classifier = classifierAndContext.getLeft();
+      if (classifier.classify(compositeBackOffContext.retryContext.getLastThrowable())) {
         logger.debug(
             "retrying",
             Map.of(
                 "exception",
-                backOffContextByClassifier.retryContext.getLastThrowable().getClass().getName(),
+                compositeBackOffContext.retryContext.getLastThrowable().getClass().getName(),
                 "exceptionMessage",
-                backOffContextByClassifier.retryContext.getLastThrowable().getMessage(),
+                compositeBackOffContext.retryContext.getLastThrowable().getMessage(),
                 "failedTrialCount",
-                backOffContextByClassifier.retryContext.getRetryCount()));
+                compositeBackOffContext.retryContext.getRetryCount()));
 
-        backOffPoliciesByClassifier
-            .get(classifier)
-            .backOff(backOffContextByClassifier.backOffContexts.get(classifier));
+        backOffPoliciesByClassifier.get(classifier).backOff(classifierAndContext.getRight());
         break; // don't back off for any further matching back off policies
       }
     }
@@ -64,12 +65,13 @@ public class CompositeBackOffPolicy implements BackOffPolicy {
   /**
    * Class to keep track of retry context and a back off context for each nested back off policy.
    */
-  private static class BackOffContextByClassifier implements BackOffContext {
+  private static class CompositeBackOffContext implements BackOffContext {
     private final RetryContext retryContext;
-    private final Map<BinaryExceptionClassifier, BackOffContext> backOffContexts;
+    private final List<Pair<BinaryExceptionClassifier, BackOffContext>> backOffContexts;
 
-    private BackOffContextByClassifier(
-        RetryContext retryContext, Map<BinaryExceptionClassifier, BackOffContext> backOffContexts) {
+    private CompositeBackOffContext(
+        RetryContext retryContext,
+        List<Pair<BinaryExceptionClassifier, BackOffContext>> backOffContexts) {
       this.retryContext = retryContext;
       this.backOffContexts = backOffContexts;
     }

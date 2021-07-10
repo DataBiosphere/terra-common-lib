@@ -16,8 +16,8 @@ import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
 @Configuration
-@EnableConfigurationProperties(TransactionRetryConfig.class)
-public class TransactionRetryInterceptorFactory {
+@EnableConfigurationProperties(TransactionRetryProperties.class)
+public class TransactionRetryInterceptorConfiguration {
   /**
    * Creates an interceptor that can be used in {@link
    * org.springframework.retry.annotation.Retryable}: <code>
@@ -25,7 +25,7 @@ public class TransactionRetryInterceptorFactory {
    * org.springframework.retry.annotation.EnableRetry}.
    */
   @Bean("transactionRetryInterceptor")
-  public MethodInterceptor getTransactionRetryInterceptor(TransactionRetryConfig config) {
+  public MethodInterceptor getTransactionRetryInterceptor(TransactionRetryProperties config) {
     return RetryInterceptorBuilder.stateless()
         .retryPolicy(createTransactionRetryPolicy(config))
         .backOffPolicy(createTransactionBackOffPolicy(config))
@@ -38,7 +38,7 @@ public class TransactionRetryInterceptorFactory {
    * config.getSlowRetryInitialInterval delay, multiplied by config.getSlowRetryMultiplier each
    * attempt.
    */
-  private BackOffPolicy createTransactionBackOffPolicy(TransactionRetryConfig config) {
+  private BackOffPolicy createTransactionBackOffPolicy(TransactionRetryProperties config) {
     UniformRandomBackOffPolicy fastBackOffPolicy = new UniformRandomBackOffPolicy();
     fastBackOffPolicy.setMaxBackOffPeriod(config.getFastRetryMaxBackOffPeriod().toMillis());
     fastBackOffPolicy.setMinBackOffPeriod(config.getFastRetryMinBackOffPeriod().toMillis());
@@ -56,7 +56,7 @@ public class TransactionRetryInterceptorFactory {
   }
 
   /** Policy dictating number of attempts for fast and slow retries. */
-  private RetryPolicy createTransactionRetryPolicy(TransactionRetryConfig config) {
+  private RetryPolicy createTransactionRetryPolicy(TransactionRetryProperties config) {
     CompositeRetryPolicy retryPolicy = new CompositeRetryPolicy();
     retryPolicy.setOptimistic(true); // retry when any nested policy says to retry
     retryPolicy.setPolicies(

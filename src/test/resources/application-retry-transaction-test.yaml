@@ -1,16 +1,4 @@
-# these are mostly the right settings for production use with the exception of
-# fast-retry-max-attempts which should be more like 100,
-# slow-retry-initial-interval which should be more like 1s,
-# and slow-retry-multiplier which should be more like 2
 terra.common.retry.transaction:
-  fast-retry-exceptions:
-    - org.springframework.dao.TransientDataAccessException
   fast-retry-max-attempts: 10
-  fast-retry-min-back-off-period: 10ms
-  fast-retry-max-back-off-period: 20ms
-  slow-retry-exceptions:
-    - org.springframework.dao.RecoverableDataAccessException
-    - org.springframework.transaction.CannotCreateTransactionException
-  slow-retry-max-attempts: 4
   slow-retry-initial-interval: 100ms
   slow-retry-multiplier: 1

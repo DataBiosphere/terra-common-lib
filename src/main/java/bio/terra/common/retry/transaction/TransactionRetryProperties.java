@@ -2,10 +2,12 @@ package bio.terra.common.retry.transaction;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.classify.BinaryExceptionClassifier;
+import org.springframework.dao.RecoverableDataAccessException;
+import org.springframework.dao.TransientDataAccessException;
+import org.springframework.transaction.CannotCreateTransactionException;
 
 /**
  * Configuration settings for how database transactions are retried. There are 2 classes of retries,
@@ -14,16 +16,18 @@ import org.springframework.classify.BinaryExceptionClassifier;
  * exponential back off and few attempts.
  */
 @ConfigurationProperties(prefix = "terra.common.retry.transaction")
-public class TransactionRetryConfig implements InitializingBean {
-  private List<Class<? extends Throwable>> fastRetryExceptions;
-  private int fastRetryMaxAttempts;
-  private Duration fastRetryMinBackOffPeriod;
-  private Duration fastRetryMaxBackOffPeriod;
+public class TransactionRetryProperties implements InitializingBean {
+  private List<Class<? extends Throwable>> fastRetryExceptions =
+      List.of(TransientDataAccessException.class);
+  private Integer fastRetryMaxAttempts = 100;
+  private Duration fastRetryMinBackOffPeriod = Duration.ofMillis(10);
+  private Duration fastRetryMaxBackOffPeriod = Duration.ofMillis(20);
 
-  private List<Class<? extends Throwable>> slowRetryExceptions;
-  private int slowRetryMaxAttempts;
-  private Duration slowRetryInitialInterval;
-  private double slowRetryMultiplier;
+  private List<Class<? extends Throwable>> slowRetryExceptions =
+      List.of(RecoverableDataAccessException.class, CannotCreateTransactionException.class);
+  private Integer slowRetryMaxAttempts = 4;
+  private Duration slowRetryInitialInterval = Duration.ofSeconds(1);
+  private Double slowRetryMultiplier = 2.0;
 
   private BinaryExceptionClassifier slowRetryExceptionClassifier;
   private BinaryExceptionClassifier fastRetryExceptionClassifier;
@@ -38,11 +42,11 @@ public class TransactionRetryConfig implements InitializingBean {
   }
 
   /** Max attempts for FAST retries (including initial attempt) */
-  public int getFastRetryMaxAttempts() {
+  public Integer getFastRetryMaxAttempts() {
     return fastRetryMaxAttempts;
   }
 
-  public void setFastRetryMaxAttempts(int fastRetryMaxAttempts) {
+  public void setFastRetryMaxAttempts(Integer fastRetryMaxAttempts) {
     this.fastRetryMaxAttempts = fastRetryMaxAttempts;
   }
 
@@ -74,11 +78,11 @@ public class TransactionRetryConfig implements InitializingBean {
   }
 
   /** Max attempts for SLOW retries (including initial attempt) */
-  public int getSlowRetryMaxAttempts() {
+  public Integer getSlowRetryMaxAttempts() {
     return slowRetryMaxAttempts;
   }
 
-  public void setSlowRetryMaxAttempts(int slowRetryMaxAttempts) {
+  public void setSlowRetryMaxAttempts(Integer slowRetryMaxAttempts) {
     this.slowRetryMaxAttempts = slowRetryMaxAttempts;
   }
 
@@ -92,11 +96,11 @@ public class TransactionRetryConfig implements InitializingBean {
   }
 
   /** Multiplier applied to the last SLOW trial interval */
-  public double getSlowRetryMultiplier() {
+  public Double getSlowRetryMultiplier() {
     return slowRetryMultiplier;
   }
 
-  public void setSlowRetryMultiplier(double slowRetryMultiplier) {
+  public void setSlowRetryMultiplier(Double slowRetryMultiplier) {
     this.slowRetryMultiplier = slowRetryMultiplier;
   }
 
@@ -111,10 +115,7 @@ public class TransactionRetryConfig implements InitializingBean {
   }
 
   @Override
-  public void afterPropertiesSet() throws Exception {
-    Objects.requireNonNull(this.fastRetryExceptions, "fastRetryExceptions must be specified");
-    Objects.requireNonNull(this.slowRetryExceptions, "slowRetryExceptions must be specified");
-
+  public void afterPropertiesSet() {
     this.fastRetryExceptionClassifier = new BinaryExceptionClassifier(this.fastRetryExceptions);
     this.slowRetryExceptionClassifier = new BinaryExceptionClassifier(this.slowRetryExceptions);
   }
