@@ -1,0 +1,4 @@
+terra.common.retry.transaction:
+  fast-retry-max-attempts: 10
+  slow-retry-initial-interval: 100ms
+  slow-retry-multiplier: 1
