@@ -11,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Annotation used to demarcate read-only database transaction, specifying correct transaction
- * semantics and retry
+ * semantics and retry. Spring application must use @{@link
+ * org.springframework.retry.annotation.EnableRetry} and @{@link
+ * org.springframework.transaction.annotation.EnableTransactionManagement}.
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
