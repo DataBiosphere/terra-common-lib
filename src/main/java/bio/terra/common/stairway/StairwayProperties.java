@@ -3,7 +3,21 @@ package bio.terra.common.stairway;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** This class includes the standard database properties. */
+/**
+ * Properties for configuring a Stairway instance.
+ *
+ * <p>There are three parameters involved in configuring the Stairway work queue. There are three
+ * valid setups:
+ *
+ * <ol>
+ *   <li>If we are not running in Kubernetes, these parameters are ignored
+ *   <li>clusterNameSuffix is null. gcpPubSubTopicId, and gcpPubSubSubscriptionId are provided: the
+ *       topic and subscrition are used for the work queue.
+ *   <li>clusterNameSuffix is provided. gcpPubSubTopicId and gcpPubSubSubscriptionId are null:
+ *       topicId and subscriptionId are generated based on the clusterNameSuffix and the pubsub
+ *       topic and subscription are created or found to already exist.
+ * </ol>
+ */
 @ConfigurationProperties(prefix = "terra.common.stairway")
 public class StairwayProperties {
   private boolean forceCleanStart;
@@ -16,16 +30,20 @@ public class StairwayProperties {
   private Duration completedFlightRetention;
 
   /**
-   * clusterNameSuffix is used to generate names when creating pubsub queues. It is not needed if
-   * the topicId and subscriptionId are provided.
+   * clusterNameSuffix is used to generate names when creating pubsub queues. It must be null if the
+   * topicId and subscriptionId are provided.
    */
   private String clusterNameSuffix;
 
-  /** PubSub topic to use for stairway work queue. It must exist in the current GCP project */
+  /**
+   * PubSub topic to use for stairway work queue. It must exist in the current GCP project. It must
+   * be null if clusterNameSuffix is provided.
+   */
   private String gcpPubSubTopicId;
 
   /**
-   * PubSub subscription to use for stairway work queue. It must exist in the current GCP project
+   * PubSub subscription to use for stairway work queue. It must exist in the current GCP project.
+   * It must be null if clusterNameSuffix is provided.
    */
   private String gcpPubSubSubscriptionId;
 
@@ -105,17 +123,15 @@ public class StairwayProperties {
     return gcpPubSubTopicId;
   }
 
-  public StairwayProperties gcpPubSubTopicId(String gcpPubSubTopicId) {
+  public void setGcpPubSubTopicId(String gcpPubSubTopicId) {
     this.gcpPubSubTopicId = gcpPubSubTopicId;
-    return this;
   }
 
   public String getGcpPubSubSubscriptionId() {
     return gcpPubSubSubscriptionId;
   }
 
-  public StairwayProperties gcpPubSubSubscriptionId(String gcpPubSubSubscriptionId) {
+  public void setGcpPubSubSubscriptionId(String gcpPubSubSubscriptionId) {
     this.gcpPubSubSubscriptionId = gcpPubSubSubscriptionId;
-    return this;
   }
 }

@@ -17,7 +17,6 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release/'

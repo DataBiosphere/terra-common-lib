@@ -45,10 +45,7 @@ public class StairwayComponent {
     this.kubeService = kubeService;
     this.kubeProperties = kubeProperties;
     this.stairwayProperties = stairwayProperties;
-    logger.info(
-        "Creating Stairway: name: [{}]  cluster name: [{}]",
-        kubeService.getPodName(),
-        getClusterName());
+    logger.info("Creating Stairway: name: [{}]", kubeService.getPodName());
   }
 
   /** convenience for getting a builder for initialize input */
@@ -78,14 +75,26 @@ public class StairwayComponent {
     try {
       String topicId = stairwayProperties.getGcpPubSubTopicId();
       String subscriptionId = stairwayProperties.getGcpPubSubSubscriptionId();
-      if (topicId == null || subscriptionId == null) {
-        logger.info(
-            "One of topicId or subscriptionId is missing. Creating pubsub from cluster name.");
-        String clusterName = getClusterName();
+      String clusterNameSuffix = stairwayProperties.getClusterNameSuffix();
+
+      if (topicId == null && subscriptionId == null && clusterNameSuffix != null) {
+        // work queue needs to be created
+        String clusterName =
+            String.format(
+                "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
         topicId = clusterName + "-workqueue";
         subscriptionId = clusterName + "-workqueue-sub";
         GcpQueueUtils.makeTopic(getDefaultProjectId(), topicId);
         GcpQueueUtils.makeSubscription(getDefaultProjectId(), topicId, subscriptionId);
+        logger.info(
+            "Found or created work queue. Topic: {}; Subscription: {}", topicId, subscriptionId);
+      } else {
+        // If the work queue is not being properly passed in
+        if (!(topicId != null && subscriptionId != null && clusterNameSuffix == null)) {
+          throw new IllegalArgumentException(
+              "Invalid stairway configuration. You must either specify the clusterNameSuffix"
+                  + " or both the topicId and subscriptionId.");
+        }
       }
 
       return GcpPubSubQueue.newBuilder()
@@ -184,15 +193,6 @@ public class StairwayComponent {
 
   public StairwayComponent.Status getStatus() {
     return status.get();
-  }
-
-  private String getClusterName() {
-    if (stairwayProperties.getClusterNameSuffix() == null) {
-      throw new IllegalArgumentException(
-          "Cluster name suffix property is required for Stairway work queue creation");
-    }
-    return String.format(
-        "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
   }
 
   public enum Status {
