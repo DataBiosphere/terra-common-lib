@@ -10,6 +10,7 @@ import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.FlightState;
 import bio.terra.stairway.FlightStatus;
 import bio.terra.stairway.Stairway;
+import bio.terra.stairway.StairwayBuilder;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
@@ -31,7 +32,7 @@ public class TracingHookTest {
     RecordContextStep.setRecord(contextRecord);
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(Stairway.newBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
@@ -58,7 +59,7 @@ public class TracingHookTest {
     RecordContextStep.setRecord(contextRecord);
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(Stairway.newBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, ErrorSpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));

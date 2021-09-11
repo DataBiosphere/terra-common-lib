@@ -41,14 +41,17 @@ dependencies {
     }
     implementation platform('com.google.cloud:libraries-bom:20.2.0')
 
-    implementation group: 'bio.terra', name: 'stairway', version: '0.0.56-SNAPSHOT'
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
+    // Publish the stairway library for common lib users to minimize rollout overhead
+    // of new Stairways.
+    api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.66-SNAPSHOT'
 
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20210507-1.31.0'
+    implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     implementation group: 'io.kubernetes', name: 'client-java', version: '10.0.0'
     implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: opencensus
     // commons-dbcp2 and -lang3 versions are managed by the Spring Boot plugin

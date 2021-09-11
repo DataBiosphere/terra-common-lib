@@ -5,10 +5,15 @@ import static com.google.cloud.ServiceOptions.getDefaultProjectId;
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
 import bio.terra.stairway.ExceptionSerializer;
+import bio.terra.stairway.QueueInterface;
 import bio.terra.stairway.Stairway;
+import bio.terra.stairway.StairwayBuilder;
 import bio.terra.stairway.StairwayHook;
 import bio.terra.stairway.exception.StairwayException;
 import bio.terra.stairway.exception.StairwayExecutionException;
+import bio.terra.stairway.gcp.GcpPubSubQueue;
+import bio.terra.stairway.gcp.GcpQueueUtils;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,10 +45,7 @@ public class StairwayComponent {
     this.kubeService = kubeService;
     this.kubeProperties = kubeProperties;
     this.stairwayProperties = stairwayProperties;
-    logger.info(
-        "Creating Stairway: name: [{}]  cluster name: [{}]",
-        kubeService.getPodName(),
-        getClusterName());
+    logger.info("Creating Stairway: name: [{}]", kubeService.getPodName());
   }
 
   /** convenience for getting a builder for initialize input */
@@ -64,23 +66,66 @@ public class StairwayComponent {
   }
 
   /**
+   * Set up the Stairway work queue. There are two ways we get a work queue. If both the gcp topicId
+   * and subscriptionId are passed as parameters, then we use those. Otherwise, if the
+   * clusterNameSuffix is present, then we create the queue. It is an error to try to run in
+   * Kubernetes without a work queue.
+   */
+  private GcpPubSubQueue setupWorkQueue() {
+    try {
+      String topicId = stairwayProperties.getGcpPubSubTopicId();
+      String subscriptionId = stairwayProperties.getGcpPubSubSubscriptionId();
+      String clusterNameSuffix = stairwayProperties.getClusterNameSuffix();
+
+      if (topicId == null && subscriptionId == null && clusterNameSuffix != null) {
+        // work queue needs to be created
+        String clusterName =
+            String.format(
+                "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
+        topicId = clusterName + "-workqueue";
+        subscriptionId = clusterName + "-workqueue-sub";
+        GcpQueueUtils.makeTopic(getDefaultProjectId(), topicId);
+        GcpQueueUtils.makeSubscription(getDefaultProjectId(), topicId, subscriptionId);
+        logger.info(
+            "Found or created work queue. Topic: {}; Subscription: {}", topicId, subscriptionId);
+      } else {
+        // If the work queue is not being properly passed in
+        if (!(topicId != null && subscriptionId != null && clusterNameSuffix == null)) {
+          throw new IllegalArgumentException(
+              "Invalid stairway configuration. You must either specify the clusterNameSuffix"
+                  + " or both the topicId and subscriptionId.");
+        }
+      }
+
+      return GcpPubSubQueue.newBuilder()
+          .projectId(getDefaultProjectId())
+          .topicId(topicId)
+          .subscriptionId(subscriptionId)
+          .build();
+
+    } catch (IOException e) {
+      throw new IllegalArgumentException("Failed to configure pubsub queue", e);
+    }
+  }
+
+  /**
    * Build and initialize the Stairway object - extensible version
    *
    * @param initializeBuilder collection of Stairway initialization parameters
    */
   public void initialize(StairwayOptionsBuilder initializeBuilder) {
+    QueueInterface queue = (kubeProperties.isInKubernetes()) ? setupWorkQueue() : null;
+
     logger.info("Initializing Stairway...");
-    final Stairway.Builder builder =
-        Stairway.newBuilder()
+    final StairwayBuilder builder =
+        new StairwayBuilder()
             .maxParallelFlights(stairwayProperties.getMaxParallelFlights())
             .retentionCheckInterval(stairwayProperties.getRetentionCheckInterval())
             .completedFlightRetention(stairwayProperties.getCompletedFlightRetention())
             .applicationContext(
                 initializeBuilder.getContext()) // not necessarily a Spring ApplicationContext
             .stairwayName(kubeProperties.getPodName())
-            .stairwayClusterName(getClusterName())
-            .workQueueProjectId(getDefaultProjectId())
-            .enableWorkQueue(kubeProperties.isInKubernetes())
+            .workQueue(queue)
             .exceptionSerializer(initializeBuilder.getExceptionSerializer());
     initializeBuilder.getHooks().forEach(builder::stairwayHook);
     try {
@@ -148,11 +193,6 @@ public class StairwayComponent {
 
   public StairwayComponent.Status getStatus() {
     return status.get();
-  }
-
-  private String getClusterName() {
-    return String.format(
-        "%s-%s", kubeService.getNamespace(), stairwayProperties.getClusterNameSuffix());
   }
 
   public enum Status {

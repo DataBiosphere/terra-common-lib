@@ -6,6 +6,7 @@ import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.FlightState;
 import bio.terra.stairway.Stairway;
+import bio.terra.stairway.StairwayBuilder;
 import bio.terra.stairway.exception.DatabaseOperationException;
 import bio.terra.stairway.exception.StairwayException;
 import java.time.Duration;
@@ -16,7 +17,7 @@ import javax.sql.DataSource;
 public class StairwayTestUtils {
 
   /** Returns an initialized and started Stairway instance from the Stairway.Builder. */
-  public static Stairway setupStairway(Stairway.Builder builder) {
+  public static Stairway setupStairway(StairwayBuilder builder) {
     try {
       Stairway stairway = builder.build();
       stairway.initialize(
