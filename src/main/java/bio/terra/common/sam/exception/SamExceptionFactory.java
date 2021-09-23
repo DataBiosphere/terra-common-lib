@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory;
 public class SamExceptionFactory {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static Logger logger = LoggerFactory.getLogger(SamExceptionFactory.class);
+  // Requests which time out will have status code 0. This is not a real HTTP status code, but is
+  // still a useful signal.
+  private static final int TIMEOUT_ERROR_CODE = 0;
 
   public static ErrorReportException create(ApiException apiException) {
     return create(null, apiException);
@@ -40,6 +43,8 @@ public class SamExceptionFactory {
       message = messagePrefix + ": " + message;
     }
     switch (apiException.getCode()) {
+      case TIMEOUT_ERROR_CODE:
+        return new SamConnectionException(message, apiException);
       case HttpStatusCodes.STATUS_CODE_BAD_REQUEST:
         return new SamBadRequestException(message, apiException);
       case HttpStatusCodes.STATUS_CODE_UNAUTHORIZED:
