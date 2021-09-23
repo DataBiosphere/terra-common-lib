@@ -1,10 +1,11 @@
 package bio.terra.common.sam.exception;
 
 import bio.terra.common.exception.ErrorReportException;
+import bio.terra.common.sam.SamRetry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.http.HttpStatusCodes;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.model.ErrorReport;
 import org.slf4j.Logger;
@@ -39,18 +40,22 @@ public class SamExceptionFactory {
     if (!StringUtils.isEmpty(messagePrefix)) {
       message = messagePrefix + ": " + message;
     }
+
+    if (SamRetry.isTimeoutException(apiException)) {
+      return new SamTimeoutException(message, apiException);
+    }
     switch (apiException.getCode()) {
-      case HttpStatusCodes.STATUS_CODE_BAD_REQUEST:
+      case HttpStatus.SC_BAD_REQUEST:
         return new SamBadRequestException(message, apiException);
-      case HttpStatusCodes.STATUS_CODE_UNAUTHORIZED:
+      case HttpStatus.SC_UNAUTHORIZED:
         return new SamUnauthorizedException(message, apiException);
-      case HttpStatusCodes.STATUS_CODE_FORBIDDEN:
+      case HttpStatus.SC_FORBIDDEN:
         return new SamForbiddenException(message, apiException);
-      case HttpStatusCodes.STATUS_CODE_NOT_FOUND:
+      case HttpStatus.SC_NOT_FOUND:
         return new SamNotFoundException(message, apiException);
-      case HttpStatusCodes.STATUS_CODE_CONFLICT:
+      case HttpStatus.SC_CONFLICT:
         return new SamConflictException(message, apiException);
-      case HttpStatusCodes.STATUS_CODE_SERVER_ERROR:
+      case HttpStatus.SC_INTERNAL_SERVER_ERROR:
         return new SamInternalServerErrorException(message, apiException);
         // note that SAM does not use a 501 NOT_IMPLEMENTED status code, so that case is skipped
         // here

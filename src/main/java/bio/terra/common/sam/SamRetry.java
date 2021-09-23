@@ -2,14 +2,14 @@ package bio.terra.common.sam;
 
 import static java.time.Instant.now;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import org.apache.http.HttpStatus;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 
 /**
  * SamRetry encapsulates logic needed for retrying Sam API calls. All constants are hard-coded, as
@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
  * <p>SamRetry throws either the underlying ApiException from Sam or an InterruptedException.
  */
 public class SamRetry {
-  private static Logger logger = LoggerFactory.getLogger(SamRetry.class);
+  private static final Logger logger = LoggerFactory.getLogger(SamRetry.class);
 
   // The retry function starts with INITIAL_WAIT between retries, and doubles that until it
   // reaches MAXIMUM_WAIT, after which all retries are MAXIMUM_WAIT apart.
@@ -27,10 +27,12 @@ public class SamRetry {
   private static final Duration OPERATION_TIMEOUT = Duration.ofSeconds(300);
   private final Instant operationTimeout;
 
+  // Sam calls which timeout will throw ApiExceptions wrapping SocketTimeoutExceptions and will have
+  // an errorCode 0. This isn't a real HTTP status code, but we can check for it anyway.
+  private static final int TIMEOUT_STATUS_CODE = 0;
+
   // How long to wait between retries.
   private Duration retryDuration;
-
-  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   SamRetry() {
     this.operationTimeout = now().plus(OPERATION_TIMEOUT);
@@ -50,6 +52,17 @@ public class SamRetry {
   @FunctionalInterface
   public interface SamFunction<R> {
     R apply() throws ApiException, InterruptedException;
+  }
+
+  /**
+   * Requests made through the Sam client library sometimes fail with timeouts, generally due to
+   * transient network or connection issues. When this happens, the client library will throw an API
+   * exceptions with status code 0 wrapping a SocketTimeoutException. These errors should always be
+   * retried.
+   */
+  public static boolean isTimeoutException(ApiException apiException) {
+    return apiException.getCode() == TIMEOUT_STATUS_CODE
+        && apiException.getCause() instanceof SocketTimeoutException;
   }
 
   public static <T> T retry(SamFunction<T> function) throws ApiException, InterruptedException {
@@ -90,7 +103,11 @@ public class SamRetry {
   }
 
   private boolean isRetryable(ApiException apiException) {
-    return (apiException.getCode() == HttpStatus.INTERNAL_SERVER_ERROR.value());
+    return isTimeoutException(apiException)
+        || apiException.getCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR
+        || apiException.getCode() == HttpStatus.SC_BAD_GATEWAY
+        || apiException.getCode() == HttpStatus.SC_SERVICE_UNAVAILABLE
+        || apiException.getCode() == HttpStatus.SC_GATEWAY_TIMEOUT;
   }
 
   private void performVoid(SamVoidFunction function) throws ApiException, InterruptedException {

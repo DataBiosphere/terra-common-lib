@@ -3,10 +3,11 @@ package bio.terra.common.sam;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.api.client.http.HttpStatusCodes;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.http.HttpStatus;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -34,7 +35,7 @@ public class SamRetryTest {
 
   @Test
   public void testRetryFinish() throws Exception {
-    SamRetry.retry(() -> testRetryFinishInner(2));
+    SamRetry.retry(() -> testRetryAllErrorCodesFinishInner(6));
   }
 
   @Test
@@ -82,7 +83,32 @@ public class SamRetryTest {
   private boolean testRetryFinishInner(int failCount) throws ApiException {
     if (count < failCount) {
       count++;
-      throw new ApiException(HttpStatusCodes.STATUS_CODE_SERVER_ERROR, "testing");
+      throw new ApiException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "testing");
+    }
+    return true;
+  }
+
+  private boolean testRetryAllErrorCodesFinishInner(int failCount) throws ApiException {
+    if (count < failCount) {
+      count++;
+      switch (count) {
+        case 0:
+          // Status code 0 is returned when calls time out, even though it's not a valid HTTP status
+          throw new ApiException(
+              "testing",
+              new SocketTimeoutException(),
+              /*statusCode=*/ 0,
+              /*responseHeaders=*/ null);
+        case 1:
+          throw new ApiException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "testing");
+        case 2:
+          throw new ApiException(HttpStatus.SC_BAD_GATEWAY, "testing");
+        case 3:
+          throw new ApiException(HttpStatus.SC_SERVICE_UNAVAILABLE, "testing");
+        case 4:
+        default:
+          throw new ApiException(HttpStatus.SC_GATEWAY_TIMEOUT, "testing");
+      }
     }
     return true;
   }
@@ -90,11 +116,11 @@ public class SamRetryTest {
   private void testRetryVoidFinishInner(int failCount) throws ApiException {
     if (count < failCount) {
       count++;
-      throw new ApiException(HttpStatusCodes.STATUS_CODE_SERVER_ERROR, "testing");
+      throw new ApiException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "testing");
     }
   }
 
   private boolean testRetryThrows() throws ApiException {
-    throw new ApiException(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "testing");
+    throw new ApiException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "testing");
   }
 }
