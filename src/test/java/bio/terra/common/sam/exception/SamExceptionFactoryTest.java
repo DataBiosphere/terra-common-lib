@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.common.exception.ErrorReportException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.http.HttpStatusCodes;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
+import org.apache.http.HttpStatus;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.model.ErrorReport;
 import org.junit.jupiter.api.Tag;
@@ -33,8 +33,7 @@ public class SamExceptionFactoryTest {
     ErrorReport errorReport = new ErrorReport().message(message);
     String errorReportString = objectMapper.writeValueAsString(errorReport);
     ApiException apiException =
-        new ApiException(
-            "", HttpStatusCodes.STATUS_CODE_BAD_REQUEST, new HashMap<>(), errorReportString);
+        new ApiException("", HttpStatus.SC_BAD_REQUEST, new HashMap<>(), errorReportString);
     ErrorReportException errorReportException = SamExceptionFactory.create(apiException);
     assertEquals(message, errorReportException.getMessage());
     assertTrue(errorReportException instanceof SamBadRequestException);
@@ -55,37 +54,35 @@ public class SamExceptionFactoryTest {
   @Test
   public void UnauthorizedException() {
     ErrorReportException errorReportException =
-        SamExceptionFactory.create(
-            new ApiException(HttpStatusCodes.STATUS_CODE_UNAUTHORIZED, "test"));
+        SamExceptionFactory.create(new ApiException(HttpStatus.SC_UNAUTHORIZED, "test"));
     assertTrue(errorReportException instanceof SamUnauthorizedException);
   }
 
   @Test
   public void ForbiddenException() {
     ErrorReportException errorReportException =
-        SamExceptionFactory.create(new ApiException(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test"));
+        SamExceptionFactory.create(new ApiException(HttpStatus.SC_FORBIDDEN, "test"));
     assertTrue(errorReportException instanceof SamForbiddenException);
   }
 
   @Test
   public void NotFoundException() {
     ErrorReportException errorReportException =
-        SamExceptionFactory.create(new ApiException(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "test"));
+        SamExceptionFactory.create(new ApiException(HttpStatus.SC_NOT_FOUND, "test"));
     assertTrue(errorReportException instanceof SamNotFoundException);
   }
 
   @Test
   public void ConflictException() {
     ErrorReportException errorReportException =
-        SamExceptionFactory.create(new ApiException(HttpStatusCodes.STATUS_CODE_CONFLICT, "test"));
+        SamExceptionFactory.create(new ApiException(HttpStatus.SC_CONFLICT, "test"));
     assertTrue(errorReportException instanceof SamConflictException);
   }
 
   @Test
   public void InternalServerErrorException() {
     ErrorReportException errorReportException =
-        SamExceptionFactory.create(
-            new ApiException(HttpStatusCodes.STATUS_CODE_SERVER_ERROR, "test"));
+        SamExceptionFactory.create(new ApiException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "test"));
     assertTrue(errorReportException instanceof SamInternalServerErrorException);
   }
 
