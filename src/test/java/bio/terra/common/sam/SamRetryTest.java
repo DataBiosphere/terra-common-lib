@@ -3,6 +3,7 @@ package bio.terra.common.sam;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -93,7 +94,11 @@ public class SamRetryTest {
       switch (count) {
         case 0:
           // Status code 0 is returned when calls time out, even though it's not a valid HTTP status
-          throw new ApiException(/*statusCode=*/ 0, "testing");
+          throw new ApiException(
+              "testing",
+              new SocketTimeoutException(),
+              /*statusCode=*/ 0,
+              /*responseHeaders=*/ null);
         case 1:
           throw new ApiException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "testing");
         case 2:

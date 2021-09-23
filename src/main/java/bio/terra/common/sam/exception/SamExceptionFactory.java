@@ -1,6 +1,7 @@
 package bio.terra.common.sam.exception;
 
 import bio.terra.common.exception.ErrorReportException;
+import bio.terra.common.sam.SamRetry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.HttpStatusCodes;
@@ -18,9 +19,6 @@ import org.slf4j.LoggerFactory;
 public class SamExceptionFactory {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static Logger logger = LoggerFactory.getLogger(SamExceptionFactory.class);
-  // Requests which time out will have status code 0. This is not a real HTTP status code, but is
-  // still a useful signal.
-  private static final int TIMEOUT_ERROR_CODE = 0;
 
   public static ErrorReportException create(ApiException apiException) {
     return create(null, apiException);
@@ -42,9 +40,11 @@ public class SamExceptionFactory {
     if (!StringUtils.isEmpty(messagePrefix)) {
       message = messagePrefix + ": " + message;
     }
+
+    if (SamRetry.isTimeoutException(apiException)) {
+      return new SamTimeoutException(message, apiException);
+    }
     switch (apiException.getCode()) {
-      case TIMEOUT_ERROR_CODE:
-        return new SamConnectionException(message, apiException);
       case HttpStatusCodes.STATUS_CODE_BAD_REQUEST:
         return new SamBadRequestException(message, apiException);
       case HttpStatusCodes.STATUS_CODE_UNAUTHORIZED:

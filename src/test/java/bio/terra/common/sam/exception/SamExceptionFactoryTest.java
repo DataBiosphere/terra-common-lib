@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import bio.terra.common.exception.ErrorReportException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.HttpStatusCodes;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.model.ErrorReport;
@@ -37,6 +38,18 @@ public class SamExceptionFactoryTest {
     ErrorReportException errorReportException = SamExceptionFactory.create(apiException);
     assertEquals(message, errorReportException.getMessage());
     assertTrue(errorReportException instanceof SamBadRequestException);
+  }
+
+  @Test
+  public void ConnectionException() {
+    ErrorReportException errorReportException =
+        SamExceptionFactory.create(
+            new ApiException(
+                "testing",
+                new SocketTimeoutException(),
+                /*statusCode=*/ 0,
+                /*responseHeaders=*/ null));
+    assertTrue(errorReportException instanceof SamTimeoutException);
   }
 
   @Test

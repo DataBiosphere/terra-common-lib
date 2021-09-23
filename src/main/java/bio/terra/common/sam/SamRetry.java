@@ -2,6 +2,7 @@ package bio.terra.common.sam;
 
 import static java.time.Instant.now;
 
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +54,11 @@ public class SamRetry {
     R apply() throws ApiException, InterruptedException;
   }
 
+  public static boolean isTimeoutException(ApiException apiException) {
+    return apiException.getCode() == TIMEOUT_STATUS_CODE
+        && apiException.getCause() instanceof SocketTimeoutException;
+  }
+
   public static <T> T retry(SamFunction<T> function) throws ApiException, InterruptedException {
     SamRetry samRetry = new SamRetry();
     return samRetry.perform(function);
@@ -91,7 +97,7 @@ public class SamRetry {
   }
 
   private boolean isRetryable(ApiException apiException) {
-    return apiException.getCode() == TIMEOUT_STATUS_CODE
+    return isTimeoutException(apiException)
         || apiException.getCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR
         || apiException.getCode() == HttpStatus.SC_BAD_GATEWAY
         || apiException.getCode() == HttpStatus.SC_SERVICE_UNAVAILABLE
