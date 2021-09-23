@@ -54,6 +54,12 @@ public class SamRetry {
     R apply() throws ApiException, InterruptedException;
   }
 
+  /**
+   * Requests made through the Sam client library sometimes fail with timeouts, generally due to
+   * transient network or connection issues. When this happens, the client library will throw an API
+   * exceptions with status code 0 wrapping a SocketTimeoutException. These errors should always be
+   * retried.
+   */
   public static boolean isTimeoutException(ApiException apiException) {
     return apiException.getCode() == TIMEOUT_STATUS_CODE
         && apiException.getCause() instanceof SocketTimeoutException;
