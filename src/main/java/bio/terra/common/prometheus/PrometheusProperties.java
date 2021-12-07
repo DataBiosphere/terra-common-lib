@@ -1,10 +1,10 @@
-package bio.terra.common.metrics;
+package bio.terra.common.prometheus;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Properties for enabling service metrics export to Prometheus. */
 @ConfigurationProperties(prefix = "terra.common.metrics")
-public class MetricsProperties {
+public class PrometheusProperties {
   /**
    * If the endpoint--more specifically, the server backing it--should be started.
    *
@@ -12,7 +12,7 @@ public class MetricsProperties {
    * specifically to pick up the endpoint component, and flagging the endpoint for scraping is a
    * separate external toggle (e.g. ServiceMonitor resources in Kubernetes).
    */
-  private boolean prometheusEndpointEnabled = true;
+  private boolean endpointEnabled = true;
 
   /**
    * The port that the endpoint server should run on, if enabled. Must be different from the
@@ -22,21 +22,21 @@ public class MetricsProperties {
    * use 9100-9999. <a
    * href="https://github.com/prometheus/prometheus/wiki/Default-port-allocations">Docs.</a>
    */
-  private int prometheusEndpointPort = 9098;
+  private int endpointPort = 9098;
 
-  public boolean isPrometheusEndpointEnabled() {
-    return prometheusEndpointEnabled;
+  public boolean isEndpointEnabled() {
+    return endpointEnabled;
   }
 
-  public void setPrometheusEndpointEnabled(boolean prometheusEndpointEnabled) {
-    this.prometheusEndpointEnabled = prometheusEndpointEnabled;
+  public void setEndpointEnabled(boolean endpointEnabled) {
+    this.endpointEnabled = endpointEnabled;
   }
 
-  public int getPrometheusEndpointPort() {
-    return prometheusEndpointPort;
+  public int getEndpointPort() {
+    return endpointPort;
   }
 
-  public void setPrometheusEndpointPort(int prometheusEndpointPort) {
-    this.prometheusEndpointPort = prometheusEndpointPort;
+  public void setEndpointPort(int endpointPort) {
+    this.endpointPort = endpointPort;
   }
 }

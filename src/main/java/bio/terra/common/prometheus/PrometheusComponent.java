@@ -1,4 +1,4 @@
-package bio.terra.common.metrics;
+package bio.terra.common.prometheus;
 
 import io.opencensus.exporter.stats.prometheus.PrometheusStatsCollector;
 import io.prometheus.client.exporter.HTTPServer;
@@ -11,24 +11,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** A Spring Component that exposes any OpenCensus metrics via a {@link HTTPServer}. */
+/** A Spring Component that exposes any OpenCensus metrics via a Prometheus {@link HTTPServer}. */
 @Component
-public class MetricsComponent {
-  private final Logger logger = LoggerFactory.getLogger(MetricsComponent.class);
-  private final MetricsProperties metricsProperties;
+public class PrometheusComponent {
+  private final Logger logger = LoggerFactory.getLogger(PrometheusComponent.class);
+  private final PrometheusProperties prometheusProperties;
 
   private HTTPServer prometheusServer;
 
   @Autowired
-  public MetricsComponent(MetricsProperties metricsProperties) {
-    this.metricsProperties = metricsProperties;
+  public PrometheusComponent(PrometheusProperties prometheusProperties) {
+    this.prometheusProperties = prometheusProperties;
   }
 
   @PostConstruct
   private void startEndpointServer() {
     logger.info(
-        "Prometheus metrics endpoint enabled: {}", metricsProperties.isPrometheusEndpointEnabled());
-    if (!metricsProperties.isPrometheusEndpointEnabled()) {
+        "Prometheus metrics endpoint enabled: {}", prometheusProperties.isEndpointEnabled());
+    if (!prometheusProperties.isEndpointEnabled()) {
       return;
     }
     try {
@@ -37,10 +37,9 @@ public class MetricsComponent {
       logger.error("OpenCensus Prometheus Collector already registered.", e);
     }
     try {
-      prometheusServer = new HTTPServer(metricsProperties.getPrometheusEndpointPort());
+      prometheusServer = new HTTPServer(prometheusProperties.getEndpointPort());
       logger.info(
-          "Prometheus endpoint server started. Port: {}",
-          metricsProperties.getPrometheusEndpointPort());
+          "Prometheus endpoint server started. Port: {}", prometheusProperties.getEndpointPort());
     } catch (IOException e) {
       logger.error("Prometheus endpoint server error on startup.", e);
     }
