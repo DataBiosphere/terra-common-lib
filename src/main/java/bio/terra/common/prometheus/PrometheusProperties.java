@@ -3,7 +3,7 @@ package bio.terra.common.prometheus;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Properties for enabling service metrics export to Prometheus. */
-@ConfigurationProperties(prefix = "terra.common.metrics")
+@ConfigurationProperties(prefix = "terra.common.prometheus")
 public class PrometheusProperties {
   /**
    * If the endpoint--more specifically, the server backing it--should be started.
