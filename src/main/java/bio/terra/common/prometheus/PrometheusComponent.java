@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 /** A Spring Component that exposes any OpenCensus metrics via a Prometheus {@link HTTPServer}. */
 @Component
 public class PrometheusComponent {
-  private final Logger logger = LoggerFactory.getLogger(PrometheusComponent.class);
+  private static final Logger logger = LoggerFactory.getLogger(PrometheusComponent.class);
   private final PrometheusProperties prometheusProperties;
 
   private HTTPServer prometheusServer;
