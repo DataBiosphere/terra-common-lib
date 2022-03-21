@@ -1,6 +1,7 @@
 package bio.terra.common.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 
@@ -198,6 +199,34 @@ public class LoggingTest {
 
     assertThat(event4).isNotNull();
     assertThat((String) readJson(event4, "$.foo.bar")).isEqualTo("baz");
+  }
+
+  @Test
+  public void testAlertLogging(CapturedOutput capturedOutput) {
+    ResponseEntity<String> response =
+        testRestTemplate.getForEntity("/testAlertLogging", String.class);
+    assertThat(response.getStatusCode().value()).isEqualTo(200);
+
+    String[] lines = capturedOutput.getAll().split("\n");
+    String event1 = null;
+    String event2 = null;
+    for (String line : lines) {
+      String message = readJson(line, "$.message");
+      if (message != null && message.contains("test alert message")) {
+        event1 = line;
+      } else if (message != null && message.contains("test structured object alert message")) {
+        event2 = line;
+      }
+    }
+
+    assertThat(event1).isNotNull();
+    assertThat((String) readJson(event1, "$.severity")).isEqualTo("ERROR");
+    assertTrue((Boolean) readJson(event1, "$." + LoggingUtils.ALERT_KEY));
+    assertThat(event2).isNotNull();
+    assertThat((String) readJson(event2, "$.severity")).isEqualTo("ERROR");
+    assertThat((String) readJson(event2, "$.pojo.name")).isEqualTo("asdf");
+    assertThat((Integer) readJson(event2, "$.pojo.id")).isEqualTo(1234);
+    assertTrue((Boolean) readJson(event2, "$." + LoggingUtils.ALERT_KEY));
   }
 
   // Uses the JsonPath library to extract data from a given path within a JSON string.

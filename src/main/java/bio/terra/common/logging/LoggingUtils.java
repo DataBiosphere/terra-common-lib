@@ -27,6 +27,25 @@ public final class LoggingUtils {
 
   private LoggingUtils() {}
 
+  // A simple string which can be included as a key in JSON logging output. This is intended to
+  // trigger log-based alerting to notify developers of unexpected errors.
+  public static final String ALERT_KEY = "terraLogBasedAlert";
+
+  public static Map<String, Boolean> alertObject() {
+    return Collections.singletonMap(ALERT_KEY, true);
+  }
+
+  /**
+   * Wrapper around logger.error() which also includes the alertObject defined above.
+   *
+   * <p>This allows callers to log at ERROR level and also trigger any environment-appropriate
+   * logging set up wherever their code is running. For logs which also need to include objects,
+   * callers can just include the alertObject() as an additional structured object to log.
+   */
+  public static void logAlert(Logger logger, String message) {
+    logger.error(message, alertObject());
+  }
+
   /**
    * Parses a JSON string and returns a Jackson JsonNode object which can be passed as an argument
    * for inclusion in JSON logging output.
@@ -43,7 +62,7 @@ public final class LoggingUtils {
    *   jsonPayload.eventType = "very-rare-event"
    * </pre>
    */
-  static JsonNode jsonFromString(String s) throws JsonProcessingException {
+  public static JsonNode jsonFromString(String s) throws JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper();
     // Let's not be monsters here. Allow some more lenient Javascript-style JSON.
     mapper.configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
@@ -67,7 +86,7 @@ public final class LoggingUtils {
    *   jsonPayload.event.subfield.value = "12345"
    * </pre>
    */
-  static Map<String, Object> structuredLogData(String key, Object value) {
+  public static Map<String, Object> structuredLogData(String key, Object value) {
     return Collections.singletonMap(key, value);
   }
 
