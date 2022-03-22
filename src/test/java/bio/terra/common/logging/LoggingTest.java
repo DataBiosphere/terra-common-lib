@@ -6,12 +6,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 
 import bio.terra.common.logging.LoggingTest.FilterTestConfiguration;
+import bio.terra.common.logging.LoggingTestController.StructuredDataPojo;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.annotation.Nullable;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -167,23 +169,10 @@ public class LoggingTest {
     assertThat(response.getStatusCode().value()).isEqualTo(200);
 
     String[] lines = capturedOutput.getAll().split("\n");
-
-    String event1 = null;
-    String event2 = null;
-    String event3 = null;
-    String event4 = null;
-    for (String line : lines) {
-      String message = readJson(line, "$.message");
-      if (message != null && message.contains("Some event happened")) {
-        event1 = line;
-      } else if (message != null && message.contains("Another event")) {
-        event2 = line;
-      } else if (message != null && message.contains("Structured data")) {
-        event3 = line;
-      } else if (message != null && message.contains("GSON object")) {
-        event4 = line;
-      }
-    }
+    String event1 = getLogContainingMessage(lines, "Some event happened");
+    String event2 = getLogContainingMessage(lines, "Another event");
+    String event3 = getLogContainingMessage(lines, "Structured data");
+    String event4 = getLogContainingMessage(lines, "GSON object");
 
     // The first log statement included a single key-value pair. Ensure that data is included in
     // the log output.
@@ -194,8 +183,10 @@ public class LoggingTest {
     assertThat((Integer) readJson(event2, "$.b")).isEqualTo(2);
 
     assertThat(event3).isNotNull();
-    assertThat((String) readJson(event3, "$.pojo.name")).isEqualTo("asdf");
-    assertThat((Integer) readJson(event3, "$.pojo.id")).isEqualTo(1234);
+    StructuredDataPojo pojo = readJson(event3, "$.pojo", StructuredDataPojo.class);
+    assertThat(pojo).isNotNull();
+    assertThat(pojo.name).isEqualTo("asdf");
+    assertThat(pojo.id).isEqualTo(1234);
 
     assertThat(event4).isNotNull();
     assertThat((String) readJson(event4, "$.foo.bar")).isEqualTo("baz");
@@ -206,46 +197,78 @@ public class LoggingTest {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testAlertLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
+    String[] lines = capturedOutput.getAll().split("\n");
+    String logLine = getLogContainingMessage(lines, "test alert message");
+    assertThat(logLine).isNotNull();
+    assertThat((String) readJson(logLine, "$.severity")).isEqualTo("ERROR");
+    assertTrue((Boolean) readJson(logLine, "$." + LoggingUtils.ALERT_KEY));
+  }
+
+  @Test
+  public void testAlertLoggingWithObject(CapturedOutput capturedOutput) {
+    ResponseEntity<String> response =
+        testRestTemplate.getForEntity("/testAlertLoggingWithObject", String.class);
+    assertThat(response.getStatusCode().value()).isEqualTo(200);
 
     String[] lines = capturedOutput.getAll().split("\n");
-    String event1 = null;
-    String event2 = null;
-    for (String line : lines) {
-      String message = readJson(line, "$.message");
-      if (message != null && message.contains("test alert message")) {
-        event1 = line;
-      } else if (message != null && message.contains("test structured object alert message")) {
-        event2 = line;
-      }
-    }
+    String logLine = getLogContainingMessage(lines, "test structured object alert message");
+    StructuredDataPojo pojo = readJson(logLine, "$.pojo", StructuredDataPojo.class);
+    assertThat(pojo).isNotNull();
 
-    assertThat(event1).isNotNull();
-    assertThat((String) readJson(event1, "$.severity")).isEqualTo("ERROR");
-    assertTrue((Boolean) readJson(event1, "$." + LoggingUtils.ALERT_KEY));
-    assertThat(event2).isNotNull();
-    assertThat((String) readJson(event2, "$.severity")).isEqualTo("ERROR");
-    assertThat((String) readJson(event2, "$.pojo.name")).isEqualTo("asdf");
-    assertThat((Integer) readJson(event2, "$.pojo.id")).isEqualTo(1234);
-    assertTrue((Boolean) readJson(event2, "$." + LoggingUtils.ALERT_KEY));
+    assertThat(logLine).isNotNull();
+    assertThat((String) readJson(logLine, "$.severity")).isEqualTo("ERROR");
+    assertTrue((Boolean) readJson(logLine, "$." + LoggingUtils.ALERT_KEY));
+    assertThat(pojo.name).isEqualTo("asdf");
+    assertThat(pojo.id).isEqualTo(1234);
   }
 
   // Uses the JsonPath library to extract data from a given path within a JSON string.
   @Nullable
   private <T> T readJson(String line, String path) {
+    return readJson(line, path, null);
+  }
+
+  /**
+   * Uses the JsonPath library to extract data from a given path within a JSON string.
+   *
+   * @param line The line of text to extract from
+   * @param path The JSON object path to read
+   * @param clazz Class to return. If null, this is inferred by the JsonPath library.
+   * @return
+   */
+  @Nullable
+  private <T> T readJson(String line, String path, @Nullable Class<T> clazz) {
     if (line.isEmpty()) {
       // JsonPath does not allow empty strings to be parsed.
       return null;
     }
     // Suppress exceptions, otherwise JsonPath will throw an exception when we look for a path that
     // doesn't exist. It's better to assert a null return value in that case.
-    return (T)
-        JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
-            .parse(line)
-            .read(path);
+    if (clazz != null) {
+      return (T)
+          JsonPath.using(
+                  Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+              .parse(line)
+              .read(path, clazz);
+    } else {
+      return (T)
+          JsonPath.using(
+                  Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+              .parse(line)
+              .read(path);
+    }
   }
 
   private String lastLoggedLine(CapturedOutput capturedOutput) {
     String[] lines = capturedOutput.getAll().split("\n");
     return lines[lines.length - 1];
+  }
+
+  /** Find and return the entire log line containing the provided message. */
+  private String getLogContainingMessage(String[] logLines, String message) {
+    return Arrays.stream(logLines)
+        .filter(line -> line.contains(message))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("No log line with message " + message));
   }
 }
