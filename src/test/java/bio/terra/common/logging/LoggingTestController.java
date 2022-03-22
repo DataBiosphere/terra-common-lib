@@ -55,4 +55,22 @@ public class LoggingTestController {
     // The GSON should look like {"foo": {"bar": "baz"}}
     LOG.info("GSON object", jsonObject);
   }
+
+  @GetMapping("/testAlertLogging")
+  public void testAlertLogging() throws JsonProcessingException {
+    // Test logging a message which should trigger an alert
+    LoggingUtils.logAlert(LOG, "test alert message");
+  }
+
+  @GetMapping("/testAlertLoggingWithObject")
+  public void testAlertLoggingWithObject() throws JsonProcessingException {
+    // Test logging both a message and object
+    StructuredDataPojo pojo = new StructuredDataPojo();
+    pojo.name = "asdf";
+    pojo.id = 1234;
+    LOG.error(
+        "test structured object alert message",
+        LoggingUtils.structuredLogData("pojo", pojo),
+        LoggingUtils.alertObject());
+  }
 }
