@@ -1,6 +1,5 @@
 package bio.terra.common.exception;
 
-import com.google.common.html.HtmlEscapers;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -75,5 +74,4 @@ public abstract class ErrorReportException extends RuntimeException {
         .append("statusCode", statusCode)
         .toString();
   }
-
 }
