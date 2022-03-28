@@ -1,6 +1,5 @@
 package bio.terra.common.exception;
 
-import com.google.common.html.HtmlEscapers;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -20,13 +19,13 @@ public abstract class ErrorReportException extends RuntimeException {
   private final HttpStatus statusCode;
 
   public ErrorReportException(String message) {
-    super(encodeMessage(message));
+    super(message);
     this.causes = Collections.emptyList();
     this.statusCode = DEFAULT_STATUS;
   }
 
   public ErrorReportException(String message, Throwable cause) {
-    super(encodeMessage(message), cause);
+    super(message, cause);
     this.causes = Collections.emptyList();
     this.statusCode = DEFAULT_STATUS;
   }
@@ -45,7 +44,7 @@ public abstract class ErrorReportException extends RuntimeException {
 
   public ErrorReportException(
       String message, @Nullable List<String> causes, @Nullable HttpStatus statusCode) {
-    super(encodeMessage(message));
+    super(message);
     this.causes = Optional.ofNullable(causes).orElse(Collections.emptyList());
     this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
   }
@@ -55,7 +54,7 @@ public abstract class ErrorReportException extends RuntimeException {
       Throwable cause,
       @Nullable List<String> causes,
       @Nullable HttpStatus statusCode) {
-    super(encodeMessage(message), cause);
+    super(message, cause);
     this.causes = Optional.ofNullable(causes).orElse(Collections.emptyList());
     this.statusCode = Optional.ofNullable(statusCode).orElse(DEFAULT_STATUS);
   }
@@ -74,9 +73,5 @@ public abstract class ErrorReportException extends RuntimeException {
         .append("causes", causes)
         .append("statusCode", statusCode)
         .toString();
-  }
-
-  private static String encodeMessage(String message) {
-    return HtmlEscapers.htmlEscaper().escape(message);
   }
 }
