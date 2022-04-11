@@ -164,7 +164,7 @@ class KubePodListener implements Runnable {
     return Watch.createWatch(
         apiClient,
         kubeApi.listNamespacedPodCall(
-            namespace, null, null, null, null, null, 5, null, null, Boolean.TRUE, null),
+            namespace, null, null, null, null, null, 5, null, null, null, Boolean.TRUE, null),
         new TypeToken<Watch.Response<V1Namespace>>() {}.getType());
   }
 

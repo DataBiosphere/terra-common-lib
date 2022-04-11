@@ -8,7 +8,6 @@ import ch.qos.logback.contrib.json.JsonLayoutBase;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.ServiceOptions;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
@@ -63,8 +62,6 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   // A reference to the current Spring app context, on order to pull out the spring.application.name
   // and spring.application.version variable for inclusion in JSON output.
   private ConfigurableApplicationContext applicationContext;
-  // A Gson instance to support converting Gson-type payloads into Jackson nodes.
-  private Gson gson;
   // A Jackson ObjectMapper to support converting Gson-type payloads into Jackson nodes.
   private ObjectMapper objectMapper;
   // A Logback utility class to assist with handling stack traces.
@@ -73,7 +70,6 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
   GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
     this.applicationContext = applicationContext;
-    this.gson = new Gson();
     this.objectMapper = new ObjectMapper();
     this.throwableProxyConverter = new ThrowableProxyConverter();
     // "full" is a magic string used by the TPC to indicate we want a full stack trace, rather
