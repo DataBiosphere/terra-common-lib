@@ -4,7 +4,7 @@ import bio.terra.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Objects;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /** Class representing the identity of an authenticated user. */
 @JsonDeserialize(builder = AuthenticatedUserRequest.Builder.class)

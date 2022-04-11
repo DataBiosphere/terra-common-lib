@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +104,8 @@ public class KubeService {
       try {
         CoreV1Api api = makeCoreApi();
         V1PodList list =
-            api.listNamespacedPod(namespace, null, null, null, null, null, null, null, null, null);
+            api.listNamespacedPod(
+                namespace, null, null, null, null, null, null, null, null, null, null);
         for (V1Pod item : list.getItems()) {
           if (item.getMetadata() != null) {
             String podName = item.getMetadata().getName();
