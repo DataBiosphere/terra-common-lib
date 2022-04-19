@@ -27,7 +27,7 @@ repositories {
 }
 
 group 'bio.terra'
-version '0.0.56-SNAPSHOT'
+version '0.0.57-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_11
 
 dependencies {
@@ -52,7 +52,11 @@ dependencies {
     implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20210507-1.31.0'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
-    implementation group: 'io.kubernetes', name: 'client-java', version: '15.0.0'
+    // TODO: This is not a direct dependency, but the transitive dependency is
+    //  an older version with a known vulnerability. Once a newer version is
+    //  pulled in as a transitive dependency, remove this direct dependency.
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.19.4'
+    implementation group: 'io.kubernetes', name: 'client-java', version: '14.0.0'
     implementation group: 'io.opencensus', name: 'opencensus-exporter-stats-prometheus', version: opencensus
     implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: opencensus
     implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.12.0'
