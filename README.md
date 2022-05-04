@@ -63,6 +63,7 @@ Gradle makes this very easy with a `mavenLocal` target for publishing and loadin
    ./gradlew publishToMavenLocal
    ```
     
+   Your package will be in `~/.m2/repository`.
 2. From the service repo, add `mavenLocal()` to the _first_ repository location
 build.gradle file (e.g. before `mavenCentral()`.
 
