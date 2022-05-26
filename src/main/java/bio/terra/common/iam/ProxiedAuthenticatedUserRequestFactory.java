@@ -5,11 +5,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 /**
- * Implementation of {link AuthenticatedUserRequestFactory} when HTTP requests enter from Apache
+ * Implementation of {@link AuthenticatedUserRequestFactory} when HTTP requests enter from Apache
  * Proxy. In this scenario, service is deployed behind Apache Proxy, and Apache proxy clears out any
  * inbound values for these headers, so they are guaranteed to contain valid auth information.
+ * @deprecated use {@link TokenAuthenticatedRequestFactory} instead
  */
 @Component
+@Deprecated
 public class ProxiedAuthenticatedUserRequestFactory implements AuthenticatedUserRequestFactory {
 
   static final String OIDC_ACCESS_TOKEN = "OIDC_ACCESS_token";

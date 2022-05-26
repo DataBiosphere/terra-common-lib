@@ -3,25 +3,22 @@ package bio.terra.common.iam;
 import bio.terra.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import java.util.Objects;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-/**
- * Class representing the identity of an authenticated user.
- * @deprecated use {@link TokenAuthenticatedRequest} instead
- */
-@JsonDeserialize(builder = AuthenticatedUserRequest.Builder.class)
-@Deprecated
-public class AuthenticatedUserRequest {
+import java.util.Objects;
+
+/** Class representing the identity of an authenticated user. */
+@JsonDeserialize(builder = SamUserAuthenticatedRequest.Builder.class)
+public class SamUserAuthenticatedRequest {
 
   private final String email;
   private final String subjectId;
-  private final String token;
+  private final TokenAuthenticatedRequest tokenRequest;
 
-  private AuthenticatedUserRequest(Builder builder) {
+  private SamUserAuthenticatedRequest(Builder builder) {
     this.email = builder.email;
     this.subjectId = builder.subjectId;
-    this.token = builder.token;
+    this.tokenRequest = builder.tokenRequest;
   }
 
   /**
@@ -40,15 +37,15 @@ public class AuthenticatedUserRequest {
   }
 
   /** Returns a JSON Web Token (JWT) possessed by the authenticated user. */
-  public String getToken() {
-    return token;
+  public TokenAuthenticatedRequest getTokenRequest() {
+    return tokenRequest;
   }
 
   @JsonPOJOBuilder(withPrefix = "set")
   public static class Builder {
     private String email;
     private String subjectId;
-    private String token;
+    private TokenAuthenticatedRequest tokenRequest;
 
     /** Sets the value for {@link #getEmail()}. */
     public Builder setEmail(String email) {
@@ -62,29 +59,29 @@ public class AuthenticatedUserRequest {
       return this;
     }
 
-    /** Sets the value for {@link #getToken()}}. */
-    public Builder setToken(String token) {
-      this.token = token;
+    /** Sets the value for {@link #getTokenRequest()}}. */
+    public Builder setTokenRequest(TokenAuthenticatedRequest tokenRequest) {
+      this.tokenRequest = tokenRequest;
       return this;
     }
 
     /**
-     * Build method returns a constructed, immutable {@link AuthenticatedUserRequest} instance.
+     * Build method returns a constructed, immutable {@link SamUserAuthenticatedRequest} instance.
      *
      * @throws UnauthorizedException if any field are not properly initialized
      */
-    public AuthenticatedUserRequest build() {
+    public SamUserAuthenticatedRequest build() {
 
       if (this.email == null) {
-        throw new IllegalStateException("Email is empty.");
+        throw new UnauthorizedException("Email is empty.");
       }
       if (this.subjectId == null) {
-        throw new IllegalStateException("Subject is empty.");
+        throw new UnauthorizedException("Subject is empty.");
       }
-      if (this.token == null) {
-        throw new IllegalStateException("Token is empty");
+      if (this.tokenRequest == null) {
+        throw new UnauthorizedException("Token is empty");
       }
-      return new AuthenticatedUserRequest(this);
+      return new SamUserAuthenticatedRequest(this);
     }
   }
 
@@ -93,7 +90,7 @@ public class AuthenticatedUserRequest {
   }
 
   public Builder toBuilder() {
-    return builder().setEmail(this.email).setSubjectId(this.subjectId).setToken(this.token);
+    return builder().setEmail(this.email).setSubjectId(this.subjectId).setTokenRequest(this.tokenRequest);
   }
 
   @Override
@@ -101,13 +98,13 @@ public class AuthenticatedUserRequest {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof AuthenticatedUserRequest)) {
+    if (!(o instanceof SamUserAuthenticatedRequest)) {
       return false;
     }
-    AuthenticatedUserRequest that = (AuthenticatedUserRequest) o;
+    SamUserAuthenticatedRequest that = (SamUserAuthenticatedRequest) o;
     return Objects.equals(getEmail(), that.getEmail())
         && Objects.equals(getSubjectId(), that.getSubjectId())
-        && Objects.equals(getToken(), that.getToken());
+        && Objects.equals(getTokenRequest(), that.getTokenRequest());
   }
 
   @Override
@@ -115,7 +112,7 @@ public class AuthenticatedUserRequest {
     return new HashCodeBuilder()
         .append(getEmail())
         .append(getSubjectId())
-        .append(getToken())
+        .append(getTokenRequest())
         .toHashCode();
   }
 }
