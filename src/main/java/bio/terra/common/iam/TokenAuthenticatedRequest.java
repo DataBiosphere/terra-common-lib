@@ -3,9 +3,8 @@ package bio.terra.common.iam;
 import bio.terra.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.Objects;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /** Class representing the bearer token of the request. */
 @JsonDeserialize(builder = TokenAuthenticatedRequest.Builder.class)
@@ -68,8 +67,6 @@ public class TokenAuthenticatedRequest {
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder()
-        .append(getToken())
-        .toHashCode();
+    return new HashCodeBuilder().append(getToken()).toHashCode();
   }
 }

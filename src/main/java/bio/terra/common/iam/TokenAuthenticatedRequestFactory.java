@@ -1,17 +1,15 @@
 package bio.terra.common.iam;
 
-import bio.terra.common.exception.UnauthorizedException;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
- * Implementation of {@link AuthenticatedUserRequestFactory} when HTTP requests contain a bearer token
- * in the Authorization header.
+ * Implementation of {@link AuthenticatedUserRequestFactory} when HTTP requests contain a bearer
+ * token in the Authorization header.
  *
- * This factory is all that should be required to propagate the caller's identity in most cases.
- * In cases where Sam is not otherwise called to check the caller's access or the caller's email or id
- * are required, seel{@link SamAuthenticatedUserRequestFactory}.
+ * <p>This factory is all that should be required to propagate the caller's identity in most cases.
+ * In cases where Sam is not otherwise called to check the caller's access or the caller's email or
+ * id are required, seel{@link SamAuthenticatedUserRequestFactory}.
  */
 @Component
 public class TokenAuthenticatedRequestFactory {

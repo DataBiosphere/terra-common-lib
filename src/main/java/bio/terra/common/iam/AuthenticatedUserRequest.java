@@ -8,6 +8,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Class representing the identity of an authenticated user.
+ *
  * @deprecated use {@link TokenAuthenticatedRequest} instead
  */
 @JsonDeserialize(builder = AuthenticatedUserRequest.Builder.class)

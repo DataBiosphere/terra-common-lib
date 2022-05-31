@@ -1,5 +1,7 @@
 package bio.terra.common.iam;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import bio.terra.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -13,12 +15,11 @@ import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @Tag("unit")
 public class SamUserAuthenticatedRequestTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(SamUserAuthenticatedRequestTest.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(SamUserAuthenticatedRequestTest.class);
 
   /**
    * ObjectMapper testing configuration
@@ -40,7 +41,8 @@ public class SamUserAuthenticatedRequestTest {
 
   private static final String EMAIL_ADDRESS = "test@example.com";
   private static final String SUBJECT_ID = "Subject";
-  private static final TokenAuthenticatedRequest TOKEN = new TokenAuthenticatedRequest.Builder().setToken("0123.456-789AbCd").build();
+  private static final TokenAuthenticatedRequest TOKEN =
+      new TokenAuthenticatedRequest.Builder().setToken("0123.456-789AbCd").build();
 
   @Test
   public void builder() throws Exception {
@@ -83,7 +85,11 @@ public class SamUserAuthenticatedRequestTest {
     // Negative tests
     assertNotEquals(req, req.toBuilder().setEmail("JUNK").build());
     assertNotEquals(req, req.toBuilder().setSubjectId("JUNK").build());
-    assertNotEquals(req, req.toBuilder().setTokenRequest(new TokenAuthenticatedRequest.Builder().setToken("JUNK").build()).build());
+    assertNotEquals(
+        req,
+        req.toBuilder()
+            .setTokenRequest(new TokenAuthenticatedRequest.Builder().setToken("JUNK").build())
+            .build());
 
     // Explicit test for comparison to self
     assertEquals(req, req);

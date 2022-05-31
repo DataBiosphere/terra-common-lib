@@ -1,5 +1,9 @@
 package bio.terra.common.iam;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import bio.terra.common.exception.UnauthorizedException;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
@@ -10,21 +14,20 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @Tag("unit")
 public class SamUserAuthenticatedRequestFactoryTest {
 
   private static final String EMAIL_ADDRESS = "test@example.com";
   private static final String SUBJECT_ID = "Subject";
-  private static final TokenAuthenticatedRequest TOKEN = new TokenAuthenticatedRequest.Builder().setToken("0123.456-789AbCd").build();
+  private static final TokenAuthenticatedRequest TOKEN =
+      new TokenAuthenticatedRequest.Builder().setToken("0123.456-789AbCd").build();
 
   @Test
   public void enabledUser() throws ApiException {
     TestFactory factory = new TestFactory();
-    when(factory.usersApi.getUserStatusInfo()).thenReturn(new UserStatusInfo().userEmail(EMAIL_ADDRESS).userSubjectId(SUBJECT_ID).enabled(true));
+    when(factory.usersApi.getUserStatusInfo())
+        .thenReturn(
+            new UserStatusInfo().userEmail(EMAIL_ADDRESS).userSubjectId(SUBJECT_ID).enabled(true));
 
     SamUserAuthenticatedRequest outReq = factory.from(TOKEN, new ApiClient());
     assertEquals(EMAIL_ADDRESS, outReq.getEmail());
@@ -35,7 +38,9 @@ public class SamUserAuthenticatedRequestFactoryTest {
   @Test
   public void disabledUser() throws ApiException {
     TestFactory factory = new TestFactory();
-    when(factory.usersApi.getUserStatusInfo()).thenReturn(new UserStatusInfo().userEmail(EMAIL_ADDRESS).userSubjectId(SUBJECT_ID).enabled(false));
+    when(factory.usersApi.getUserStatusInfo())
+        .thenReturn(
+            new UserStatusInfo().userEmail(EMAIL_ADDRESS).userSubjectId(SUBJECT_ID).enabled(false));
 
     assertThrows(UnauthorizedException.class, () -> factory.from(TOKEN, new ApiClient()));
   }
@@ -43,7 +48,8 @@ public class SamUserAuthenticatedRequestFactoryTest {
   @Test
   public void notFoundUser() throws ApiException {
     TestFactory factory = new TestFactory();
-    when(factory.usersApi.getUserStatusInfo()).thenThrow(new ApiException(HttpStatus.NOT_FOUND.value(), "not found"));
+    when(factory.usersApi.getUserStatusInfo())
+        .thenThrow(new ApiException(HttpStatus.NOT_FOUND.value(), "not found"));
 
     assertThrows(UnauthorizedException.class, () -> factory.from(TOKEN, new ApiClient()));
   }
@@ -57,9 +63,11 @@ public class SamUserAuthenticatedRequestFactoryTest {
 
     @Override
     protected UsersApi getUsersApi(ApiClient samApiClient) {
-      assertTrue(samApiClient.getAuthentications().values().stream().anyMatch(a ->
-        a instanceof OAuth && ((OAuth) a).getAccessToken().equals(TOKEN.getToken())
-      ));
+      assertTrue(
+          samApiClient.getAuthentications().values().stream()
+              .anyMatch(
+                  a ->
+                      a instanceof OAuth && ((OAuth) a).getAccessToken().equals(TOKEN.getToken())));
       return usersApi;
     }
   }

@@ -1,5 +1,7 @@
 package bio.terra.common.iam;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import bio.terra.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -12,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("unit")
 public class TokenAuthenticatedRequestTest {
@@ -56,10 +56,7 @@ public class TokenAuthenticatedRequestTest {
 
   @Test
   public void equality() {
-    TokenAuthenticatedRequest req =
-        TokenAuthenticatedRequest.builder()
-            .setToken(TOKEN)
-            .build();
+    TokenAuthenticatedRequest req = TokenAuthenticatedRequest.builder().setToken(TOKEN).build();
 
     // Positive test
     TokenAuthenticatedRequest cmp = req.toBuilder().build();
@@ -96,8 +93,6 @@ public class TokenAuthenticatedRequestTest {
 
     validateJsonDeserialization(
         "[\"bio.terra.common.iam.TokenAuthenticatedRequest\",{\"token\":\"0123.456-789AbCd\"}]",
-        TokenAuthenticatedRequest.builder()
-            .setToken("0123.456-789AbCd")
-            .build());
+        TokenAuthenticatedRequest.builder().setToken("0123.456-789AbCd").build());
   }
 }

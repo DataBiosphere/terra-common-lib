@@ -3,9 +3,8 @@ package bio.terra.common.iam;
 import bio.terra.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.Objects;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /** Class representing the identity of an authenticated user. */
 @JsonDeserialize(builder = SamUserAuthenticatedRequest.Builder.class)
@@ -90,7 +89,10 @@ public class SamUserAuthenticatedRequest {
   }
 
   public Builder toBuilder() {
-    return builder().setEmail(this.email).setSubjectId(this.subjectId).setTokenRequest(this.tokenRequest);
+    return builder()
+        .setEmail(this.email)
+        .setSubjectId(this.subjectId)
+        .setTokenRequest(this.tokenRequest);
   }
 
   @Override
