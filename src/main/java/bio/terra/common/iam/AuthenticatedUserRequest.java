@@ -6,8 +6,13 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Objects;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-/** Class representing the identity of an authenticated user. */
+/**
+ * Class representing the identity of an authenticated user.
+ *
+ * @deprecated use {@link BearerToken} instead
+ */
 @JsonDeserialize(builder = AuthenticatedUserRequest.Builder.class)
+@Deprecated
 public class AuthenticatedUserRequest {
 
   private final String email;
