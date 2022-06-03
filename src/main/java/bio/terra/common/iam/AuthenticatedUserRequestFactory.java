@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * An interface for extracting {@link AuthenticatedUserRequest} from an {@link HttpServletRequest}.
  *
- * @deprecated use {@link TokenAuthenticatedRequestFactory} instead
+ * @deprecated use {@link BearerTokenFactory} instead
  */
 @Deprecated
 public interface AuthenticatedUserRequestFactory {

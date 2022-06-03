@@ -2,7 +2,6 @@ package bio.terra.common.iam;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import bio.terra.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,9 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Tag("unit")
-public class TokenAuthenticatedRequestTest {
+public class BearerTokenTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(TokenAuthenticatedRequestTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(BearerTokenTest.class);
 
   /**
    * ObjectMapper testing configuration
@@ -38,50 +37,33 @@ public class TokenAuthenticatedRequestTest {
           .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
           .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
-  private static final String TOKEN = "0123.456-789AbCd";
-
-  @Test
-  public void builder() throws Exception {
-    TokenAuthenticatedRequest.Builder builder = TokenAuthenticatedRequest.builder();
-
-    // Build fails due to no Token
-    assertThrows(UnauthorizedException.class, builder::build);
-    builder.setToken(TOKEN);
-
-    // Build succeeds
-    TokenAuthenticatedRequest req = builder.build();
-    assertEquals(TOKEN, req.getToken());
-    validateJsonSerialization(req);
-  }
+  private static final BearerToken TOKEN = new BearerToken("0123.456-789AbCd");
 
   @Test
   public void equality() {
-    TokenAuthenticatedRequest req = TokenAuthenticatedRequest.builder().setToken(TOKEN).build();
-
     // Positive test
-    TokenAuthenticatedRequest cmp = req.toBuilder().build();
-    assertEquals(req, cmp);
-    assertEquals(req.hashCode(), cmp.hashCode());
+    BearerToken cmp = new BearerToken(TOKEN.getToken());
+    assertEquals(TOKEN, cmp);
+    assertEquals(TOKEN.hashCode(), cmp.hashCode());
 
     // Negative tests
-    assertNotEquals(req, req.toBuilder().setToken("JUNK").build());
+    assertNotEquals(TOKEN, new BearerToken("JUNK"));
 
     // Explicit test for comparison to self
-    assertEquals(req, req);
+    assertEquals(TOKEN, TOKEN);
 
     // Explicit test for off-type comparison
-    assertNotEquals(req, "test");
+    assertNotEquals(TOKEN, "test");
   }
 
-  private static void validateJsonDeserialization(String json, TokenAuthenticatedRequest request)
+  private static void validateJsonDeserialization(String json, BearerToken request)
       throws JsonProcessingException {
-    TokenAuthenticatedRequest deserialized =
-        objectMapper.readValue(json, TokenAuthenticatedRequest.class);
+    BearerToken deserialized = objectMapper.readValue(json, BearerToken.class);
     assertEquals(request, deserialized);
     assertEquals(request.hashCode(), deserialized.hashCode());
   }
 
-  private static void validateJsonSerialization(TokenAuthenticatedRequest request)
+  private static void validateJsonSerialization(BearerToken request)
       throws JsonProcessingException {
     String asString = objectMapper.writeValueAsString(request);
     logger.debug(String.format("Serialized TokenAuthenticatedRequest: '%s'", asString));
@@ -93,6 +75,6 @@ public class TokenAuthenticatedRequestTest {
 
     validateJsonDeserialization(
         "[\"bio.terra.common.iam.TokenAuthenticatedRequest\",{\"token\":\"0123.456-789AbCd\"}]",
-        TokenAuthenticatedRequest.builder().setToken("0123.456-789AbCd").build());
+        TOKEN);
   }
 }

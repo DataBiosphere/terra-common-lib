@@ -12,13 +12,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("unit")
-public class TokenAuthenticatedRequestFactoryTest {
+public class BearerTokenFactoryTest {
 
   private static final String TOKEN = "0123.456-789AbCd";
 
   private HttpServletRequest inRequest;
 
-  private static void validate(TokenAuthenticatedRequest outReq) {
+  private static void validate(BearerToken outReq) {
     assertEquals(TOKEN, outReq.getToken());
   }
 
@@ -33,23 +33,22 @@ public class TokenAuthenticatedRequestFactoryTest {
   @Test
   public void bearerToken() {
     final String bearerToken = "Bearer ".concat(TOKEN);
-    TokenAuthenticatedRequestFactory factory = new TokenAuthenticatedRequestFactory();
-    when(inRequest.getHeader(TokenAuthenticatedRequestFactory.AUTHORIZATION))
-        .thenReturn(bearerToken);
+    BearerTokenFactory factory = new BearerTokenFactory();
+    when(inRequest.getHeader(BearerTokenFactory.AUTHORIZATION)).thenReturn(bearerToken);
     validate(factory.from(inRequest));
   }
 
   @Test
   public void nullToken() {
-    TokenAuthenticatedRequestFactory factory = new TokenAuthenticatedRequestFactory();
-    when(inRequest.getHeader(TokenAuthenticatedRequestFactory.AUTHORIZATION)).thenReturn(null);
+    BearerTokenFactory factory = new BearerTokenFactory();
+    when(inRequest.getHeader(BearerTokenFactory.AUTHORIZATION)).thenReturn(null);
     assertThrows(UnauthorizedException.class, () -> factory.from(inRequest));
   }
 
   @Test
   public void badToken() {
-    TokenAuthenticatedRequestFactory factory = new TokenAuthenticatedRequestFactory();
-    when(inRequest.getHeader(TokenAuthenticatedRequestFactory.AUTHORIZATION)).thenReturn("junk");
+    BearerTokenFactory factory = new BearerTokenFactory();
+    when(inRequest.getHeader(BearerTokenFactory.AUTHORIZATION)).thenReturn("junk");
     assertThrows(UnauthorizedException.class, () -> factory.from(inRequest));
   }
 }
