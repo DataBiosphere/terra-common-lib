@@ -57,7 +57,7 @@ public class SamUserFactory {
   }
 
   @VisibleForTesting
-  protected UsersApi createUsersApi(BearerToken bearerToken, String samBasePath) {
+  UsersApi createUsersApi(BearerToken bearerToken, String samBasePath) {
     ApiClient samApiClient = new ApiClient();
     samApiClient.setBasePath(samBasePath);
     samApiClient.setAccessToken(bearerToken.getToken());
