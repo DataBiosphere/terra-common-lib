@@ -63,18 +63,17 @@ public class BearerTokenTest {
     assertEquals(request.hashCode(), deserialized.hashCode());
   }
 
-  private static void validateJsonSerialization(BearerToken request)
-      throws JsonProcessingException {
-    String asString = objectMapper.writeValueAsString(request);
+  @Test
+  void testJsonSerialization() throws JsonProcessingException {
+    String asString = objectMapper.writeValueAsString(TOKEN);
     logger.debug(String.format("Serialized TokenAuthenticatedRequest: '%s'", asString));
-    validateJsonDeserialization(asString, request);
+    validateJsonDeserialization(asString, TOKEN);
   }
 
   @Test
-  public void testVectors() throws JsonProcessingException {
+  public void testJsonDeserialization() throws JsonProcessingException {
 
     validateJsonDeserialization(
-        "[\"bio.terra.common.iam.TokenAuthenticatedRequest\",{\"token\":\"0123.456-789AbCd\"}]",
-        TOKEN);
+        "[\"bio.terra.common.iam.BearerToken\",{\"token\":\"0123.456-789AbCd\"}]", TOKEN);
   }
 }
