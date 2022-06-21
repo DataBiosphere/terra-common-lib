@@ -11,6 +11,7 @@ import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,6 +21,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -43,11 +45,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 @EnableConfigurationProperties(value = TracingProperties.class)
-public class TracingConfig implements InitializingBean, WebMvcConfigurer {
+public class TracingConfig implements InitializingBean, WebMvcConfigurer, ServletContextAware {
   private static final Logger logger = LoggerFactory.getLogger(TracingConfig.class);
 
   private final ConfigurableEnvironment configurableEnvironment;
   private final TracingProperties tracingProperties;
+  private ServletContext servletContext;
 
   @Autowired
   public TracingConfig(
@@ -56,12 +59,21 @@ public class TracingConfig implements InitializingBean, WebMvcConfigurer {
     this.tracingProperties = tracingProperties;
   }
 
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    this.servletContext = servletContext;
+  }
+
   /**
    * A bean to register the {@link OcHttpServletFilter} to enclose server requests in OpenCensus
    * span scopes.
    */
   @Bean
   public FilterRegistrationBean<OcHttpServletFilter> tracingServletFilter() {
+    // Sam only supports B3 format headers, so prefer those everywhere to the default TraceContext
+    // format.
+    servletContext.setAttribute(
+        OcHttpServletFilter.OC_TRACE_PROPAGATOR, Tracing.getPropagationComponent().getB3Format());
     FilterRegistrationBean<OcHttpServletFilter> registration =
         new FilterRegistrationBean<>(new OcHttpServletFilter());
     registration.setUrlPatterns(tracingProperties.getUrlPatterns());
