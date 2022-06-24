@@ -8,7 +8,7 @@ import okhttp3.Response;
 /**
  * Extractor to populate span fields from a Request object
  *
- * OpenCensus spans have a number of fields defined, this class extracts values from OkHttp
+ * <p>OpenCensus spans have a number of fields defined, this class extracts values from OkHttp
  * request/response objects to populate those fields. Per the OpenCensus spec, "All attributes are
  * optional, but collector should make the best effort to collect those."
  */

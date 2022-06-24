@@ -13,9 +13,9 @@ import okhttp3.Response;
 /**
  * An interceptor to add tracing headers to outgoing requests.
  *
- * OkHttp interceptors are called before and after network requests, and can modify the request and
- * response objects. In this case, we're adding headers for the current traceId and span, which the
- * remote service can read to link traces across services.
+ * <p>OkHttp interceptors are called before and after network requests, and can modify the request
+ * and response objects. In this case, we're adding headers for the current traceId and span, which
+ * the remote service can read to link traces across services.
  */
 public class OkHttpClientTracingInterceptor implements Interceptor {
   private final Tracer tracer;
