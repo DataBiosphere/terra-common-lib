@@ -5,6 +5,13 @@ import javax.annotation.Nullable;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * Extractor to populate span fields from a Request object
+ *
+ * OpenCensus spans have a number of fields defined, this class extracts values from OkHttp
+ * request/response objects to populate those fields. Per the OpenCensus spec, "All attributes are
+ * optional, but collector should make the best effort to collect those."
+ */
 public class OkHttpTracingExtractor extends HttpExtractor<Request, Response> {
 
   @Nullable
@@ -12,8 +19,8 @@ public class OkHttpTracingExtractor extends HttpExtractor<Request, Response> {
   public String getRoute(Request request) {
     // OpenCensus spec wants this to be something like the literal string
     // "/api/workspace/{workspaceId}", whereas path would be "/api/workspace/12345".
-    // We don't have the route available and this is a best-effort method, so use path instead.
-    return request.url().encodedPath();
+    // We don't have the route available and this is an optional method, so return null.
+    return null;
   }
 
   @Nullable
@@ -48,6 +55,7 @@ public class OkHttpTracingExtractor extends HttpExtractor<Request, Response> {
 
   @Override
   public int getStatusCode(@Nullable Response response) {
+    // Per base class, "If the response is null, this method should return 0".
     return response != null ? response.code() : 0;
   }
 }
