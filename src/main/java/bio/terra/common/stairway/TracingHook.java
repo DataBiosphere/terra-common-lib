@@ -102,10 +102,10 @@ public class TracingHook implements StairwayHook {
       // at the end of the Flight's current run.
       flightScope =
           tracer
-              .spanBuilderWithExplicitParent(
+              .spanBuilderWithRemoteParent(
                   FLIGHT_NAME_PREFIX
                       + ClassUtils.getShortClassName(flightContext.getFlightClassName()),
-                  null)
+                  submissionContext)
               .startScopedSpan();
       Span flightSpan = tracer.getCurrentSpan();
       flightSpan.addLink(Link.fromSpanContext(submissionContext, Link.Type.PARENT_LINKED_SPAN));
