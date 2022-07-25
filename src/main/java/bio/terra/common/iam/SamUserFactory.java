@@ -2,8 +2,11 @@ package bio.terra.common.iam;
 
 import bio.terra.common.exception.InternalServerErrorException;
 import bio.terra.common.exception.UnauthorizedException;
+import bio.terra.common.tracing.OkHttpClientTracingInterceptor;
 import com.google.common.annotations.VisibleForTesting;
+import io.opencensus.trace.Tracing;
 import javax.servlet.http.HttpServletRequest;
+import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
@@ -25,6 +28,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class SamUserFactory {
   final BearerTokenFactory bearerTokenFactory;
+  final OkHttpClient httpClient =
+      new ApiClient()
+          .getHttpClient()
+          .newBuilder()
+          .addInterceptor(new OkHttpClientTracingInterceptor(Tracing.getTracer()))
+          .build();
 
   @Autowired
   public SamUserFactory(BearerTokenFactory bearerTokenFactory) {
@@ -59,6 +68,7 @@ public class SamUserFactory {
   @VisibleForTesting
   UsersApi createUsersApi(BearerToken bearerToken, String samBasePath) {
     ApiClient samApiClient = new ApiClient();
+    samApiClient.setHttpClient(this.httpClient);
     samApiClient.setBasePath(samBasePath);
     samApiClient.setAccessToken(bearerToken.getToken());
     return new UsersApi(samApiClient);
