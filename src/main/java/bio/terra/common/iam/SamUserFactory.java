@@ -28,6 +28,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class SamUserFactory {
   final BearerTokenFactory bearerTokenFactory;
+  final OkHttpClient httpClient =
+      new ApiClient()
+          .getHttpClient()
+          .newBuilder()
+          .addInterceptor(new OkHttpClientTracingInterceptor(Tracing.getTracer()))
+          .build();
 
   @Autowired
   public SamUserFactory(BearerTokenFactory bearerTokenFactory) {
@@ -62,14 +68,7 @@ public class SamUserFactory {
   @VisibleForTesting
   UsersApi createUsersApi(BearerToken bearerToken, String samBasePath) {
     ApiClient samApiClient = new ApiClient();
-    OkHttpClient okHttpClient =
-        samApiClient
-            .getHttpClient()
-            .newBuilder()
-            .addInterceptor(new OkHttpClientTracingInterceptor(Tracing.getTracer()))
-            .build();
-
-    samApiClient.setHttpClient(okHttpClient);
+    samApiClient.setHttpClient(this.httpClient);
     samApiClient.setBasePath(samBasePath);
     samApiClient.setAccessToken(bearerToken.getToken());
     return new UsersApi(samApiClient);
