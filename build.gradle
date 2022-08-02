@@ -27,7 +27,7 @@ repositories {
 }
 
 group 'bio.terra'
-version 'DOGE'
+version '0.0.62-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_11
 
 dependencies {
