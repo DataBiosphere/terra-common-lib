@@ -17,6 +17,7 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release/'
@@ -27,7 +28,7 @@ repositories {
 }
 
 group 'bio.terra'
-version '0.0.62-SNAPSHOT'
+version '0.0.62-ZLOERY'
 sourceCompatibility = JavaVersion.VERSION_11
 
 dependencies {
@@ -43,7 +44,7 @@ dependencies {
 
     // Publish the stairway library for common lib users to minimize rollout overhead
     // of new Stairways.
-    api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.67-SNAPSHOT'
+    api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.69-ZLOERY'
 
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
