@@ -6,7 +6,7 @@ plugins {
 
     id 'com.diffplug.spotless' version '5.12.4'
     id 'com.github.ben-manes.versions' version '0.36.0'
-    id 'com.jfrog.artifactory' version '4.13.0'
+    id 'com.jfrog.artifactory' version '4.28.1'
     // [dd 2021-05-17] Use of Spring dependency management generates invalid POM, making
     // it impossible to publish to mavenLocal. In order to make TCL testable, I have
     // removed this plugin and filled in specific version numbers. I also removed all
