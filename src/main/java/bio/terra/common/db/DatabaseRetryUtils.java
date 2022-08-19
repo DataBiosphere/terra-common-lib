@@ -45,7 +45,8 @@ public final class DatabaseRetryUtils {
       TimeUnit.MILLISECONDS.sleep(retrySleep.toMillis());
     }
     throw new IllegalStateException(
-        "Exceeded maximum number of retries without throwing an exception. This should never happen.");
+        "Exceeded maximum number of retries without throwing an exception. This should never"
+            + " happen.");
   }
 
   /**

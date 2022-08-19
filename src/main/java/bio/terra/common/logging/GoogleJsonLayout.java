@@ -81,6 +81,43 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
     setJsonFormatter(new JacksonJsonFormatter());
   }
 
+  /**
+   * Returns a Map with properties indicating the source file and location of the code triggering
+   * the logging event.
+   *
+   * <p>Taken largely from <a
+   * href="https://github.com/ankurcha/gcloud-logging-slf4j-logback/blob/master/src/main/java/com/google/cloud/logging/GoogleCloudLoggingV2Layout.java">gcloud-logging-slf4j-logback</a>.
+   */
+  static Map<String, Object> getSourceLocation(ILoggingEvent event) {
+    StackTraceElement[] callerData = event.getCallerData();
+    Map<String, Object> sourceLocation = new HashMap<>();
+    if (callerData != null && callerData.length > 0) {
+      StackTraceElement stackTraceElement = callerData[0];
+
+      sourceLocation.put(
+          "function",
+          stackTraceElement.getClassName()
+              + "."
+              + stackTraceElement.getMethodName()
+              + (stackTraceElement.isNativeMethod() ? "(Native Method)" : ""));
+      if (stackTraceElement.getFileName() != null) {
+        String packageName = stackTraceElement.getClassName().replaceAll("\\.", "/");
+        packageName = packageName.substring(0, packageName.lastIndexOf("/") + 1);
+        sourceLocation.put("file", packageName + stackTraceElement.getFileName());
+      }
+      sourceLocation.put("line", stackTraceElement.getLineNumber());
+    } else {
+      sourceLocation.put("file", CallerData.NA);
+      sourceLocation.put("line", CallerData.LINE_NA);
+      sourceLocation.put("function", CallerData.NA);
+    }
+    return sourceLocation;
+  }
+
+  private static boolean isNullOrEmpty(String string) {
+    return string == null || string.length() == 0;
+  }
+
   @Override
   public void start() {
     super.start();
@@ -183,43 +220,6 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
       return message + "\n" + stackTrace;
     }
     return message;
-  }
-
-  /**
-   * Returns a Map with properties indicating the source file and location of the code triggering
-   * the logging event.
-   *
-   * <p>Taken largely from <a
-   * href="https://github.com/ankurcha/gcloud-logging-slf4j-logback/blob/master/src/main/java/com/google/cloud/logging/GoogleCloudLoggingV2Layout.java">gcloud-logging-slf4j-logback</a>.
-   */
-  static Map<String, Object> getSourceLocation(ILoggingEvent event) {
-    StackTraceElement[] callerData = event.getCallerData();
-    Map<String, Object> sourceLocation = new HashMap<>();
-    if (callerData != null && callerData.length > 0) {
-      StackTraceElement stackTraceElement = callerData[0];
-
-      sourceLocation.put(
-          "function",
-          stackTraceElement.getClassName()
-              + "."
-              + stackTraceElement.getMethodName()
-              + (stackTraceElement.isNativeMethod() ? "(Native Method)" : ""));
-      if (stackTraceElement.getFileName() != null) {
-        String packageName = stackTraceElement.getClassName().replaceAll("\\.", "/");
-        packageName = packageName.substring(0, packageName.lastIndexOf("/") + 1);
-        sourceLocation.put("file", packageName + stackTraceElement.getFileName());
-      }
-      sourceLocation.put("line", stackTraceElement.getLineNumber());
-    } else {
-      sourceLocation.put("file", CallerData.NA);
-      sourceLocation.put("line", CallerData.LINE_NA);
-      sourceLocation.put("function", CallerData.NA);
-    }
-    return sourceLocation;
-  }
-
-  private static boolean isNullOrEmpty(String string) {
-    return string == null || string.length() == 0;
   }
 
   protected String formatTraceId(final String traceId) {

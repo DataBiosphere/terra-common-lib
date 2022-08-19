@@ -25,12 +25,10 @@ public class SamRetry {
   private static final Duration MAXIMUM_WAIT = Duration.ofSeconds(30);
   private static final Duration INITIAL_WAIT = Duration.ofSeconds(10);
   private static final Duration OPERATION_TIMEOUT = Duration.ofSeconds(300);
-  private final Instant operationTimeout;
-
   // Sam calls which timeout will throw ApiExceptions wrapping SocketTimeoutExceptions and will have
   // an errorCode 0. This isn't a real HTTP status code, but we can check for it anyway.
   private static final int TIMEOUT_STATUS_CODE = 0;
-
+  private final Instant operationTimeout;
   // How long to wait between retries.
   private Duration retryDuration;
 
@@ -42,16 +40,6 @@ public class SamRetry {
   protected SamRetry(Duration timeout) {
     this.operationTimeout = now().plus(timeout);
     this.retryDuration = INITIAL_WAIT;
-  }
-
-  @FunctionalInterface
-  public interface SamVoidFunction {
-    void apply() throws ApiException, InterruptedException;
-  }
-
-  @FunctionalInterface
-  public interface SamFunction<R> {
-    R apply() throws ApiException, InterruptedException;
   }
 
   /**
@@ -138,5 +126,15 @@ public class SamRetry {
     if (retryDuration.compareTo(MAXIMUM_WAIT) > 0) {
       retryDuration = MAXIMUM_WAIT;
     }
+  }
+
+  @FunctionalInterface
+  public interface SamVoidFunction {
+    void apply() throws ApiException, InterruptedException;
+  }
+
+  @FunctionalInterface
+  public interface SamFunction<R> {
+    R apply() throws ApiException, InterruptedException;
   }
 }

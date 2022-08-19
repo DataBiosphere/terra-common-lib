@@ -42,23 +42,16 @@ import org.slf4j.LoggerFactory;
     justification = "Spotbugs doesn't understand resource try construct")
 class KubePodListener implements Runnable {
 
-  enum PodState {
-    RUNNING,
-    DELETED
-  }
-
   private static final int WATCH_RETRIES = 10;
   private static final int WATCH_INITIAL_WAIT = 5;
   private static final int WATCH_MAX_WAIT = 30;
-
   private final Logger logger = LoggerFactory.getLogger(KubePodListener.class);
   private final KubeService kubeService;
   private final String namespace;
   private final String podNameFilter;
   private final Stairway stairway;
-  private Exception exception;
   private final Map<String, PodState> podMap;
-
+  private Exception exception;
   /**
    * Setup the listener configuration.
    *
@@ -204,5 +197,10 @@ class KubePodListener implements Runnable {
     final long count = podMap.values().stream().filter(PodState.RUNNING::equals).count();
     logger.info("KubePodListener ActivePodCount: {} of {} pods active", count, podMap.size());
     return Math.toIntExact(count);
+  }
+
+  enum PodState {
+    RUNNING,
+    DELETED
   }
 }

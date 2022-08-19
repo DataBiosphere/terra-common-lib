@@ -1,7 +1,10 @@
 package bio.terra.common.iam;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import bio.terra.common.exception.UnauthorizedException;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;

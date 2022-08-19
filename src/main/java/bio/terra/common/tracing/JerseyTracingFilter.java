@@ -14,11 +14,6 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class JerseyTracingFilter implements ClientRequestFilter, ClientResponseFilter {
-  private final Tracer tracer;
-  private final HttpClientHandler<ClientRequestContext, ClientResponseContext, ClientRequestContext>
-      handler;
-  private HttpRequestContext opencensusRequestContext;
-
   private static final TextFormat.Setter<ClientRequestContext> SETTER =
       new TextFormat.Setter<ClientRequestContext>() {
         @Override
@@ -26,6 +21,10 @@ public class JerseyTracingFilter implements ClientRequestFilter, ClientResponseF
           carrier.getHeaders().add(key, value);
         }
       };
+  private final Tracer tracer;
+  private final HttpClientHandler<ClientRequestContext, ClientResponseContext, ClientRequestContext>
+      handler;
+  private HttpRequestContext opencensusRequestContext;
 
   public JerseyTracingFilter(Tracer tracer) {
     this.tracer = tracer;

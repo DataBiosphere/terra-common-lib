@@ -26,6 +26,16 @@ import org.junit.jupiter.api.Test;
 @Tag("unit")
 public class TracingHookTest {
 
+  private static void assertSharedTraceId(List<SpanContext> contextRecord) {
+    assertEquals(1, contextRecord.stream().map(SpanContext::getTraceId).distinct().count());
+  }
+
+  private static void assertAllDifferentSpanIds(List<SpanContext> contextRecord) {
+    assertEquals(
+        contextRecord.size(),
+        contextRecord.stream().map(SpanContext::getSpanId).distinct().count());
+  }
+
   @Test
   public void spansConnected() throws Exception {
     List<SpanContext> contextRecord = new ArrayList<>();
@@ -42,15 +52,6 @@ public class TracingHookTest {
     assertThat(contextRecord, Matchers.hasSize(2));
     assertSharedTraceId(contextRecord);
     assertAllDifferentSpanIds(contextRecord);
-  }
-
-  /** A {@link Flight} with two steps for recording the span context. */
-  public static class SpanRecordingFlight extends Flight {
-    public SpanRecordingFlight(FlightMap inputParameters, Object applicationContext) {
-      super(inputParameters, applicationContext);
-      addStep(new RecordContextStep());
-      addStep(new RecordContextStep());
-    }
   }
 
   @Test
@@ -70,14 +71,13 @@ public class TracingHookTest {
     assertAllDifferentSpanIds(contextRecord);
   }
 
-  private static void assertSharedTraceId(List<SpanContext> contextRecord) {
-    assertEquals(1, contextRecord.stream().map(SpanContext::getTraceId).distinct().count());
-  }
-
-  private static void assertAllDifferentSpanIds(List<SpanContext> contextRecord) {
-    assertEquals(
-        contextRecord.size(),
-        contextRecord.stream().map(SpanContext::getSpanId).distinct().count());
+  /** A {@link Flight} with two steps for recording the span context. */
+  public static class SpanRecordingFlight extends Flight {
+    public SpanRecordingFlight(FlightMap inputParameters, Object applicationContext) {
+      super(inputParameters, applicationContext);
+      addStep(new RecordContextStep());
+      addStep(new RecordContextStep());
+    }
   }
 
   /** A {@link Flight} with two steps for recording the span context and a {@link FailureStep}. */
@@ -100,6 +100,12 @@ public class TracingHookTest {
       contextRecord = newRecord;
     }
 
+    private static void record(SpanContext context) {
+      if (contextRecord != null) {
+        contextRecord.add(context);
+      }
+    }
+
     @Override
     public StepResult doStep(FlightContext flightContext) {
       record(Tracing.getTracer().getCurrentSpan().getContext());
@@ -110,12 +116,6 @@ public class TracingHookTest {
     public StepResult undoStep(FlightContext flightContext) {
       record(Tracing.getTracer().getCurrentSpan().getContext());
       return StepResult.getStepResultSuccess();
-    }
-
-    private static void record(SpanContext context) {
-      if (contextRecord != null) {
-        contextRecord.add(context);
-      }
     }
   }
 

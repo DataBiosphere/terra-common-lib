@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ruleset name="Base ruleset" xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        name="Base ruleset"
+        xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+        xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
 
     <description>
         General Java quality rules.
@@ -43,21 +44,26 @@
         -->
         <exclude name="LinguisticNaming"/>
         <exclude name="LocalHomeNamingConvention"/> <!-- earlier j2ee group-->
-        <exclude name="LocalInterfaceSessionNamingConvention"/> <!-- earlier j2ee group-->
+        <exclude
+                name="LocalInterfaceSessionNamingConvention"/> <!-- earlier j2ee group-->
         <exclude name="LocalVariableCouldBeFinal"/>
         <exclude name="LongVariable"/>
-        <exclude name="MDBAndSessionBeanNamingConvention"/> <!-- earlier j2ee group-->
+        <exclude
+                name="MDBAndSessionBeanNamingConvention"/> <!-- earlier j2ee group-->
         <!--
           Terra: final on method arguments is not required.
         -->
         <exclude name="MethodArgumentCouldBeFinal"/>
-        <exclude name="OnlyOneReturn"/> <!-- disabled in favour of checkstyle ReturnCount check -->
+        <exclude
+                name="OnlyOneReturn"/> <!-- disabled in favour of checkstyle ReturnCount check -->
         <!--
           Terra: overly sensitive rule with marginal value.
         -->
         <exclude name="PrematureDeclaration"/>
-        <exclude name="RemoteInterfaceNamingConvention"/> <!-- earlier j2ee group-->
-        <exclude name="RemoteSessionInterfaceNamingConvention"/> <!-- earlier j2ee group-->
+        <exclude
+                name="RemoteInterfaceNamingConvention"/> <!-- earlier j2ee group-->
+        <exclude
+                name="RemoteSessionInterfaceNamingConvention"/> <!-- earlier j2ee group-->
         <exclude name="ShortClassName"/>
         <exclude name="ShortMethodName"/>
         <exclude name="ShortVariable"/>
@@ -140,7 +146,8 @@
         <exclude name="AvoidCatchingThrowable"/>
         <exclude name="BeanMembersShouldSerialize"/>
         <exclude name="DataflowAnomalyAnalysis"/>
-        <exclude name="DoNotTerminateVM"/> <!-- earlier j2ee group; before 6.29 DoNotCallSystemExit-->
+        <exclude
+                name="DoNotTerminateVM"/> <!-- earlier j2ee group; before 6.29 DoNotCallSystemExit-->
         <exclude name="EmptyFinalizer"/>
         <exclude name="FinalizeOnlyCallsSuperFinalize"/>
         <exclude name="FinalizeDoesNotCallSuperFinalize"/>
@@ -149,7 +156,8 @@
         <exclude name="InvalidLogMessageFormat"/>
         <exclude name="LoggerIsNotStaticFinal"/>
         <exclude name="MissingSerialVersionUID"/>
-        <exclude name="NullAssignment"/> <!-- disabled due to false positive for initialization with ternary operator -->
+        <exclude
+                name="NullAssignment"/> <!-- disabled due to false positive for initialization with ternary operator -->
         <exclude name="StaticEJBFieldShouldBeFinal"/> <!-- earlier j2ee group-->
         <exclude name="UseCorrectExceptionLogging"/>
         <exclude name="UseLocaleWithCaseConversions"/>
@@ -168,7 +176,8 @@
     <rule ref="category/java/errorprone.xml/CloseResource">
         <properties>
             <!-- AutoClosable removed from value because it produces too many false positives -->
-            <property name="types" value="java.sql.Connection,java.sql.Statement,java.sql.ResultSet" />
+            <property name="types"
+                    value="java.sql.Connection,java.sql.Statement,java.sql.ResultSet"/>
         </properties>
     </rule>
 

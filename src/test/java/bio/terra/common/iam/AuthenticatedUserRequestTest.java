@@ -43,6 +43,21 @@ public class AuthenticatedUserRequestTest {
   private static final String SUBJECT_ID = "Subject";
   private static final String TOKEN = "0123.456-789AbCd";
 
+  private static void validateJsonDeserialization(String json, AuthenticatedUserRequest request)
+      throws JsonProcessingException {
+    AuthenticatedUserRequest deserialized =
+        objectMapper.readValue(json, AuthenticatedUserRequest.class);
+    assertEquals(request, deserialized);
+    assertEquals(request.hashCode(), deserialized.hashCode());
+  }
+
+  private static void validateJsonSerialization(AuthenticatedUserRequest request)
+      throws JsonProcessingException {
+    String asString = objectMapper.writeValueAsString(request);
+    logger.debug(String.format("Serialized AuthenticatedUserRequest: '%s'", asString));
+    validateJsonDeserialization(asString, request);
+  }
+
   @Test
   public void builder() throws Exception {
     AuthenticatedUserRequest.Builder builder = AuthenticatedUserRequest.builder();
@@ -91,21 +106,6 @@ public class AuthenticatedUserRequestTest {
 
     // Explicit test for off-type comparison
     assertNotEquals(req, "test");
-  }
-
-  private static void validateJsonDeserialization(String json, AuthenticatedUserRequest request)
-      throws JsonProcessingException {
-    AuthenticatedUserRequest deserialized =
-        objectMapper.readValue(json, AuthenticatedUserRequest.class);
-    assertEquals(request, deserialized);
-    assertEquals(request.hashCode(), deserialized.hashCode());
-  }
-
-  private static void validateJsonSerialization(AuthenticatedUserRequest request)
-      throws JsonProcessingException {
-    String asString = objectMapper.writeValueAsString(request);
-    logger.debug(String.format("Serialized AuthenticatedUserRequest: '%s'", asString));
-    validateJsonDeserialization(asString, request);
   }
 
   @Test

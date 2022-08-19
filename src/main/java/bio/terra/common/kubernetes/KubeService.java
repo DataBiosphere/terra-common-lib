@@ -35,17 +35,15 @@ import org.slf4j.LoggerFactory;
     value = "DMI_HARDCODED_ABSOLUTE_FILENAME",
     justification = "The K8s namespace file is a valid absolute filename")
 public class KubeService {
-  // The maximum retry when calling Kubernetes.
-  private static final int MAX_RETRY = 10;
-  // Time to sleep between each call.
-  private static final Duration RETRY_SLEEP = Duration.ofSeconds(5);
-
   // Location in the container where Kubernetes stores service account and
   // namespace information. Kubernetes mints a service account for the container (pod?)
   // that can be used to make requests of Kubernetes.
   static final String KUBE_DIR = "/var/run/secrets/kubernetes.io/serviceaccount";
   static final String KUBE_NAMESPACE_FILE = KUBE_DIR + "/namespace";
-
+  // The maximum retry when calling Kubernetes.
+  private static final int MAX_RETRY = 10;
+  // Time to sleep between each call.
+  private static final Duration RETRY_SLEEP = Duration.ofSeconds(5);
   private static final Logger logger = LoggerFactory.getLogger(KubeService.class);
 
   private final String podName;

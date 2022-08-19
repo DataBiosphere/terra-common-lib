@@ -24,12 +24,11 @@ import org.springframework.util.ResourceUtils;
 public final class LoggingUtils {
 
   public static final String TERRA_APPENDER_NAME = "terra-common";
-
-  private LoggingUtils() {}
-
   // A simple string which can be included as a key in JSON logging output. This is intended to
   // trigger log-based alerting to notify developers of unexpected errors.
   public static final String ALERT_KEY = "terraLogBasedAlert";
+
+  private LoggingUtils() {}
 
   public static Map<String, Boolean> alertObject() {
     return Collections.singletonMap(ALERT_KEY, true);

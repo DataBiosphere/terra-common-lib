@@ -29,6 +29,18 @@ public class TracingTest {
   @Autowired private TracingTestController controller;
   @Autowired private TracedAnnotatedBean annotatedBean;
 
+  /** Converts all types of {@link AttributeValue} to String. */
+  private static String coerceToString(AttributeValue attributeValue) {
+    String coerced =
+        attributeValue.match(
+            Object::toString,
+            Object::toString,
+            Object::toString,
+            Object::toString,
+            Object::toString);
+    return coerced;
+  }
+
   @Test
   public void testRequestTracing() {
     ResponseEntity<String> response = testRestTemplate.getForEntity("/foo/bar", String.class);
@@ -58,17 +70,5 @@ public class TracingTest {
     SpanData beanSpanData = beanSpan.toSpanData();
     assertEquals("annotatedMethod", beanSpanData.getName());
     assertEquals(requestSpan.getContext().getSpanId(), beanSpanData.getParentSpanId());
-  }
-
-  /** Converts all types of {@link AttributeValue} to String. */
-  private static String coerceToString(AttributeValue attributeValue) {
-    String coerced =
-        attributeValue.match(
-            Object::toString,
-            Object::toString,
-            Object::toString,
-            Object::toString,
-            Object::toString);
-    return coerced;
   }
 }

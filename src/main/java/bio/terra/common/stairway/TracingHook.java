@@ -76,6 +76,30 @@ public class TracingHook implements StairwayHook {
     inputMap.put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, serializeCurrentTracingContext());
   }
 
+  /**
+   * Encode the SpanContext as a base64 string using the binary format. Works with {@link
+   * #decodeContext(String)}.
+   */
+  private static String encodeContext(SpanContext spanContext) {
+    return Base64.getEncoder()
+        .encodeToString(
+            Tracing.getPropagationComponent().getBinaryFormat().toByteArray(spanContext));
+  }
+
+  /**
+   * Decode the SpanContext from a base64 string using the binary format. Works with {@link
+   * #encodeContext(SpanContext)}.
+   */
+  private static SpanContext decodeContext(String encodedContext) {
+    try {
+      return Tracing.getPropagationComponent()
+          .getBinaryFormat()
+          .fromByteArray(Base64.getDecoder().decode(encodedContext));
+    } catch (SpanContextParseException e) {
+      throw new RuntimeException("Unable to decode SpanContext", e);
+    }
+  }
+
   @Override
   public Optional<DynamicHook> flightFactory(FlightContext context) {
     return Optional.of(new TraceFlightHook());
@@ -84,6 +108,49 @@ public class TracingHook implements StairwayHook {
   @Override
   public Optional<DynamicHook> stepFactory(FlightContext context) {
     return Optional.of(new TraceStepHook());
+  }
+
+  /**
+   * Gets or creates the context of the submission Span. Each Flight span is linked to the
+   * submission span to correlate all Flight Spans.
+   */
+  private SpanContext getOrCreateSubmissionContext(FlightContext flightContext) {
+    // Check the input parameters for a submission span to link for the Flight.
+    String encodedContext =
+        flightContext.getInputParameters().get(SUBMISSION_SPAN_CONTEXT_MAP_KEY, String.class);
+    if (encodedContext != null) {
+      return decodeContext(encodedContext);
+    }
+    // Check the working map for a submission span to link for the Flight.
+    encodedContext =
+        flightContext.getWorkingMap().get(SUBMISSION_SPAN_CONTEXT_MAP_KEY, String.class);
+    if (encodedContext != null) {
+      return decodeContext(encodedContext);
+    }
+    // Create a new span to use as a submission span to link for the Flight Spans.
+    Span submissionSpan =
+        tracer
+            .spanBuilderWithExplicitParent(
+                SUBMISSION_NAME_PREFIX
+                    + ClassUtils.getShortClassName(flightContext.getFlightClassName()),
+                null)
+            .startSpan();
+    submissionSpan.putAttribute(
+        "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
+    submissionSpan.putAttribute(
+        "stairway/flightClass",
+        AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
+
+    SpanContext flightSpanContext = submissionSpan.getContext();
+    // Store the submission span so that there is only one of these per Flight ID.
+    flightContext
+        .getWorkingMap()
+        .put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, encodeContext(flightSpanContext));
+
+    // End the span immediately. We cannot carry this span until the flight finishes, we merely use
+    // it to link the Flight Spans.
+    submissionSpan.end();
+    return flightSpanContext;
   }
 
   /**
@@ -167,73 +234,6 @@ public class TracingHook implements StairwayHook {
     public HookAction end(FlightContext flightContext) {
       stepScope.close();
       return HookAction.CONTINUE;
-    }
-  }
-
-  /**
-   * Gets or creates the context of the submission Span. Each Flight span is linked to the
-   * submission span to correlate all Flight Spans.
-   */
-  private SpanContext getOrCreateSubmissionContext(FlightContext flightContext) {
-    // Check the input parameters for a submission span to link for the Flight.
-    String encodedContext =
-        flightContext.getInputParameters().get(SUBMISSION_SPAN_CONTEXT_MAP_KEY, String.class);
-    if (encodedContext != null) {
-      return decodeContext(encodedContext);
-    }
-    // Check the working map for a submission span to link for the Flight.
-    encodedContext =
-        flightContext.getWorkingMap().get(SUBMISSION_SPAN_CONTEXT_MAP_KEY, String.class);
-    if (encodedContext != null) {
-      return decodeContext(encodedContext);
-    }
-    // Create a new span to use as a submission span to link for the Flight Spans.
-    Span submissionSpan =
-        tracer
-            .spanBuilderWithExplicitParent(
-                SUBMISSION_NAME_PREFIX
-                    + ClassUtils.getShortClassName(flightContext.getFlightClassName()),
-                null)
-            .startSpan();
-    submissionSpan.putAttribute(
-        "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
-    submissionSpan.putAttribute(
-        "stairway/flightClass",
-        AttributeValue.stringAttributeValue(flightContext.getFlightClassName()));
-
-    SpanContext flightSpanContext = submissionSpan.getContext();
-    // Store the submission span so that there is only one of these per Flight ID.
-    flightContext
-        .getWorkingMap()
-        .put(SUBMISSION_SPAN_CONTEXT_MAP_KEY, encodeContext(flightSpanContext));
-
-    // End the span immediately. We cannot carry this span until the flight finishes, we merely use
-    // it to link the Flight Spans.
-    submissionSpan.end();
-    return flightSpanContext;
-  }
-
-  /**
-   * Encode the SpanContext as a base64 string using the binary format. Works with {@link
-   * #decodeContext(String)}.
-   */
-  private static String encodeContext(SpanContext spanContext) {
-    return Base64.getEncoder()
-        .encodeToString(
-            Tracing.getPropagationComponent().getBinaryFormat().toByteArray(spanContext));
-  }
-
-  /**
-   * Decode the SpanContext from a base64 string using the binary format. Works with {@link
-   * #encodeContext(SpanContext)}.
-   */
-  private static SpanContext decodeContext(String encodedContext) {
-    try {
-      return Tracing.getPropagationComponent()
-          .getBinaryFormat()
-          .fromByteArray(Base64.getDecoder().decode(encodedContext));
-    } catch (SpanContextParseException e) {
-      throw new RuntimeException("Unable to decode SpanContext", e);
     }
   }
 }

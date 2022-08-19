@@ -1,6 +1,7 @@
 package bio.terra.common.iam;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -42,6 +43,13 @@ public class SamUserTest {
   private static final BearerToken TOKEN = new BearerToken("0123.456-789AbCd");
   private static final SamUser TEST_SAM_USER = new SamUser(EMAIL_ADDRESS, SUBJECT_ID, TOKEN);
 
+  private static void validateJsonDeserialization(String json, SamUser request)
+      throws JsonProcessingException {
+    SamUser deserialized = objectMapper.readValue(json, SamUser.class);
+    assertEquals(request, deserialized);
+    assertEquals(request.hashCode(), deserialized.hashCode());
+  }
+
   @Test
   public void equality() {
     // Positive test
@@ -59,13 +67,6 @@ public class SamUserTest {
 
     // Explicit test for off-type comparison
     assertNotEquals(TEST_SAM_USER, "test");
-  }
-
-  private static void validateJsonDeserialization(String json, SamUser request)
-      throws JsonProcessingException {
-    SamUser deserialized = objectMapper.readValue(json, SamUser.class);
-    assertEquals(request, deserialized);
-    assertEquals(request.hashCode(), deserialized.hashCode());
   }
 
   @Test

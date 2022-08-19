@@ -25,6 +25,10 @@ public class AuthenticatedUserRequest {
     this.token = builder.token;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   /**
    * Returns the email address of the authenticated user, corresponding to the OIDC 'email' claim.
    */
@@ -43,6 +47,33 @@ public class AuthenticatedUserRequest {
   /** Returns a JSON Web Token (JWT) possessed by the authenticated user. */
   public String getToken() {
     return token;
+  }
+
+  public Builder toBuilder() {
+    return builder().setEmail(this.email).setSubjectId(this.subjectId).setToken(this.token);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof AuthenticatedUserRequest)) {
+      return false;
+    }
+    AuthenticatedUserRequest that = (AuthenticatedUserRequest) o;
+    return Objects.equals(getEmail(), that.getEmail())
+        && Objects.equals(getSubjectId(), that.getSubjectId())
+        && Objects.equals(getToken(), that.getToken());
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder()
+        .append(getEmail())
+        .append(getSubjectId())
+        .append(getToken())
+        .toHashCode();
   }
 
   @JsonPOJOBuilder(withPrefix = "set")
@@ -87,36 +118,5 @@ public class AuthenticatedUserRequest {
       }
       return new AuthenticatedUserRequest(this);
     }
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public Builder toBuilder() {
-    return builder().setEmail(this.email).setSubjectId(this.subjectId).setToken(this.token);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof AuthenticatedUserRequest)) {
-      return false;
-    }
-    AuthenticatedUserRequest that = (AuthenticatedUserRequest) o;
-    return Objects.equals(getEmail(), that.getEmail())
-        && Objects.equals(getSubjectId(), that.getSubjectId())
-        && Objects.equals(getToken(), that.getToken());
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder()
-        .append(getEmail())
-        .append(getSubjectId())
-        .append(getToken())
-        .toHashCode();
   }
 }

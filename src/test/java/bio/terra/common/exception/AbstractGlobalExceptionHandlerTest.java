@@ -1,7 +1,9 @@
 package bio.terra.common.exception;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.util.List;
 import org.junit.jupiter.api.Tag;

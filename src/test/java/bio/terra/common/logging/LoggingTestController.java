@@ -26,11 +26,6 @@ public class LoggingTestController {
     LOG.error("This is an ERROR log");
   }
 
-  static class StructuredDataPojo {
-    public String name;
-    public int id;
-  }
-
   @GetMapping("/testStructuredLogging")
   public void testStructuredLogging() throws JsonProcessingException {
     // Test a simple key-value pair. Should show up as {... "foo": "bar", ...}
@@ -72,5 +67,10 @@ public class LoggingTestController {
         "test structured object alert message",
         LoggingUtils.structuredLogData("pojo", pojo),
         LoggingUtils.alertObject());
+  }
+
+  static class StructuredDataPojo {
+    public String name;
+    public int id;
   }
 }

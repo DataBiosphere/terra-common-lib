@@ -1,6 +1,7 @@
 package bio.terra.common.iam;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -39,6 +40,13 @@ public class BearerTokenTest {
 
   private static final BearerToken TOKEN = new BearerToken("0123.456-789AbCd");
 
+  private static void validateJsonDeserialization(String json, BearerToken request)
+      throws JsonProcessingException {
+    BearerToken deserialized = objectMapper.readValue(json, BearerToken.class);
+    assertEquals(request, deserialized);
+    assertEquals(request.hashCode(), deserialized.hashCode());
+  }
+
   @Test
   public void equality() {
     // Positive test
@@ -54,13 +62,6 @@ public class BearerTokenTest {
 
     // Explicit test for off-type comparison
     assertNotEquals(TOKEN, "test");
-  }
-
-  private static void validateJsonDeserialization(String json, BearerToken request)
-      throws JsonProcessingException {
-    BearerToken deserialized = objectMapper.readValue(json, BearerToken.class);
-    assertEquals(request, deserialized);
-    assertEquals(request.hashCode(), deserialized.hashCode());
   }
 
   @Test

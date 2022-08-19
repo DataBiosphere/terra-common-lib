@@ -70,42 +70,10 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 @Tag("unit")
 public class LoggingTest {
 
+  private static SpanContext requestSpanContext;
   @Autowired private TestRestTemplate testRestTemplate;
   // Spy bean to allow us to mock out the RequestIdFilter ID generator.
   @SpyBean private RequestIdFilter requestIdFilter;
-
-  private static SpanContext requestSpanContext;
-
-  // A servlet filter to create an OpenCensus span at the beginning of each request
-  @Component
-  public static class MockSpanFilter implements Filter {
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-      Tracing.getTracer().spanBuilderWithExplicitParent("test-span", null).startScopedSpan();
-      requestSpanContext = Tracing.getTracer().getCurrentSpan().getContext();
-      chain.doFilter(request, response);
-      // Note: we purposefully don't close the scope here. For some reason, it doesn't seem possible
-      // to inject this filter into the servlet at high enough precedence to ensure it covers the
-      // entire RequestLoggingFilter lifetime. By not closing the scope here, we can ensure that the
-      // tracing span is available as context when an inbound request ultimately gets logged.
-    }
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {}
-
-    @Override
-    public void destroy() {}
-  }
-
-  @TestConfiguration
-  static class FilterTestConfiguration {
-    @Bean
-    @Order(LOWEST_PRECEDENCE)
-    MockSpanFilter getMockSpanFilter() {
-      return new MockSpanFilter();
-    }
-  }
 
   @BeforeEach
   public void setUp() throws IOException, ServletException {
@@ -270,5 +238,36 @@ public class LoggingTest {
         .filter(line -> line.contains(message))
         .findFirst()
         .orElseThrow(() -> new RuntimeException("No log line with message " + message));
+  }
+
+  // A servlet filter to create an OpenCensus span at the beginning of each request
+  @Component
+  public static class MockSpanFilter implements Filter {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
+      Tracing.getTracer().spanBuilderWithExplicitParent("test-span", null).startScopedSpan();
+      requestSpanContext = Tracing.getTracer().getCurrentSpan().getContext();
+      chain.doFilter(request, response);
+      // Note: we purposefully don't close the scope here. For some reason, it doesn't seem possible
+      // to inject this filter into the servlet at high enough precedence to ensure it covers the
+      // entire RequestLoggingFilter lifetime. By not closing the scope here, we can ensure that the
+      // tracing span is available as context when an inbound request ultimately gets logged.
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {}
+
+    @Override
+    public void destroy() {}
+  }
+
+  @TestConfiguration
+  static class FilterTestConfiguration {
+    @Bean
+    @Order(LOWEST_PRECEDENCE)
+    MockSpanFilter getMockSpanFilter() {
+      return new MockSpanFilter();
+    }
   }
 }
