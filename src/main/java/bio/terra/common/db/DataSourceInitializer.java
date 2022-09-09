@@ -10,8 +10,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 /**
  * Utility class to create {@link DataSource}.
  *
- * Prefer using {@DataSourceManager} instead of this code so that connection pools are
- * closed when the Spring application context is deleted.
+ * <p>Prefer using {@DataSourceManager} instead of this code so that connection pools are closed
+ * when the Spring application context is deleted.
  */
 public class DataSourceInitializer {
   private DataSourceInitializer() {}
@@ -24,13 +24,14 @@ public class DataSourceInitializer {
   }
 
   /**
-   * This method is shared by this class and the DataSourceManager so we only have one implementation
-   * of creating the connection pool
+   * This method is shared by this class and the DataSourceManager so we only have one
+   * implementation of creating the connection pool
    *
    * @param baseDatabaseProperties common database properties
    * @return connection pool
    */
-  public static ObjectPool<PoolableConnection> makeConnectionPool(BaseDatabaseProperties baseDatabaseProperties) {
+  public static ObjectPool<PoolableConnection> makeConnectionPool(
+      BaseDatabaseProperties baseDatabaseProperties) {
     Properties props = new Properties();
     props.setProperty("user", baseDatabaseProperties.getUsername());
     props.setProperty("password", baseDatabaseProperties.getPassword());
