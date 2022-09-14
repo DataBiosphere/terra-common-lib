@@ -40,13 +40,13 @@ public class KubeService {
   // Time to sleep between each call.
   private static final Duration RETRY_SLEEP = Duration.ofSeconds(5);
 
+  private static final Logger logger = LoggerFactory.getLogger(KubeService.class);
+
   // Location in the container where Kubernetes stores service account and
   // namespace information. Kubernetes mints a service account for the container (pod?)
   // that can be used to make requests of Kubernetes.
   static final String KUBE_DIR = "/var/run/secrets/kubernetes.io/serviceaccount";
   static final String KUBE_NAMESPACE_FILE = KUBE_DIR + "/namespace";
-
-  private static final Logger logger = LoggerFactory.getLogger(KubeService.class);
 
   private final String podName;
   private final boolean inKubernetes;

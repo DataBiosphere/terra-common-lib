@@ -48,23 +48,6 @@ public class StairwayComponent {
     logger.info("Creating Stairway: name: [{}]", kubeService.getPodName());
   }
 
-  /** convenience for getting a builder for initialize input */
-  public StairwayOptionsBuilder newStairwayOptionsBuilder() {
-    return new StairwayOptionsBuilder();
-  }
-
-  /**
-   * Build and initialize the Stairway object Deprecated. Use the
-   *
-   * @param dataSource data source for the Stairway DB
-   * @param context application context or other service-specific contextual object
-   * @param hooks list of Stairway hooks to install when building Stairway
-   */
-  @Deprecated
-  public void initialize(DataSource dataSource, Object context, List<StairwayHook> hooks) {
-    initialize(newStairwayOptionsBuilder().dataSource(dataSource).context(context).hooks(hooks));
-  }
-
   /**
    * Set up the Stairway work queue. There are two ways we get a work queue. If both the gcp topicId
    * and subscriptionId are passed as parameters, then we use those. Otherwise, if the
@@ -106,6 +89,22 @@ public class StairwayComponent {
     } catch (IOException e) {
       throw new IllegalArgumentException("Failed to configure pubsub queue", e);
     }
+  }
+
+  /** convenience for getting a builder for initialize input */
+  public StairwayOptionsBuilder newStairwayOptionsBuilder() {
+    return new StairwayOptionsBuilder();
+  }
+
+  /**
+   * @deprecated Build and initialize the Stairway object Deprecated. Use the
+   * @param dataSource data source for the Stairway DB
+   * @param context application context or other service-specific contextual object
+   * @param hooks list of Stairway hooks to install when building Stairway
+   */
+  @Deprecated
+  public void initialize(DataSource dataSource, Object context, List<StairwayHook> hooks) {
+    initialize(newStairwayOptionsBuilder().dataSource(dataSource).context(context).hooks(hooks));
   }
 
   /**
@@ -199,7 +198,7 @@ public class StairwayComponent {
     INITIALIZING,
     OK,
     ERROR,
-    SHUTDOWN,
+    SHUTDOWN
   }
 
   /**
