@@ -36,3 +36,6 @@ out/
 
 ### Mac directory metadata
 .DS_Store
+
+### Jenv directory-local version setting
+.java-version
