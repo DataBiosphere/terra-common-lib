@@ -16,19 +16,24 @@ plugins {
     id 'ru.vyarus.quality' version '4.5.0'
 }
 
+// TODO(PF-1981) - Move version to settings.gradle
+group 'bio.terra'
+version '0.0.68-SNAPSHOT'
+
+// If true, search local repository (~/.m2/repository/) first for dependencies.
+def useMavenLocal = false
 repositories {
+    if (useMavenLocal) {
+        mavenLocal() // must be listed first to take effect
+    }
     mavenCentral()
     maven {
-        url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release/'
+        url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release-local/'
     }
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
     }
 }
-
-group 'bio.terra'
-version '0.0.70-SNAPSHOT'
-sourceCompatibility = JavaVersion.VERSION_11
 
 dependencies {
     ext {
@@ -124,5 +129,3 @@ apply from: "$rootDir/gradle/publishing.gradle"
 apply from: "$rootDir/gradle/quality.gradle"
 apply from: "$rootDir/gradle/spotless.gradle"
 apply from: "$rootDir/gradle/test.gradle"
-
-defaultTasks 'spotlessApply', 'build'
