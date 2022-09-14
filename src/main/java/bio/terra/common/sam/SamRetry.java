@@ -25,11 +25,12 @@ public class SamRetry {
   private static final Duration MAXIMUM_WAIT = Duration.ofSeconds(30);
   private static final Duration INITIAL_WAIT = Duration.ofSeconds(10);
   private static final Duration OPERATION_TIMEOUT = Duration.ofSeconds(300);
-  private final Instant operationTimeout;
 
   // Sam calls which timeout will throw ApiExceptions wrapping SocketTimeoutExceptions and will have
   // an errorCode 0. This isn't a real HTTP status code, but we can check for it anyway.
   private static final int TIMEOUT_STATUS_CODE = 0;
+
+  private final Instant operationTimeout;
 
   // How long to wait between retries.
   private Duration retryDuration;
@@ -123,7 +124,7 @@ public class SamRetry {
    * retryDuration. If the thread times out while sleeping, throw the initial exception.
    *
    * @param previousException The error Sam threw
-   * @throws ApiException, InterruptedException
+   * @throws ApiException InterruptedException
    */
   private void sleepOrTimeoutBeforeRetrying(ApiException previousException)
       throws ApiException, InterruptedException {
