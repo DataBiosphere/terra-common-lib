@@ -30,7 +30,7 @@ tasks.withType(Test) {
 
 // Inspired by https://github.com/spotbugs/spotbugs-gradle-plugin/blob/master/gradle/test.gradle
 jacoco {
-    toolVersion = "0.8.6"
+    toolVersion = "0.8.7"
 }
 def jacocoTestReport = tasks.named('jacocoTestReport') {
     reports {
