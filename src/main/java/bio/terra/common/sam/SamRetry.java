@@ -140,4 +140,14 @@ public class SamRetry {
       retryDuration = MAXIMUM_WAIT;
     }
   }
+
+  @FunctionalInterface
+  public interface SamVoidFunction {
+    void apply() throws ApiException, InterruptedException;
+  }
+
+  @FunctionalInterface
+  public interface SamFunction<R> {
+    R apply() throws ApiException, InterruptedException;
+  }
 }
