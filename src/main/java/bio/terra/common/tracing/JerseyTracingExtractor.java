@@ -4,8 +4,6 @@ import io.opencensus.contrib.http.HttpExtractor;
 import javax.annotation.Nullable;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientResponseContext;
-//import javax.ws.rs.client.ClientRequestContext;
-//import javax.ws.rs.client.ClientResponseContext;
 
 /**
  * Extractor to populate span fields from a Request object
