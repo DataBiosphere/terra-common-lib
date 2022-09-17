@@ -53,9 +53,7 @@ dependencies {
     compileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'
     testCompileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'
 
-   // implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20220819-2.0.0'
-   // implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20210507-1.31.0'
 
     // Publish the stairway library here to minimize rollout overhead of new Stairways
     api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.71-SNAPSHOT'
@@ -82,7 +80,7 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
     implementation group: 'io.kubernetes', name: 'client-java', version: '16.0.0'
-    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
+    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '2.1.6'
 
     ext {
         opencensus = '0.31.1'
@@ -119,6 +117,7 @@ if (hasProperty('buildScan')) {
     }
 }
 
+apply from: "$rootDir/gradle/application.gradle"
 apply from: "$rootDir/gradle/dependency-locking.gradle"
 apply from: "$rootDir/gradle/javadoc.gradle"
 apply from: "$rootDir/gradle/publishing.gradle"
