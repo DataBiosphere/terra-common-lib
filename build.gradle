@@ -69,7 +69,7 @@ dependencies {
     implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
     implementation group: 'org.liquibase' , name: 'liquibase-core', version: '4.16.0'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.1'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
 
     implementation group: 'org.springframework' , name: 'spring-context', version: '5.3.23'
     implementation group: 'org.springframework' , name: 'spring-core', version: '5.3.23'
