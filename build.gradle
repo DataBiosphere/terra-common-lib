@@ -12,7 +12,7 @@ plugins {
     // it impossible to publish to mavenLocal. In order to make TCL testable, I have
     // removed this plugin and filled in specific version numbers. I also removed all
     // version numbers with `+` in them. Was:
-    //     id 'io.spring.dependency-management' version '1.0.10.RELEASE' // TODO
+    //     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'org.springframework.boot' version '2.7.3'
     id 'ru.vyarus.quality' version '4.8.0'
 }
@@ -42,7 +42,6 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
     implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.11.1'
     implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
-   // testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.9.0' TODO
 
     // JSON processing
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
@@ -93,7 +92,6 @@ dependencies {
     implementation group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
     api group: 'io.opencensus', name: 'opencensus-api', version: opencensus
     api group: 'io.opencensus', name: 'opencensus-contrib-spring', version: opencensus
-   // testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: opencensus TODO
 
     // Spotbugs
     implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'
