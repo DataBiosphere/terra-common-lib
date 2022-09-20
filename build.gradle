@@ -4,110 +4,113 @@ plugins {
     id 'java-library'
     id 'maven-publish'
 
-    id 'com.diffplug.spotless' version '5.12.4'
-    id 'com.github.ben-manes.versions' version '0.36.0'
-    id 'com.jfrog.artifactory' version '4.28.1'
+    id 'com.diffplug.spotless' version '6.10.0'
+    id 'com.github.spotbugs' version '5.0.12'
+    id 'com.github.ben-manes.versions' version '0.42.0'
+    id 'com.jfrog.artifactory' version '4.28.2'
     // [dd 2021-05-17] Use of Spring dependency management generates invalid POM, making
     // it impossible to publish to mavenLocal. In order to make TCL testable, I have
     // removed this plugin and filled in specific version numbers. I also removed all
     // version numbers with `+` in them. Was:
     //     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'org.springframework.boot' version '2.6.6'
-    id 'ru.vyarus.quality' version '4.5.0'
+    id 'org.springframework.boot' version '2.7.3'
+    id 'ru.vyarus.quality' version '4.8.0'
 }
 
+// TODO(PF-1981) - Move version to settings.gradle
+group 'bio.terra'
+version '0.0.70-SNAPSHOT'
+
+// If true, search local repository (~/.m2/repository/) first for dependencies.
+def useMavenLocal = false
 repositories {
+    if (useMavenLocal) {
+        mavenLocal() // must be listed first to take effect
+    }
     mavenCentral()
     maven {
-        url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release/'
+        url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release-local/'
     }
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
     }
 }
 
-group 'bio.terra'
-version '0.0.70-SNAPSHOT'
-sourceCompatibility = JavaVersion.VERSION_11
-
 dependencies {
-    ext {
-        opencensus = '0.28.3'
-    }
-
-    // Google dependencies - make sure we are using -jre and not android and use common bom
-    constraints {
-        implementation 'com.google.guava:guava:30.1.1-jre' // "-jre" for Java 8 or higher
-    }
-    implementation platform('com.google.cloud:libraries-bom:20.2.0')
-
-    // Publish the stairway library for common lib users to minimize rollout overhead
-    // of new Stairways.
-    api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.71-SNAPSHOT'
-
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.3'
-    implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
-    implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
-    implementation group: 'com.google.cloud', name: 'google-cloud-core'
-    implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
-    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20210507-1.31.0'
-    implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
-    // TODO: This is not a direct dependency, but the transitive dependency is
-    //  an older version with a known vulnerability. Once a newer version is
-    //  pulled in as a transitive dependency, remove this direct dependency.
-    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.19.4'
-    implementation group: 'io.kubernetes', name: 'client-java', version: '14.0.0'
-    implementation group: 'io.opencensus', name: 'opencensus-exporter-stats-prometheus', version: opencensus
-    implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: opencensus
-    implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.12.0'
-    // commons-dbcp2 and -lang3 versions are managed by the Spring Boot plugin
-    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.8.0'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
-    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.9.0'
+    // Common utils
+    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.9.0'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.11.1'
     implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
-    implementation group: 'org.liquibase' , name: 'liquibase-core', version: '4.8.0'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-    implementation group: 'org.springframework' , name: 'spring-context', version: '5.3.7'
-    implementation group: 'org.springframework' , name: 'spring-core', version: '5.3.7'
-    implementation group: 'org.springframework.retry', name: 'spring-retry', version: '1.3.1'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '2.6.6'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.6.6'
-    implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-e826d4d"
+
+    // JSON processing
+    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
+
+    // Spring
+    implementation group: 'org.springframework' , name: 'spring-context', version: '5.3.23'
+    implementation group: 'org.springframework' , name: 'spring-core', version: '5.3.23'
+    implementation group: 'org.springframework.retry', name: 'spring-retry', version: '1.3.3'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '2.7.3'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.7.3'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.7.3'
+
+    // Misc. Services
+    implementation group: 'io.kubernetes', name: 'client-java', version: '16.0.0'
+    implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.16.0'
     implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '2.1.6'
 
-    runtimeOnly group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
-
+    // Google dependencies
+    constraints {
+        implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre' // "-jre" for Java 8 or higher
+    }
+    implementation platform('com.google.cloud:libraries-bom:26.1.1') // use common bom
+    implementation group: 'com.google.cloud', name: 'google-cloud-core'
+    implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.21.6'
     api group: 'com.google.guava', name: 'guava'
+
+    // Database
+    implementation group: 'org.liquibase' , name: 'liquibase-core', version: '4.16.0'
+    runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
+
+    // Terra libraries
+    implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-fde559d'
+    api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.73-SNAPSHOT'
+
+    // Logging
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
+    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20220819-2.0.0'
+    implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
+    implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
+
+    // Metrics & Tracing
+    ext {
+        opencensus = '0.31.1'
+    }
+    implementation group: 'io.opencensus', name: 'opencensus-exporter-stats-prometheus', version: opencensus
+    implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: opencensus
+    implementation group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
     api group: 'io.opencensus', name: 'opencensus-api', version: opencensus
     api group: 'io.opencensus', name: 'opencensus-contrib-spring', version: opencensus
 
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.6'
+    // Spotbugs
+    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'
 
-    // Jsonpath version is managed by the Spring Boot plugin
-    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
-    testImplementation group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
-    testImplementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.8.0'
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-    // Jupiter version is managed by the Spring Boot plugin
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
-    testImplementation('org.springframework.boot:spring-boot-starter-test:2.6.6') {
+    // Testing
+    testImplementation('org.springframework.boot:spring-boot-starter-test:2.7.3') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
-
-    testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'
-
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.9.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.0'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.8.0'
+    testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.3'
 }
 
-// We use Spring Boot gradle plugin in a non-Spring Boot environment to manage Spring Boot dependency.
-// Disable bootJar and enable jar task back since this is actually not a Spring Boot app.
-bootJar {
-    enabled = false
-}
-
-jar {
-    enabled = true
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 // for scans
@@ -118,11 +121,10 @@ if (hasProperty('buildScan')) {
     }
 }
 
+apply from: "$rootDir/gradle/application.gradle"
 apply from: "$rootDir/gradle/dependency-locking.gradle"
 apply from: "$rootDir/gradle/javadoc.gradle"
 apply from: "$rootDir/gradle/publishing.gradle"
 apply from: "$rootDir/gradle/quality.gradle"
 apply from: "$rootDir/gradle/spotless.gradle"
 apply from: "$rootDir/gradle/test.gradle"
-
-defaultTasks 'spotlessApply', 'build'

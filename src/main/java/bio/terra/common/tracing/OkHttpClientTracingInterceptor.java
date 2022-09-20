@@ -18,10 +18,6 @@ import okhttp3.Response;
  * the remote service can read to link traces across services.
  */
 public class OkHttpClientTracingInterceptor implements Interceptor {
-  private final Tracer tracer;
-  // This looks a little odd, but OkHttp requests are immutable so the carrier type must be a
-  // request builder, not a Request.
-  private final HttpClientHandler<Request, Response, Request.Builder> handler;
   private static final Setter<Request.Builder> SETTER =
       new Setter<Request.Builder>() {
         @Override
@@ -29,6 +25,11 @@ public class OkHttpClientTracingInterceptor implements Interceptor {
           carrier.header(key, value);
         }
       };
+
+  private final Tracer tracer;
+  // This looks a little odd, but OkHttp requests are immutable so the carrier type must be a
+  // request builder, not a Request.
+  private final HttpClientHandler<Request, Response, Request.Builder> handler;
 
   public OkHttpClientTracingInterceptor(Tracer tracer) {
     this.tracer = tracer;
