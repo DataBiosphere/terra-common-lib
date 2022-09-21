@@ -74,7 +74,7 @@ dependencies {
     runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
 
     // Terra libraries
-    implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-fde559d'
+    implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-33f3550'
     api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.73-SNAPSHOT'
 
     // Logging
