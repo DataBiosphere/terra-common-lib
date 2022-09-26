@@ -63,7 +63,7 @@ dependencies {
     constraints {
         implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre' // "-jre" for Java 8 or higher
     }
-    implementation platform('com.google.cloud:libraries-bom:26.1.1') // use common bom
+    implementation platform('com.google.cloud:libraries-bom:26.0.0') // use common bom
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.21.6'
@@ -75,11 +75,11 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-33f3550'
-    api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.73-SNAPSHOT'
+    api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.74-SNAPSHOT'
 
     // Logging
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
-    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20210507-1.31.0'
+    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20220714-1.32.1'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
