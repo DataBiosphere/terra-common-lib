@@ -1,0 +1,28 @@
+---
+id: global
+description: Global Region
+regions:
+  - id: north-america
+    description: North America
+    regions:
+      - id: usa
+        description: United States of America
+        regions:
+          - id: iowa
+            description: Iowa
+            regions:
+              - id: us-central1
+                description: us-central1
+                tags:
+                  - gcp
+          - id: california
+            description: California
+            regions:
+              - id: westus
+                description: westus
+                tags:
+                  - azure
+              - id: us-west2
+                description: us-west2
+                tags:
+                  - gcp
