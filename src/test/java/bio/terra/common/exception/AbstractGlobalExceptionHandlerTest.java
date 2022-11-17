@@ -30,6 +30,13 @@ public class AbstractGlobalExceptionHandlerTest {
   }
 
   @Test
+  public void gatewayTimeoutException() throws Exception {
+    assertEquals(
+            GATEWAY_TIMEOUT,
+            exceptionHandler.errorReportHandler(new GatewayTimeoutException("test")).getStatusCode());
+  }
+
+  @Test
   public void badRequestException() throws Exception {
     assertEquals(
         BAD_REQUEST,
