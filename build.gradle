@@ -19,7 +19,7 @@ plugins {
 
 // TODO(PF-1981) - Move version to settings.gradle
 group 'bio.terra'
-version '0.0.75-SNAPSHOT'
+version '0.0.76-SNAPSHOT'
 
 // If true, search local repository (~/.m2/repository/) first for dependencies.
 def useMavenLocal = false
