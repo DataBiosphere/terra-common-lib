@@ -18,7 +18,7 @@ import org.springframework.retry.backoff.BackOffPolicy;
  * BackOffPolicy that delegates to a number of nested BackOffPolicies. The BackOffPolicy chosen is
  * determined by the exception being handled. If more than one policy matches, the first is used.
  */
-public class CompositeBackOffPolicy implements BackOffPolicy {
+public final class CompositeBackOffPolicy implements BackOffPolicy {
   private static final Logger logger = LoggerFactory.getLogger(DatabaseRetryUtils.class);
 
   // LinkedHashMap to ensure consistent behavior when an exception matches more than 1 policy

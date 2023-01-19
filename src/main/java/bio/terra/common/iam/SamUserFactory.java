@@ -27,13 +27,21 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SamUserFactory {
-  final BearerTokenFactory bearerTokenFactory;
-  final OkHttpClient httpClient =
+  private final BearerTokenFactory bearerTokenFactory;
+  private final OkHttpClient httpClient =
       new ApiClient()
           .getHttpClient()
           .newBuilder()
           .addInterceptor(new OkHttpClientTracingInterceptor(Tracing.getTracer()))
           .build();
+
+  public BearerTokenFactory getBearerTokenFactory() {
+    return bearerTokenFactory;
+  }
+
+  public OkHttpClient getHttpClient() {
+    return httpClient;
+  }
 
   @Autowired
   public SamUserFactory(BearerTokenFactory bearerTokenFactory) {

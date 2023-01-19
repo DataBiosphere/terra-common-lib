@@ -98,4 +98,8 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitJupiter}"
     testImplementation group: 'org.mockito', name: 'mockito-core', version: "${mockito}"
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: "${openapitools}"
+
+    constraints {
+        implementation group: 'org.slf4j', name: 'slf4j-api', version: "${slf4j}"
+    }
 }

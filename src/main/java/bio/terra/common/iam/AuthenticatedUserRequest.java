@@ -13,7 +13,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 @JsonDeserialize(builder = AuthenticatedUserRequest.Builder.class)
 @Deprecated
-public class AuthenticatedUserRequest {
+public final class AuthenticatedUserRequest {
 
   private final String email;
   private final String subjectId;

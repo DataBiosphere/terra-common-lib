@@ -19,10 +19,10 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 @EnableConfigurationProperties(TransactionRetryProperties.class)
 public class TransactionRetryInterceptorConfiguration {
   /**
-   * Creates an interceptor that can be used in {@link
-   * org.springframework.retry.annotation.Retryable}: <code>
-   * @Retryable(interceptor = "transactionRetryInterceptor")</code>. Be sure to use {@link
-   * org.springframework.retry.annotation.EnableRetry}.
+   * Creates an interceptor that can be used in
+   * {@link org.springframework.retry.annotation.Retryable}:
+   * <code>@Retryable(interceptor = "transactionRetryInterceptor")</code>. Be sure to use
+   * {@link org.springframework.retry.annotation.EnableRetry}.
    */
   @Bean("transactionRetryInterceptor")
   public MethodInterceptor getTransactionRetryInterceptor(TransactionRetryProperties config) {
@@ -64,7 +64,7 @@ public class TransactionRetryInterceptorConfiguration {
           new SimpleRetryPolicy(
               config.getFastRetryMaxAttempts(), config.getFastRetryExceptionClassifier()),
           new SimpleRetryPolicy(
-              config.getSlowRetryMaxAttempts(), config.getSlowRetryExceptionClassifier())
+              config.getSlowRetryMaxAttempts(), config.getSlowRetryExceptionClassifier()),
         });
     return retryPolicy;
   }
