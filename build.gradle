@@ -1,3 +1,9 @@
+buildscript {
+    ext {
+        springBootVersion = '3.0.1'
+    }
+}
+
 plugins {
     id 'idea'
     id 'jacoco'
@@ -13,7 +19,7 @@ plugins {
     // removed this plugin and filled in specific version numbers. I also removed all
     // version numbers with `+` in them. Was:
     //     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'org.springframework.boot' version '3.0.1'
+    id 'org.springframework.boot' version "${springBootVersion}"
     id 'ru.vyarus.quality' version '4.8.0'
 }
 
