@@ -28,25 +28,25 @@ recommended ways to set up a local Postgres Database for the unit tests.
 #### Option A: Docker Postgres
 ##### Running the Postgres Container
 To start a postgres container configured with the necessary databases:
-```sh
+```
 ./local-dev/run_postgres.sh start
 ```
 To stop the container:
-```sh
+```
 ./local-dev/run_postgres.sh stop
 ```
 Note that the contents of the database is not saved between container runs.
 
 ##### Connecting to the Postgres Container
 Use `psql` to connect to databases within the started database container, e.g. for database `tclstairway` users `tclstairwayuser` with password `tclstairwaypwd`:
-```sh
+```
 PGPASSWORD=tclstairwaypwd psql postgresql://127.0.0.1:5432/tclstairway -U tclstairwayuser
 ```
 
 #### Option B: Local Postgres 
 Set up a local Postgres instance. To set up TCL's required database for unit tests, run the following command, which will create the DB's and users:
 
-```sh
+```
 psql -f local-dev/local-postgres-init.sql
 ```
 

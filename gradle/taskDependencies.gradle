@@ -1,0 +1,3 @@
+tasks.named('check').configure {
+    dependsOn jacocoTestReport
+}
