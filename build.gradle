@@ -1,6 +1,7 @@
 buildscript {
     ext {
-        springBootVersion = '3.0.1'
+        // 3.* versions require jakarta support in dependencies
+        springBootVersion = '2.7.7'
     }
 }
 
@@ -24,7 +25,7 @@ plugins {
 }
 
 group 'bio.terra'
-version '0.0.77-SNAPSHOT'
+version '0.0.78-local-testing'
 
 // If true, search local repository (~/.m2/repository/) first for dependencies.
 def useMavenLocal = false

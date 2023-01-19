@@ -17,7 +17,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
  * <p>Prefer using {@DataSourceManager} instead of this code so that connection pools are closed
  * when the Spring application context is deleted.
  */
-public class DataSourceInitializer {
+public final class DataSourceInitializer {
   private DataSourceInitializer() {}
 
   /** Create a {@link DataSource} by providing a {@link BaseDatabaseProperties}. */
