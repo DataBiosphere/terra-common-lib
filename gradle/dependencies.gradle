@@ -18,7 +18,7 @@ dependencies {
         scala = '2.13.10'
         stairway = '0.0.75-SNAPSHOT'
 
-        springBootVersion = '2.7.7'
+        springBootVersion = '2.7.8'
         springCoreVersion = '6.0.4'
         springRetryVersion = '2.0.0'
 
@@ -28,7 +28,7 @@ dependencies {
 
         spotbugsVersion = '4.7.3'
 
-        opencensus = '0.31.1' // does not support jakarta
+        opencensus = '0.31.1'
 
         hamcrest = '2.2'
         jsonpath = '2.7.0'
@@ -99,8 +99,4 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitJupiter}"
     testImplementation group: 'org.mockito', name: 'mockito-core', version: "${mockito}"
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: "${openapitools}"
-
-    constraints {
-        implementation group: 'org.slf4j', name: 'slf4j-api', version: "${slf4j}"
-    }
 }

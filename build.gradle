@@ -4,11 +4,11 @@ plugins {
     id 'java-library'
     id 'maven-publish'
 
-    id 'com.diffplug.spotless' version '6.12.1'
+    id 'com.diffplug.spotless' version '6.13.0'
     id 'com.github.ben-manes.versions' version '0.44.0'
     id 'com.github.spotbugs' version '5.0.13'
     id 'com.jfrog.artifactory' version '4.31.0'
-    id 'org.springframework.boot' version '2.7.7' // 3.* versions require jakarta support in dependencies
+    id 'org.springframework.boot' version '2.7.8' // 3.* versions require jakarta support in dependencies
     id 'ru.vyarus.quality' version '4.8.0'
 
     // [dd 2021-05-17] Use of Spring dependency management generates invalid POM, making
