@@ -1,3 +1,1 @@
 rootProject.name = 'terra-common-lib'
-
-enableFeaturePreview('ONE_LOCKFILE_PER_PROJECT')

@@ -18,7 +18,8 @@ dependencies {
         scala = '2.13.10'
         stairway = '0.0.75-SNAPSHOT'
 
-        springCoreVersion = '5.3.24'
+        springBootVersion = '2.7.7'
+        springCoreVersion = '6.0.4'
         springRetryVersion = '2.0.0'
 
         googleLogging = 'v2-rev20221230-2.0.0'
