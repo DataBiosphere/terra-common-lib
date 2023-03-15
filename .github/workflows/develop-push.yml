@@ -5,9 +5,6 @@ on:
     paths-ignore: [ '**.md' ]
   workflow_dispatch: {}
 
-env:
-  ARTIFACTORY_ACCOUNT_PATH: secret/dsp/accts/artifactory/dsdejenkins
-
 jobs:
   publish_snapshot:
     runs-on: ubuntu-latest
