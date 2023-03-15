@@ -5,10 +5,6 @@ on:
     paths-ignore: [ '**.md' ]
   workflow_dispatch: {}
 
-env:
-  VAULT_ADDR: https://clotho.broadinstitute.org:8200
-  ARTIFACTORY_ACCOUNT_PATH: secret/dsp/accts/artifactory/dsdejenkins
-
 jobs:
   publish_snapshot:
     runs-on: ubuntu-latest
@@ -39,37 +35,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17
-      - name: Pull Vault image
-        run: docker pull vault:1.1.0
-      # Currently, there's no way to add capabilities to Docker actions on Git, and Vault needs IPC_LOCK to run.
-      - name: Get Vault token
-        id: vault-token-step
-        run: |
-          VAULT_TOKEN=$(docker run --rm --cap-add IPC_LOCK \
-            -e "VAULT_ADDR=${VAULT_ADDR}" \
-            vault:1.1.0 \
-            vault write -field token \
-              auth/approle/login role_id=${{ secrets.VAULT_APPROLE_ROLE_ID }} \
-              secret_id=${{ secrets.VAULT_APPROLE_SECRET_ID }})
-          echo ::add-mask::$VAULT_TOKEN
-          echo ::set-output name=vault-token::$VAULT_TOKEN
-      - name: Get artifactory credentials from Vault
-        id: vault-secret-step
-        run: |
-          ARTIFACTORY_USERNAME=$(docker run --rm --cap-add IPC_LOCK \
-            -e "VAULT_TOKEN=${{ steps.vault-token-step.outputs.vault-token }}" \
-            -e "VAULT_ADDR=${VAULT_ADDR}" \
-            vault:1.1.0 \
-            vault read -field username ${ARTIFACTORY_ACCOUNT_PATH})
-          ARTIFACTORY_PASSWORD=$(docker run --rm --cap-add IPC_LOCK \
-            -e "VAULT_TOKEN=${{ steps.vault-token-step.outputs.vault-token }}" \
-            -e "VAULT_ADDR=${VAULT_ADDR}" \
-            vault:1.1.0 \
-            vault read -field password ${ARTIFACTORY_ACCOUNT_PATH})
-          echo ::add-mask::$ARTIFACTORY_USERNAME
-          echo ::set-output name=artifactory-username::$ARTIFACTORY_USERNAME
-          echo ::add-mask::$ARTIFACTORY_PASSWORD
-          echo ::set-output name=artifactory-password::$ARTIFACTORY_PASSWORD
       # See https://github.com/actions/cache/blob/main/examples.md#java---gradle
       - name: Cache Gradle packages
         uses: actions/cache@v2
@@ -102,6 +67,6 @@ jobs:
       - name: "Publish to Artifactory"
         run: ./gradlew artifactoryPublish
         env:
-          ARTIFACTORY_USERNAME: ${{ steps.vault-secret-step.outputs.artifactory-username }}
-          ARTIFACTORY_PASSWORD: ${{ steps.vault-secret-step.outputs.artifactory-password }}
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
           ARTIFACTORY_REPO_KEY: "libs-snapshot-local"
