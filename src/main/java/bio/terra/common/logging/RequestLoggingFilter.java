@@ -178,7 +178,8 @@ class RequestLoggingFilter implements Filter {
     HttpHeaders headers = new ServletServerHttpRequest(request).getHeaders();
     return headers.entrySet().stream()
         // Remove the "authorization" header, the "oidc_access_token" header populated by the proxy,
-        // the "oauth2_claim_access_token" header and "cookie" header to avoid logging access tokens.
+        // the "oauth2_claim_access_token" header and "cookie" header to avoid logging access
+        // tokens.
         .filter(
             header ->
                 !header.getKey().equalsIgnoreCase("authorization")
