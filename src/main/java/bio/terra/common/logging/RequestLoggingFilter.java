@@ -178,12 +178,14 @@ class RequestLoggingFilter implements Filter {
     HttpHeaders headers = new ServletServerHttpRequest(request).getHeaders();
     return headers.entrySet().stream()
         // Remove the "authorization" header, the "oidc_access_token" header populated by the proxy,
-        // and the oauth2_claim_access_token header to avoid logging access tokens.
+        // the "oauth2_claim_access_token" header and "cookie" header to avoid logging access
+        // tokens.
         .filter(
             header ->
                 !header.getKey().equalsIgnoreCase("authorization")
                     && !header.getKey().equalsIgnoreCase("oidc_access_token")
-                    && !header.getKey().equalsIgnoreCase("oauth2_claim_access_token"))
+                    && !header.getKey().equalsIgnoreCase("oauth2_claim_access_token")
+                    && !header.getKey().equalsIgnoreCase("cookie"))
         .collect(
             Collectors.toMap(
                 Map.Entry::getKey, entry -> entry.getValue().stream().findFirst().orElse(null)));
