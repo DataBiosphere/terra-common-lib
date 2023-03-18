@@ -15,7 +15,7 @@ jobs:
     if: "!contains( github.event.sender.login, 'broadbot')"
     steps:
     - name: Checkout current code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Run linter
       run: |
         ./gradlew spotlessCheck
