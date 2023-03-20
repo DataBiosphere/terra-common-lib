@@ -15,7 +15,7 @@ jobs:
     if: "!contains( github.event.sender.login, 'broadbot')"
     steps:
     - name: Checkout current code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Run linter
       run: |
         ./gradlew spotlessCheck
@@ -35,7 +35,7 @@ jobs:
           - 5432:5432
     steps:
       - name: Checkout current code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Initialize Postgres DB
         env:
           PGPASSWORD: postgres
@@ -47,7 +47,7 @@ jobs:
           java-version: 17
       # See https://github.com/actions/cache/blob/main/examples.md#java---gradle
       - name: Cache Gradle packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
@@ -61,7 +61,7 @@ jobs:
         run: ./gradlew build --scan
       - name: Upload Test Reports
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: Test Reports
           path: build/reports
