@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
@@ -16,7 +18,7 @@ tasks.withType(Test) {
                 'skipped'
         ]
         // Causes the correct line to be reported on an exception.
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        exceptionFormat = TestExceptionFormat.FULL
         reports {
             // Write XML file (used by CircleCI, Jenkins, etc) to build/test-results/*
             junitXml.required true
