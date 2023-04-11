@@ -7,14 +7,26 @@ java {
     withSourcesJar()
 }
 
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.hasTask(artifactoryPublish) &&
+            (artifactory_username == null || artifactory_password == null)) {
+        throw new GradleException('Set env vars ARTIFACTORY_USERNAME and ARTIFACTORY_PASSWORD to publish')
+    }
+}
+
+// Publish jar file to a Maven module/artifact using the maven-publish plugin.
 publishing {
     publications {
         terraCommonLib(MavenPublication) {
+            groupId = gradle.projectGroup
+            artifactId = rootProject.name
+            version = gradle.tclVersion
             from components.java
         }
     }
 }
 
+// Upload Maven artifacts to Artifactory using the Artifactory plugin.
 artifactory {
     publish {
         contextUrl = 'https://broadinstitute.jfrog.io/broadinstitute/'
