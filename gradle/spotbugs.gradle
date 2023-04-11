@@ -9,7 +9,7 @@ spotbugsMain {
     reports {
         html {
             required = true
-            outputLocation = file("$buildDir/reports/spotbugs/main.htmml")
+            outputLocation = file("$buildDir/reports/spotbugs/main.html")
             stylesheet = 'fancy.xsl'
         }
     }
