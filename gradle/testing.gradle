@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
@@ -10,6 +8,7 @@ test {
     maxParallelForks = 1
 }
 
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 tasks.withType(Test) {
     testLogging {
         events = ['passed', 'failed', 'skipped']
