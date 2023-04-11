@@ -12,11 +12,7 @@ test {
 
 tasks.withType(Test) {
     testLogging {
-        events = [
-                'passed',
-                'failed',
-                'skipped'
-        ]
+        events = ['passed', 'failed', 'skipped']
         // Causes the correct line to be reported on an exception.
         exceptionFormat = TestExceptionFormat.FULL
         reports {
