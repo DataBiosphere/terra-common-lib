@@ -56,5 +56,16 @@
     Terra: Spotless is canonical for whitespace.
   -->
   <suppress checks="WhitespaceAround"/>
-
+  <!--
+  Terra: Classes may not need to be final. Prefer to catch complexity in code review.
+  -->
+  <suppress checks="FinalClass"/>
+  <!--
+  Terra: Constant names may not align to conventions. Prefer to catch complexity in code review.
+  -->
+  <suppress checks="ConstantName"/>
+  <!--
+  Terra: Prefer to catch complexity in code review.
+  -->
+  <suppress checks="AnnotationUseStyle"/>
 </suppressions>

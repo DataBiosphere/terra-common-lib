@@ -1,3 +1,4 @@
 rootProject.name = 'terra-common-lib'
 
-enableFeaturePreview('ONE_LOCKFILE_PER_PROJECT')
+gradle.ext.projectGroup = 'bio.terra'
+gradle.ext.tclVersion = '0.113.21-SNAPSHOT'

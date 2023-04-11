@@ -61,8 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           RELEASE_BRANCHES: develop
-          VERSION_FILE_PATH: build.gradle
-          VERSION_LINE_MATCH: ^version
+          VERSION_FILE_PATH: settings.gradle
+          VERSION_LINE_MATCH: "^gradle.ext.tclVersion\\s*=\\s*\".*\""
           VERSION_SUFFIX: SNAPSHOT
       - name: "Publish to Artifactory"
         run: ./gradlew artifactoryPublish
