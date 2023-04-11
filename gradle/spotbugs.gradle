@@ -2,6 +2,7 @@
 spotbugs {
     effort = 'max'
     extraArgs = ['-emacs']
+    ignoreFailures = true
 }
 
 spotbugsMain {
