@@ -56,7 +56,7 @@ jobs:
           name: Test Reports
           path: build/reports
       - name: "Bump the tag to a new version"
-        uses: databiosphere/github-actions/actions/bumper@bumper-0.0.6
+        uses: databiosphere/github-actions/actions/bumper@bumper-0.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
