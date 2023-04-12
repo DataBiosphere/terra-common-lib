@@ -62,7 +62,7 @@ jobs:
           DEFAULT_BUMP: patch
           RELEASE_BRANCHES: develop
           VERSION_FILE_PATH: settings.gradle
-          VERSION_LINE_MATCH: "^gradle.ext.tclVersion\\s*=\\s*\".*\""
+          VERSION_LINE_MATCH: "^\\s*gradle.ext.tclVersion\\s*=\\s*'.*'"
           VERSION_SUFFIX: SNAPSHOT
       - name: "Publish to Artifactory"
         run: ./gradlew artifactoryPublish
