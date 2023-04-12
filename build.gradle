@@ -18,6 +18,8 @@ plugins {
     id 'ru.vyarus.quality' version '4.8.0'
 }
 
+group = gradle.projectGroup
+
 project.ext {
     isCiServer = System.getenv().containsKey("CI")
 }
