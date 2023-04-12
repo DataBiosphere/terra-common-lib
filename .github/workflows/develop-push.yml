@@ -56,13 +56,13 @@ jobs:
           name: Test Reports
           path: build/reports
       - name: "Bump the tag to a new version"
-        uses: databiosphere/github-actions/actions/bumper@bumper-0.0.6
+        uses: databiosphere/github-actions/actions/bumper@bumper-0.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           RELEASE_BRANCHES: develop
           VERSION_FILE_PATH: settings.gradle
-          VERSION_LINE_MATCH: "^gradle.ext.tclVersion\\s*=\\s*\".*\""
+          VERSION_LINE_MATCH: "^\\s*gradle.ext.tclVersion\\s*=\\s*'.*'"
           VERSION_SUFFIX: SNAPSHOT
       - name: "Publish to Artifactory"
         run: ./gradlew artifactoryPublish
