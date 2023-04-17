@@ -1,6 +1,7 @@
 package bio.terra.common.flagsmith;
 
 import com.flagsmith.FlagsmithClient;
+import com.flagsmith.config.FlagsmithCacheConfig;
 import com.flagsmith.exceptions.FlagsmithClientError;
 import com.flagsmith.models.Flags;
 import java.util.Optional;
@@ -29,6 +30,7 @@ public class FlagsmithService {
         FlagsmithClient.newBuilder()
             .setApiKey(flagsmithProperties.getServerSideApiKey())
             .withApiUrl(flagsmithProperties.getApiUrl())
+            .withCache(FlagsmithCacheConfig.newBuilder().build())
             .build();
 
     Flags flags;
