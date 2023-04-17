@@ -88,6 +88,9 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
+    // Flagsmith
+    implementation group: 'com.flagsmith', name: 'flagsmith-java-client', version: '6.1.0'
+
     // Metrics & Tracing
     ext {
         opencensus = '0.31.1'
