@@ -20,10 +20,10 @@ public class FlagsmithService {
     this.flagsmithProperties = flagsmithProperties;
   }
 
-  public boolean isFeatureEnabled(String feature, Optional<Boolean> defaultValue) {
+  public Optional<Boolean> isFeatureEnabled(String feature) {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
-      return defaultValue.orElse(false);
+      return Optional.empty();
     }
 
     var flagsmith =
@@ -38,13 +38,13 @@ public class FlagsmithService {
       flags = flagsmith.getEnvironmentFlags();
     } catch (FlagsmithClientError e) {
       LOGGER.warn("Failed to get environment flags", e);
-      return defaultValue.orElse(false);
+      return Optional.empty();
     }
     try {
-      return flags.isFeatureEnabled(feature);
+      return Optional.of(flags.isFeatureEnabled(feature));
     } catch (FlagsmithClientError e) {
       LOGGER.warn("Failed to get the feature state of {}", feature, e);
-      return defaultValue.orElse(false);
+      return Optional.empty();
     }
   }
 }
