@@ -20,6 +20,10 @@ public class FlagsmithService {
     this.flagsmithProperties = flagsmithProperties;
   }
 
+  /**
+   * If Flagsmith is unavailable or the feature does not exist, return {@code Optional.empty()}
+   * @param feature the name of the feature
+   */
   public Optional<Boolean> isFeatureEnabled(String feature) {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");

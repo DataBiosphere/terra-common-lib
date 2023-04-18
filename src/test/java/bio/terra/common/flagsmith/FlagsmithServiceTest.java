@@ -19,12 +19,11 @@ public class FlagsmithServiceTest {
 
   @Test
   public void isFeatureEnabled() {
-    assertTrue(flagsmithService.isFeatureEnabled("foo", Optional.empty()));
+    assertTrue(flagsmithService.isFeatureEnabled("foo").get());
   }
 
   @Test
   public void isFeatureEnabled_featureUndefined_returnsDefaultValue() {
-    assertTrue(flagsmithService.isFeatureEnabled("bar", Optional.of(true)));
-    assertFalse(flagsmithService.isFeatureEnabled("bar", Optional.of(false)));
+    assertTrue(flagsmithService.isFeatureEnabled("bar").isEmpty());
   }
 }
