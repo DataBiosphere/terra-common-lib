@@ -14,8 +14,9 @@ import org.springframework.stereotype.Component;
 public class FlagsmithService {
   private static final Logger LOGGER = LoggerFactory.getLogger(FlagsmithService.class);
 
-  @Autowired private final FlagsmithProperties flagsmithProperties;
+  private final FlagsmithProperties flagsmithProperties;
 
+  @Autowired
   FlagsmithService(FlagsmithProperties flagsmithProperties) {
     this.flagsmithProperties = flagsmithProperties;
   }
