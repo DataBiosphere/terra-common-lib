@@ -22,6 +22,7 @@ public class FlagsmithService {
 
   /**
    * If Flagsmith is unavailable or the feature does not exist, return {@code Optional.empty()}
+   *
    * @param feature the name of the feature
    */
   public Optional<Boolean> isFeatureEnabled(String feature) {
