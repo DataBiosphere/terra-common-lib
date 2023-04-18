@@ -16,7 +16,7 @@ public class FlagsmithService {
 
   private final FlagsmithProperties flagsmithProperties;
 
-  @Autowired 
+  @Autowired
   FlagsmithService(FlagsmithProperties flagsmithProperties) {
     this.flagsmithProperties = flagsmithProperties;
   }
