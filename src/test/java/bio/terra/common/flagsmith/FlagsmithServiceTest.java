@@ -16,12 +16,12 @@ public class FlagsmithServiceTest {
   @Autowired FlagsmithService flagsmithService;
 
   @Test
-  public void isFeatureEnabled() throws Exception {
+  public void isFeatureEnabled() {
     assertTrue(flagsmithService.isFeatureEnabled("foo").get());
   }
 
   @Test
-  public void isFeatureEnabled_featureUndefined_returnsDefaultValue() throws Exception {
+  public void isFeatureEnabled_featureUndefined_returnsDefaultValue() {
     assertTrue(flagsmithService.isFeatureEnabled("bar").isEmpty());
   }
 }
