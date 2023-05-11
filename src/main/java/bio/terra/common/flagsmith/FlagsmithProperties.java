@@ -10,6 +10,8 @@ public class FlagsmithProperties {
   private String serverSideApiKey;
   private String apiUrl;
 
+  private String envCacheKey;
+
   public boolean getEnabled() {
     return enabled;
   }
@@ -32,5 +34,13 @@ public class FlagsmithProperties {
 
   public void setApiUrl(String apiUrl) {
     this.apiUrl = apiUrl;
+  }
+
+  public @Nullable String getEnvCacheKey() {
+    return envCacheKey;
+  }
+
+  public void setEnvCacheKey(String envCacheKey) {
+    this.envCacheKey = envCacheKey;
   }
 }
