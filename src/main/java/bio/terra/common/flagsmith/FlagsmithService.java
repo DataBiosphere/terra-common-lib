@@ -76,9 +76,7 @@ public class FlagsmithService {
           throw e;
         }
         LOGGER.info(
-            "Exception \"{}\". Waiting 10 seconds. End time is {}",
-            e.getMessage(),
-            endTime);
+            "Exception \"{}\". Waiting 10 seconds. End time is {}", e.getMessage(), endTime);
         TimeUnit.MILLISECONDS.sleep(DEFAULT_RETRY_SLEEP_DURATION.toMillis());
       }
     }
