@@ -65,7 +65,6 @@ public class FlagsmithService {
 
     T result;
     Instant endTime = Instant.now().plus(DEFAULT_RETRY_TOTAL_DURATION);
-    Duration sleepDuration = DEFAULT_RETRY_SLEEP_DURATION;
 
     while (true) {
       try {
@@ -77,11 +76,10 @@ public class FlagsmithService {
           throw e;
         }
         LOGGER.info(
-            "Exception \"{}\". Waiting {} seconds. End time is {}",
+            "Exception \"{}\". Waiting 10 seconds. End time is {}",
             e.getMessage(),
-            sleepDuration.toSeconds(),
             endTime);
-        TimeUnit.MILLISECONDS.sleep(sleepDuration.toMillis());
+        TimeUnit.MILLISECONDS.sleep(DEFAULT_RETRY_SLEEP_DURATION.toMillis());
       }
     }
     return result;
