@@ -25,8 +25,8 @@ class MetricsHelperTest {
 
   @Test
   void testRecordErrorCount() throws Exception {
-    long errorCount403 = getCurrentCount(ERROR_VIEW_NAME, FATAL_COUNT);
-    long errorCount401 = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT);
+    long fatalCount = getCurrentCount(ERROR_VIEW_NAME, FATAL_COUNT);
+    long errorCount = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT);
 
     MetricsHelper.recordError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
     MetricsHelper.recordError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
@@ -36,8 +36,8 @@ class MetricsHelperTest {
 
     sleepForSpansExport();
 
-    assertCountIncremented(ERROR_VIEW_NAME, ERROR_COUNT, errorCount401, 3);
-    assertCountIncremented(ERROR_VIEW_NAME, FATAL_COUNT, errorCount403, 1);
+    assertCountIncremented(ERROR_VIEW_NAME, ERROR_COUNT, errorCount, 3);
+    assertCountIncremented(ERROR_VIEW_NAME, FATAL_COUNT, fatalCount, 1);
   }
 
   @Test
