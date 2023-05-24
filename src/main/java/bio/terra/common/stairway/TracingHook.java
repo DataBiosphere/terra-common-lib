@@ -7,6 +7,7 @@ import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.HookAction;
 import bio.terra.stairway.StairwayHook;
 import bio.terra.stairway.Step;
+import com.google.common.base.Stopwatch;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Link;
@@ -93,9 +94,10 @@ public class TracingHook implements StairwayHook {
    */
   private class TraceFlightHook implements DynamicHook {
     private Scope flightScope;
+    private Stopwatch stopwatch;
 
     @Override
-    public HookAction start(FlightContext flightContext) throws InterruptedException {
+    public HookAction start(FlightContext flightContext) {
       SpanContext submissionContext = getOrCreateSubmissionContext(flightContext);
       // Start the Flight Span and its Scope. We rely on implicit propagation to get this Flight
       // Span as the current span during Step execution. We must remember to close the Flight Scope
@@ -107,6 +109,7 @@ public class TracingHook implements StairwayHook {
                       + ClassUtils.getShortClassName(flightContext.getFlightClassName()),
                   submissionContext)
               .startScopedSpan();
+      stopwatch = Stopwatch.createStarted();
       Span flightSpan = tracer.getCurrentSpan();
       flightSpan.addLink(Link.fromSpanContext(submissionContext, Link.Type.PARENT_LINKED_SPAN));
       flightSpan.putAttribute(
@@ -121,12 +124,18 @@ public class TracingHook implements StairwayHook {
     }
 
     @Override
-    public HookAction end(FlightContext flightContext) throws InterruptedException {
+    public HookAction end(FlightContext flightContext) {
       Span flightSpan = tracer.getCurrentSpan();
       flightSpan.putAttribute(
           "flightStatus",
           AttributeValue.stringAttributeValue(flightContext.getFlightStatus().toString()));
       flightScope.close();
+      if (stopwatch != null) {
+        MetricsHelper.recordLatency(flightContext.getFlightClassName(), stopwatch.elapsed());
+        stopwatch = null;
+      }
+      MetricsHelper.recordError(
+          flightContext.getFlightClassName(), flightContext.getFlightStatus());
       return HookAction.CONTINUE;
     }
   }
