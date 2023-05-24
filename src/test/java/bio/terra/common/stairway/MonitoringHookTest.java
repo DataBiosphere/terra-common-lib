@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("unit")
-public class TracingHookTest {
+public class MonitoringHookTest {
 
   private static final List<TagValue> ERROR_COUNT_TAGS =
       List.of(
@@ -44,7 +44,7 @@ public class TracingHookTest {
     RecordContextStep.setRecord(contextRecord);
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
@@ -61,7 +61,7 @@ public class TracingHookTest {
     long errorCount = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
@@ -80,7 +80,7 @@ public class TracingHookTest {
     }
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
@@ -113,7 +113,7 @@ public class TracingHookTest {
     RecordContextStep.setRecord(contextRecord);
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, ErrorSpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
@@ -128,7 +128,7 @@ public class TracingHookTest {
   void recordErrorOnFailure() throws Exception {
     long errorCount = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
 
     var flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
@@ -147,7 +147,7 @@ public class TracingHookTest {
       previousDistribution.add(getCurrentDistributionDataCount(LATENCY_VIEW_NAME, flightsList, i));
     }
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
+        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
 
     var flightState =
         StairwayTestUtils.blockUntilFlightCompletes(

@@ -21,7 +21,8 @@ import java.util.Optional;
 import org.apache.commons.lang3.ClassUtils;
 
 /**
- * A {@link StairwayHook} to add support for tracing execution of Stairway flights with OpenCensus.
+ * A {@link StairwayHook} to add support for tracing execution of Stairway flights and record custom
+ * metrics with OpenCensus.
  *
  * <p>This hook uses Spans at 3 different levels. From lowest to highest:
  *
@@ -46,7 +47,7 @@ import org.apache.commons.lang3.ClassUtils;
  *
  * @see <a href="https://opencensus.io/tracing/">https://opencensus.io/tracing/</a>
  */
-public class TracingHook implements StairwayHook {
+public class MonitoringHook implements StairwayHook {
   /** The {@link FlightMap} key for the submission Span's context. */
   public static final String SUBMISSION_SPAN_CONTEXT_MAP_KEY = "opencensusTracingSpanContext";
 
