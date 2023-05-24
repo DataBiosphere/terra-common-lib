@@ -57,7 +57,7 @@ public class TracingHookTest {
   }
 
   @Test
-  public void recordNoErrorOnSuccess() throws Exception {
+  void recordNoErrorOnSuccess() throws Exception {
     long errorCount = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
 
     Stairway stairway =
@@ -72,7 +72,7 @@ public class TracingHookTest {
   }
 
   @Test
-  public void recordLatencyOnSuccess() throws Exception {
+  void recordLatencyOnSuccess() throws Exception {
     var flightsList = List.of(TagValue.create(SpanRecordingFlight.class.getName()));
     List<Long> previousDistribution = new ArrayList<>();
     for (int i = 0; i < 29; i++) {
@@ -125,7 +125,7 @@ public class TracingHookTest {
   }
 
   @Test
-  public void recordErrorOnFailure() throws Exception {
+  void recordErrorOnFailure() throws Exception {
     long errorCount = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
     Stairway stairway =
         StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new TracingHook()));
@@ -140,7 +140,7 @@ public class TracingHookTest {
   }
 
   @Test
-  public void recordLatencyOnFailure() throws Exception {
+  void recordLatencyOnFailure() throws Exception {
     var flightsList = List.of(TagValue.create(ErrorSpanRecordingFlight.class.getName()));
     List<Long> previousDistribution = new ArrayList<>();
     for (int i = 0; i < 29; i++) {

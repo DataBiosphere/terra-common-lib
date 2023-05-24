@@ -51,10 +51,8 @@ public class MetricsHelper {
                   4000.0, 8000.0, 16000.0, 32000.0, 64000.0)));
 
   private static final Aggregation COUNT_AGGREGATION = Aggregation.Count.create();
-  static final View.Name LATENCY_VIEW_NAME =
-      View.Name.create(METRICS_PREFIX + "/stairway/latency");
-  static final View.Name ERROR_VIEW_NAME =
-      View.Name.create(METRICS_PREFIX + "/stairway/error");
+  static final View.Name LATENCY_VIEW_NAME = View.Name.create(METRICS_PREFIX + "/stairway/latency");
+  static final View.Name ERROR_VIEW_NAME = View.Name.create(METRICS_PREFIX + "/stairway/error");
   private static final View LATENCY_VIEW =
       View.create(
           LATENCY_VIEW_NAME,
@@ -78,9 +76,7 @@ public class MetricsHelper {
     }
   }
 
-  /**
-   * Record the latency for stairway flights.
-   */
+  /** Record the latency for stairway flights. */
   public static void recordLatency(String flightName, Duration latency) {
     TagContext tctx =
         tagger
@@ -107,4 +103,6 @@ public class MetricsHelper {
       statsRecorder.newMeasureMap().put(ERROR_COUNT, 1).record(tctx);
     }
   }
+
+  private MetricsHelper() {}
 }

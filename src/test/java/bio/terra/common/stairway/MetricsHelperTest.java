@@ -18,13 +18,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("unit")
-public class MetricsHelperTest {
+class MetricsHelperTest {
   private static final String FAKE_FLIGHT_NAME = "fakeFlight";
 
   private static final List<TagValue> FLIGHTS_LIST = List.of(TagValue.create(FAKE_FLIGHT_NAME));
 
   @Test
-  public void testRecordErrorCount() throws Exception {
+  void testRecordErrorCount() throws Exception {
     long errorCount403 = getCurrentCount(ERROR_VIEW_NAME, FATAL_COUNT);
     long errorCount401 = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT);
 
@@ -41,7 +41,7 @@ public class MetricsHelperTest {
   }
 
   @Test
-  public void testRecordLatency() throws Exception {
+  void testRecordLatency() throws Exception {
     // this is mapped to the Distribution defined in MetricsHelper, i.e.
     // 0ms being within the first bucket & 1 ms in the 2nd.
     var zeroMsBucketIndex = 0;
