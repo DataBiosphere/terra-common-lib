@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.util.List;
 
 public class MetricsHelper {
-  public static final String CLOUD_RESOURCE_PREFIX = "terra/common-lib";
+  public static final String METRICS_PREFIX = "terra/common-lib";
   public static final ViewManager viewManager = Stats.getViewManager();
 
   private static final Tagger tagger = Tags.getTagger();
@@ -36,11 +36,11 @@ public class MetricsHelper {
   /** {@link Measure} for latency in milliseconds. */
   private static final Measure.MeasureDouble LATENCY =
       Measure.MeasureDouble.create(
-          CLOUD_RESOURCE_PREFIX + "/stairway/latency", "Latency for stairway flight", MILLISECOND);
-  /** {@link Measure} for number of errors from cloud call. */
+          METRICS_PREFIX + "/stairway/latency", "Latency for stairway flight", MILLISECOND);
+  /** {@link Measure} for number of errors from stairway flights. */
   private static final Measure.MeasureDouble ERROR_COUNT =
       Measure.MeasureDouble.create(
-          CLOUD_RESOURCE_PREFIX + "/stairway/error", "Number of stairway errors", COUNT);
+          METRICS_PREFIX + "/stairway/error", "Number of stairway errors", COUNT);
 
   private static final Aggregation LATENCY_DISTRIBUTION =
       Aggregation.Distribution.create(
@@ -52,9 +52,9 @@ public class MetricsHelper {
 
   private static final Aggregation COUNT_AGGREGATION = Aggregation.Count.create();
   static final View.Name LATENCY_VIEW_NAME =
-      View.Name.create(CLOUD_RESOURCE_PREFIX + "/stairway/latency");
+      View.Name.create(METRICS_PREFIX + "/stairway/latency");
   static final View.Name ERROR_VIEW_NAME =
-      View.Name.create(CLOUD_RESOURCE_PREFIX + "/stairway/error");
+      View.Name.create(METRICS_PREFIX + "/stairway/error");
   private static final View LATENCY_VIEW =
       View.create(
           LATENCY_VIEW_NAME,
@@ -79,9 +79,7 @@ public class MetricsHelper {
   }
 
   /**
-   * Record the latency for Cloud API calls.
-   *
-   * @param latency The API latency.
+   * Record the latency for stairway flights.
    */
   public static void recordLatency(String flightName, Duration latency) {
     TagContext tctx =
