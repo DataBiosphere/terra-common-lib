@@ -56,7 +56,7 @@ public class FlagsmithService {
   /**
    * Get feature's value formatted as JSON.
    *
-   * If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
+   * <p>If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
    * return {@code Optional.empty()}.
    */
   public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) {
@@ -87,11 +87,11 @@ public class FlagsmithService {
       cacheConfig.enableEnvLevelCaching(flagsmithProperties.getEnvCacheKey());
     }
     return FlagsmithClient.newBuilder()
-            .setApiKey(flagsmithProperties.getServerSideApiKey())
-            .withApiUrl(flagsmithProperties.getApiUrl())
-            .withCache(cacheConfig.build())
-            .enableLogging()
-            .build();
+        .setApiKey(flagsmithProperties.getServerSideApiKey())
+        .withApiUrl(flagsmithProperties.getApiUrl())
+        .withCache(cacheConfig.build())
+        .enableLogging()
+        .build();
   }
 
   private static <T> T getWithRetryOnException(SupplierWithException<T> supplier) throws Exception {
