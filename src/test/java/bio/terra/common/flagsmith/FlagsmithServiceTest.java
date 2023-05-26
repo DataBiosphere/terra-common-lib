@@ -1,7 +1,9 @@
 package bio.terra.common.flagsmith;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 public class FlagsmithServiceTest {
 
   @Autowired FlagsmithService flagsmithService;
+  @Autowired ObjectMapper objectMapper;
 
   @Test
   public void isFeatureEnabled() {
@@ -21,7 +24,28 @@ public class FlagsmithServiceTest {
   }
 
   @Test
+  public void getFeatureValue() {
+    FooValue fooValue = flagsmithService.getFeatureValueJson("foo", FooValue.class).get();
+
+    assertEquals("world", fooValue.hello);
+    assertEquals("world2", fooValue.hello2);
+  }
+
+  @Test
+  public void getFeatureValue_featureHasNoValue() {
+    assertTrue(flagsmithService.isFeatureEnabled("foo_no_value").get());
+    assertTrue(flagsmithService.getFeatureValueJson("foo_no_value", Void.class).isEmpty());
+  }
+
+  @Test
   public void isFeatureEnabled_featureUndefined_returnsDefaultValue() {
     assertTrue(flagsmithService.isFeatureEnabled("bar").isEmpty());
   }
+
+  @Test
+  public void getFeatureValue_featureUndefined_returnsDefaultValue() {
+    assertTrue(flagsmithService.getFeatureValueJson("bar", Void.class).isEmpty());
+  }
+
+  public record FooValue(String hello, String hello2) {}
 }
