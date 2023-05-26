@@ -1,7 +1,7 @@
 package bio.terra.common.stairway;
 
-import static bio.terra.common.stairway.MetricsHelper.ERROR_VIEW_NAME;
-import static bio.terra.common.stairway.MetricsHelper.LATENCY_VIEW_NAME;
+import static bio.terra.common.stairway.MetricsHelper.FLIGHT_ERROR_VIEW_NAME;
+import static bio.terra.common.stairway.MetricsHelper.FLIGHT_LATENCY_VIEW_NAME;
 import static bio.terra.common.stairway.test.MetricsTestUtil.assertCountIncremented;
 import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentCount;
 import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentDistributionDataCount;
@@ -58,7 +58,7 @@ public class MonitoringHookTest {
 
   @Test
   void recordNoErrorOnSuccess() throws Exception {
-    long errorCount = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
+    long errorCount = getCurrentCount(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
 
     Stairway stairway =
         StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
@@ -68,7 +68,7 @@ public class MonitoringHookTest {
 
     assertEquals(FlightStatus.SUCCESS, flightState.getFlightStatus());
     sleepForSpansExport();
-    assertCountIncremented(ERROR_VIEW_NAME, ERROR_COUNT_TAGS, errorCount, 0);
+    assertCountIncremented(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS, errorCount, 0);
   }
 
   @Test
@@ -76,7 +76,8 @@ public class MonitoringHookTest {
     var flightsList = List.of(TagValue.create(SpanRecordingFlight.class.getName()));
     List<Long> previousDistribution = new ArrayList<>();
     for (int i = 0; i < 29; i++) {
-      previousDistribution.add(getCurrentDistributionDataCount(LATENCY_VIEW_NAME, flightsList, i));
+      previousDistribution.add(
+          getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i));
     }
 
     Stairway stairway =
@@ -91,7 +92,7 @@ public class MonitoringHookTest {
     for (int i = 0; i < 29; i++) {
       if (previousDistribution
           .get(i)
-          .equals(getCurrentDistributionDataCount(LATENCY_VIEW_NAME, flightsList, i) - 1)) {
+          .equals(getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i) - 1)) {
         changedBucketCount++;
       }
     }
@@ -126,7 +127,7 @@ public class MonitoringHookTest {
 
   @Test
   void recordErrorOnFailure() throws Exception {
-    long errorCount = getCurrentCount(ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
+    long errorCount = getCurrentCount(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
     Stairway stairway =
         StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
 
@@ -136,7 +137,7 @@ public class MonitoringHookTest {
 
     assertEquals(FlightStatus.ERROR, flightState.getFlightStatus());
     sleepForSpansExport();
-    assertCountIncremented(ERROR_VIEW_NAME, ERROR_COUNT_TAGS, errorCount, 1);
+    assertCountIncremented(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS, errorCount, 1);
   }
 
   @Test
@@ -144,7 +145,8 @@ public class MonitoringHookTest {
     var flightsList = List.of(TagValue.create(ErrorSpanRecordingFlight.class.getName()));
     List<Long> previousDistribution = new ArrayList<>();
     for (int i = 0; i < 29; i++) {
-      previousDistribution.add(getCurrentDistributionDataCount(LATENCY_VIEW_NAME, flightsList, i));
+      previousDistribution.add(
+          getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i));
     }
     Stairway stairway =
         StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
@@ -159,7 +161,7 @@ public class MonitoringHookTest {
     for (int i = 0; i < 29; i++) {
       if (previousDistribution
           .get(i)
-          .equals(getCurrentDistributionDataCount(LATENCY_VIEW_NAME, flightsList, i) - 1)) {
+          .equals(getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i) - 1)) {
         changedBucketCount++;
       }
     }

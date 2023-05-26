@@ -28,19 +28,28 @@ public class MetricsHelper {
       TagMetadata.create(TagMetadata.TagTtl.UNLIMITED_PROPAGATION);
   private static final StatsRecorder statsRecorder = Stats.getStatsRecorder();
   private static final TagKey KEY_FLIGHT_NAME = TagKey.create("flight_name");
+  private static final TagKey KEY_STEP_NAME = TagKey.create("step_name");
   private static final TagKey KEY_ERROR = TagKey.create("error_code");
   /** Unit string for count. */
   private static final String COUNT = "1";
   /** Unit string for millisecond. */
   private static final String MILLISECOND = "ms";
   /** {@link Measure} for latency in milliseconds. */
-  private static final Measure.MeasureDouble LATENCY =
+  private static final Measure.MeasureDouble FLIGHT_LATENCY =
       Measure.MeasureDouble.create(
-          METRICS_PREFIX + "/stairway/latency", "Latency for stairway flight", MILLISECOND);
+          METRICS_PREFIX + "/stairway/flight/latency", "Latency for stairway flight", MILLISECOND);
   /** {@link Measure} for number of errors from stairway flights. */
-  private static final Measure.MeasureDouble ERROR_COUNT =
+  private static final Measure.MeasureDouble FLIGHT_ERROR_COUNT =
       Measure.MeasureDouble.create(
-          METRICS_PREFIX + "/stairway/error", "Number of stairway errors", COUNT);
+          METRICS_PREFIX + "/stairway/flight/error", "Number of stairway errors", COUNT);
+
+  private static final Measure.MeasureDouble STEP_LATENCY =
+      Measure.MeasureDouble.create(
+          METRICS_PREFIX + "/stairway/step/latency", "Latency for stairway step", MILLISECOND);
+  /** {@link Measure} for number of errors from stairway steps. */
+  private static final Measure.MeasureDouble STEP_ERROR_COUNT =
+      Measure.MeasureDouble.create(
+          METRICS_PREFIX + "/stairway/step/error", "Number of stairway step errors", COUNT);
 
   private static final Aggregation LATENCY_DISTRIBUTION =
       Aggregation.Distribution.create(
@@ -51,23 +60,39 @@ public class MetricsHelper {
                   4000.0, 8000.0, 16000.0, 32000.0, 64000.0)));
 
   private static final Aggregation COUNT_AGGREGATION = Aggregation.Count.create();
-  static final View.Name LATENCY_VIEW_NAME = View.Name.create(METRICS_PREFIX + "/stairway/latency");
-  static final View.Name ERROR_VIEW_NAME = View.Name.create(METRICS_PREFIX + "/stairway/error");
-  private static final View LATENCY_VIEW =
+  static final View.Name FLIGHT_LATENCY_VIEW_NAME =
+      View.Name.create(METRICS_PREFIX + "/stairway/flight/latency");
+  static final View.Name FLIGHT_ERROR_VIEW_NAME =
+      View.Name.create(METRICS_PREFIX + "/stairway/flight/error");
+
+  static final View.Name STEP_LATENCY_VIEW_NAME =
+      View.Name.create(METRICS_PREFIX + "/stairway/step/latency");
+  static final View.Name STEP_ERROR_VIEW_NAME =
+      View.Name.create(METRICS_PREFIX + "/stairway/step/error");
+  private static final View FLIGHT_LATENCY_VIEW =
       View.create(
-          LATENCY_VIEW_NAME,
+          FLIGHT_LATENCY_VIEW_NAME,
           "The distribution of latencies",
-          LATENCY,
+          FLIGHT_LATENCY,
           LATENCY_DISTRIBUTION,
           ImmutableList.of(KEY_FLIGHT_NAME));
-  private static final View ERROR_VIEW =
+  private static final View FLIGHT_ERROR_VIEW =
       View.create(
-          ERROR_VIEW_NAME,
+          FLIGHT_ERROR_VIEW_NAME,
           "The number and types of errors",
-          ERROR_COUNT,
+          FLIGHT_ERROR_COUNT,
           COUNT_AGGREGATION,
           ImmutableList.of(KEY_ERROR, KEY_FLIGHT_NAME));
-  private static final View[] views = new View[] {LATENCY_VIEW, ERROR_VIEW};
+
+  private static final View STEP_LATENCY_VIEW =
+      View.create(
+          STEP_LATENCY_VIEW_NAME,
+          "The distribution of latencies",
+          STEP_LATENCY,
+          LATENCY_DISTRIBUTION,
+          ImmutableList.of(KEY_FLIGHT_NAME, KEY_STEP_NAME));
+  private static final View[] views =
+      new View[] {FLIGHT_LATENCY_VIEW, FLIGHT_ERROR_VIEW, STEP_LATENCY_VIEW};
 
   // Register all views
   static {
@@ -77,19 +102,19 @@ public class MetricsHelper {
   }
 
   /** Record the latency for stairway flights. */
-  public static void recordLatency(String flightName, Duration latency) {
+  public static void recordFlightLatency(String flightName, Duration latency) {
     TagContext tctx =
         tagger
             .emptyBuilder()
             .put(KEY_FLIGHT_NAME, TagValue.create(flightName), tagMetadata)
             .build();
     try (Scope ss = tagger.withTagContext(tctx)) {
-      statsRecorder.newMeasureMap().put(LATENCY, latency.toMillis()).record(tctx);
+      statsRecorder.newMeasureMap().put(FLIGHT_LATENCY, latency.toMillis()).record(tctx);
     }
   }
 
   /** Records the failed flights. */
-  public static void recordError(String flightName, FlightStatus flightStatus) {
+  public static void recordFlightError(String flightName, FlightStatus flightStatus) {
     if (FlightStatus.ERROR != flightStatus && FlightStatus.FATAL != flightStatus) {
       return;
     }
@@ -100,7 +125,20 @@ public class MetricsHelper {
             .put(KEY_FLIGHT_NAME, TagValue.create(flightName), tagMetadata)
             .build();
     try (Scope ss = tagger.withTagContext(tctx)) {
-      statsRecorder.newMeasureMap().put(ERROR_COUNT, 1).record(tctx);
+      statsRecorder.newMeasureMap().put(FLIGHT_ERROR_COUNT, 1).record(tctx);
+    }
+  }
+
+  /** Record the latency for stairway flights. */
+  public static void recordStepLatency(String flightName, String stepName, Duration latency) {
+    TagContext tctx =
+        tagger
+            .emptyBuilder()
+            .put(KEY_FLIGHT_NAME, TagValue.create(flightName), tagMetadata)
+            .put(KEY_STEP_NAME, TagValue.create(stepName), tagMetadata)
+            .build();
+    try (Scope ss = tagger.withTagContext(tctx)) {
+      statsRecorder.newMeasureMap().put(STEP_LATENCY, latency.toMillis()).record(tctx);
     }
   }
 
