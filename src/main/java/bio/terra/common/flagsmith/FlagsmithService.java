@@ -19,10 +19,11 @@ import org.springframework.stereotype.Component;
 public class FlagsmithService {
   private static final Logger LOGGER = LoggerFactory.getLogger(FlagsmithService.class);
 
+  private static final Duration DEFAULT_RETRY_TOTAL_DURATION = Duration.ofSeconds(60);
+  private static final Duration DEFAULT_RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
+
   private final FlagsmithProperties flagsmithProperties;
   private final ObjectMapper objectMapper;
-  public static final Duration DEFAULT_RETRY_TOTAL_DURATION = Duration.ofSeconds(60);
-  public static final Duration DEFAULT_RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
 
   @Autowired
   FlagsmithService(FlagsmithProperties flagsmithProperties, ObjectMapper objectMapper) {
