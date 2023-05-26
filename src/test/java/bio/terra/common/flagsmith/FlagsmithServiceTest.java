@@ -47,5 +47,5 @@ public class FlagsmithServiceTest {
     assertTrue(flagsmithService.getFeatureValueJson("bar", Void.class).isEmpty());
   }
 
-  public record FooValue(String hello, String hello2) {}
+  private record FooValue(String hello, String hello2) {}
 }
