@@ -132,10 +132,13 @@ public class MonitoringHook implements StairwayHook {
           AttributeValue.stringAttributeValue(flightContext.getFlightStatus().toString()));
       flightScope.close();
       if (stopwatch != null) {
-        MetricsHelper.recordLatency(flightContext.getFlightClassName(), stopwatch.elapsed());
+        MetricsHelper.recordFlightLatency(
+            flightContext.getFlightClassName(),
+            flightContext.getFlightStatus(),
+            stopwatch.elapsed());
         stopwatch = null;
       }
-      MetricsHelper.recordError(
+      MetricsHelper.recordFlightError(
           flightContext.getFlightClassName(), flightContext.getFlightStatus());
       return HookAction.CONTINUE;
     }
@@ -144,6 +147,8 @@ public class MonitoringHook implements StairwayHook {
   /** A {@link DynamicHook} for creating Spans for each Step execution. */
   private class TraceStepHook implements DynamicHook {
     private Scope stepScope;
+
+    private Stopwatch stopwatch;
 
     @Override
     public HookAction start(FlightContext flightContext) {
@@ -156,6 +161,7 @@ public class MonitoringHook implements StairwayHook {
               .spanBuilder(
                   STEP_NAME_PREFIX + ClassUtils.getShortClassName(flightContext.getStepClassName()))
               .startScopedSpan();
+      stopwatch = Stopwatch.createStarted();
       Span stepSpan = tracer.getCurrentSpan();
       stepSpan.putAttribute(
           "stairway/flightId", AttributeValue.stringAttributeValue(flightContext.getFlightId()));
@@ -176,6 +182,18 @@ public class MonitoringHook implements StairwayHook {
     @Override
     public HookAction end(FlightContext flightContext) {
       stepScope.close();
+      if (stopwatch != null) {
+        MetricsHelper.recordStepLatency(
+            flightContext.getFlightClassName(),
+            flightContext.getDirection().name(),
+            flightContext.getStepClassName(),
+            stopwatch.elapsed());
+        stopwatch = null;
+      }
+      MetricsHelper.recordStepDirection(
+          flightContext.getFlightClassName(),
+          flightContext.getDirection().name(),
+          flightContext.getStepClassName());
       return HookAction.CONTINUE;
     }
   }
