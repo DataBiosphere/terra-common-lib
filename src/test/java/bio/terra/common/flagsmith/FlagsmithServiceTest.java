@@ -19,12 +19,12 @@ public class FlagsmithServiceTest {
   @Autowired ObjectMapper objectMapper;
 
   @Test
-  public void isFeatureEnabled() {
+  public void isFeatureEnabled() throws Exception {
     assertTrue(flagsmithService.isFeatureEnabled("foo").get());
   }
 
   @Test
-  public void getFeatureValue() {
+  public void getFeatureValue() throws Exception {
     FooValue fooValue = flagsmithService.getFeatureValueJson("foo", FooValue.class).get();
 
     assertEquals("world", fooValue.hello);
@@ -32,18 +32,18 @@ public class FlagsmithServiceTest {
   }
 
   @Test
-  public void getFeatureValue_featureHasNoValue() {
+  public void getFeatureValue_featureHasNoValue() throws Exception {
     assertTrue(flagsmithService.isFeatureEnabled("foo_no_value").get());
     assertTrue(flagsmithService.getFeatureValueJson("foo_no_value", Void.class).isEmpty());
   }
 
   @Test
-  public void isFeatureEnabled_featureUndefined_returnsDefaultValue() {
+  public void isFeatureEnabled_featureUndefined_returnsDefaultValue() throws Exception {
     assertTrue(flagsmithService.isFeatureEnabled("bar").isEmpty());
   }
 
   @Test
-  public void getFeatureValue_featureUndefined_returnsDefaultValue() {
+  public void getFeatureValue_featureUndefined_returnsDefaultValue() throws Exception {
     assertTrue(flagsmithService.getFeatureValueJson("bar", Void.class).isEmpty());
   }
 

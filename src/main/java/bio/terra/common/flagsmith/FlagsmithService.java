@@ -36,7 +36,7 @@ public class FlagsmithService {
    *
    * @param feature the name of the feature
    */
-  public Optional<Boolean> isFeatureEnabled(String feature) {
+  public Optional<Boolean> isFeatureEnabled(String feature) throws Exception {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
@@ -50,6 +50,7 @@ public class FlagsmithService {
       LOGGER.warn("Feature {} not found in {}", feature, flagsmithProperties.getApiUrl(), e);
     } catch (Exception e) {
       LOGGER.warn("Failed to fetch feature {}", feature, e);
+      throw e;
     }
     return Optional.empty();
   }
@@ -60,7 +61,7 @@ public class FlagsmithService {
    * <p>If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
    * return {@code Optional.empty()}.
    */
-  public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) {
+  public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) throws Exception {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
@@ -77,6 +78,7 @@ public class FlagsmithService {
       LOGGER.warn("Feature {} not found in {}", feature, flagsmithProperties.getApiUrl(), e);
     } catch (Exception e) {
       LOGGER.warn("Failed to fetch value for feature {}", feature, e);
+      throw e;
     }
     return Optional.empty();
   }
