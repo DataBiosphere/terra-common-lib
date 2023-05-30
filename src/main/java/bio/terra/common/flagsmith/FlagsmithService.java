@@ -37,7 +37,7 @@ public class FlagsmithService {
    *
    * @param feature the name of the feature
    */
-  public Optional<Boolean> isFeatureEnabled(String feature) throws Exception {
+  public Optional<Boolean> isFeatureEnabled(String feature) {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
@@ -63,7 +63,7 @@ public class FlagsmithService {
    * <p>If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
    * return {@code Optional.empty()}.
    */
-  public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) throws Exception {
+  public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
