@@ -128,9 +128,6 @@ public class MetricsHelper {
 
   /** Records the failed flights. */
   public static void recordFlightError(String flightName, FlightStatus flightStatus) {
-    if (FlightStatus.ERROR != flightStatus && FlightStatus.FATAL != flightStatus) {
-      return;
-    }
     TagContext tctx =
         tagger
             .emptyBuilder()
