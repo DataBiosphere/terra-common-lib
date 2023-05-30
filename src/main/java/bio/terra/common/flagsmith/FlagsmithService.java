@@ -1,5 +1,7 @@
 package bio.terra.common.flagsmith;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flagsmith.FlagsmithClient;
 import com.flagsmith.config.FlagsmithCacheConfig;
 import com.flagsmith.exceptions.FlagsmithClientError;
@@ -18,13 +20,16 @@ import org.springframework.stereotype.Component;
 public class FlagsmithService {
   private static final Logger LOGGER = LoggerFactory.getLogger(FlagsmithService.class);
 
+  private static final Duration DEFAULT_RETRY_TOTAL_DURATION = Duration.ofSeconds(60);
+  private static final Duration DEFAULT_RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
+
   private final FlagsmithProperties flagsmithProperties;
-  public static final Duration DEFAULT_RETRY_TOTAL_DURATION = Duration.ofSeconds(60);
-  public static final Duration DEFAULT_RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
+  private final ObjectMapper objectMapper;
 
   @Autowired
-  FlagsmithService(FlagsmithProperties flagsmithProperties) {
+  FlagsmithService(FlagsmithProperties flagsmithProperties, ObjectMapper objectMapper) {
     this.flagsmithProperties = flagsmithProperties;
+    this.objectMapper = objectMapper;
   }
 
   /**
@@ -37,18 +42,7 @@ public class FlagsmithService {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
     }
-
-    FlagsmithCacheConfig.Builder cacheConfig =
-        FlagsmithCacheConfig.newBuilder().expireAfterAccess(12, TimeUnit.HOURS);
-    if (StringUtils.isNotEmpty(flagsmithProperties.getEnvCacheKey())) {
-      cacheConfig.enableEnvLevelCaching(flagsmithProperties.getEnvCacheKey());
-    }
-    var flagsmith =
-        FlagsmithClient.newBuilder()
-            .setApiKey(flagsmithProperties.getServerSideApiKey())
-            .withApiUrl(flagsmithProperties.getApiUrl())
-            .withCache(cacheConfig.build())
-            .build();
+    var flagsmith = getFlagsmithClient();
 
     try {
       Flags flags = getWithRetryOnException(flagsmith::getEnvironmentFlags);
@@ -56,9 +50,56 @@ public class FlagsmithService {
     } catch (FlagsmithClientError e) {
       LOGGER.warn("Feature {} not found in {}", feature, flagsmithProperties.getApiUrl(), e);
     } catch (Exception e) {
-      LOGGER.warn("Failed to fetch feature {}", feature, e);
+      LOGGER.warn("Something went wrong when fetching value for feature {}", feature, e);
+      throw new FlagsmithFeatureFetchingException(
+          String.format("Something went wrong when fetching value for feature %s", feature), e);
     }
     return Optional.empty();
+  }
+
+  /**
+   * Get feature's value formatted as JSON.
+   *
+   * <p>If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
+   * return {@code Optional.empty()}.
+   */
+  public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) {
+    if (!flagsmithProperties.getEnabled()) {
+      LOGGER.info("Flagsmith is not enabled, use default value");
+      return Optional.empty();
+    }
+    var flagsmith = getFlagsmithClient();
+    try {
+      Flags flags = getWithRetryOnException(flagsmith::getEnvironmentFlags);
+      Object value = flags.getFeatureValue(feature);
+      if (value == null) {
+        return Optional.empty();
+      }
+      return Optional.of(objectMapper.readValue(value.toString(), clazz));
+    } catch (FlagsmithClientError e) {
+      LOGGER.warn("Feature {} not found in {}", feature, flagsmithProperties.getApiUrl(), e);
+    } catch (JsonMappingException e) {
+      LOGGER.warn("Failed to deserialize value for feature {}", feature, e);
+    } catch (Exception e) {
+      LOGGER.warn("Something went wrong when fetching value for feature {}", feature, e);
+      throw new FlagsmithFeatureFetchingException(
+          String.format("Something went wrong when fetching value for feature %s", feature), e);
+    }
+    return Optional.empty();
+  }
+
+  private FlagsmithClient getFlagsmithClient() {
+    FlagsmithCacheConfig.Builder cacheConfig =
+        FlagsmithCacheConfig.newBuilder().expireAfterAccess(12, TimeUnit.HOURS);
+    if (StringUtils.isNotEmpty(flagsmithProperties.getEnvCacheKey())) {
+      cacheConfig.enableEnvLevelCaching(flagsmithProperties.getEnvCacheKey());
+    }
+    return FlagsmithClient.newBuilder()
+        .setApiKey(flagsmithProperties.getServerSideApiKey())
+        .withApiUrl(flagsmithProperties.getApiUrl())
+        .withCache(cacheConfig.build())
+        .enableLogging()
+        .build();
   }
 
   private static <T> T getWithRetryOnException(SupplierWithException<T> supplier) throws Exception {
