@@ -2,6 +2,7 @@ package bio.terra.common.stairway;
 
 import static bio.terra.common.stairway.MetricsHelper.FLIGHT_ERROR_VIEW_NAME;
 import static bio.terra.common.stairway.MetricsHelper.FLIGHT_LATENCY_VIEW_NAME;
+import static bio.terra.common.stairway.MetricsHelper.STEP_ERROR_VIEW_NAME;
 import static bio.terra.common.stairway.MetricsHelper.STEP_LATENCY_VIEW_NAME;
 import static bio.terra.common.stairway.test.MetricsTestUtil.ERROR_COUNT;
 import static bio.terra.common.stairway.test.MetricsTestUtil.FATAL_COUNT;
@@ -11,6 +12,7 @@ import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentCount;
 import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentDistributionDataCount;
 import static bio.terra.common.stairway.test.MetricsTestUtil.sleepForSpansExport;
 
+import bio.terra.stairway.Direction;
 import bio.terra.stairway.FlightStatus;
 import io.opencensus.tags.TagValue;
 import java.time.Duration;
@@ -21,12 +23,27 @@ import org.junit.jupiter.api.Test;
 @Tag("unit")
 class MetricsHelperTest {
   private static final String FAKE_FLIGHT_NAME = "fakeFlight";
+  private static final FlightStatus FAKE_FLIGHT_STATUS_NAME = FlightStatus.SUCCESS;
   private static final String FAKE_STEP_NAME = "fakeStep";
 
-  private static final List<TagValue> FLIGHTS_LIST = List.of(TagValue.create(FAKE_FLIGHT_NAME));
+  private static final String FAKE_STEP_DO_NAME = Direction.DO.name();
 
-  private static final List<TagValue> FLIGHT_STEP_LIST =
-      List.of(TagValue.create(FAKE_FLIGHT_NAME), TagValue.create(FAKE_STEP_NAME));
+  private static final String FAKE_STEP_UNDO_NAME = Direction.UNDO.name();
+
+  private static final List<TagValue> FLIGHTS_LIST =
+      List.of(TagValue.create(FAKE_FLIGHT_NAME), TagValue.create(FAKE_FLIGHT_STATUS_NAME.name()));
+
+  private static final List<TagValue> FLIGHT_STEP_DO_LIST =
+      List.of(
+          TagValue.create(FAKE_FLIGHT_NAME),
+          TagValue.create(FAKE_STEP_DO_NAME),
+          TagValue.create(FAKE_STEP_NAME));
+
+  private static final List<TagValue> FLIGHT_STEP_UNDO_LIST =
+      List.of(
+          TagValue.create(FAKE_FLIGHT_NAME),
+          TagValue.create(FAKE_STEP_UNDO_NAME),
+          TagValue.create(FAKE_STEP_NAME));
 
   @Test
   void recordErrorCount() throws Exception {
@@ -57,9 +74,12 @@ class MetricsHelperTest {
     long current1MsCount =
         getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, FLIGHTS_LIST, oneMsBucketIndex);
 
-    MetricsHelper.recordFlightLatency(FAKE_FLIGHT_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordFlightLatency(FAKE_FLIGHT_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordFlightLatency(FAKE_FLIGHT_NAME, Duration.ofMillis(0));
+    MetricsHelper.recordFlightLatency(
+        FAKE_FLIGHT_NAME, FAKE_FLIGHT_STATUS_NAME, Duration.ofMillis(1));
+    MetricsHelper.recordFlightLatency(
+        FAKE_FLIGHT_NAME, FAKE_FLIGHT_STATUS_NAME, Duration.ofMillis(1));
+    MetricsHelper.recordFlightLatency(
+        FAKE_FLIGHT_NAME, FAKE_FLIGHT_STATUS_NAME, Duration.ofMillis(0));
 
     sleepForSpansExport();
 
@@ -80,22 +100,42 @@ class MetricsHelperTest {
 
     long current0MsCount =
         getCurrentDistributionDataCount(
-            STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_LIST, zeroMsBucketIndex);
+            STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, zeroMsBucketIndex);
     long current1MsCount =
         getCurrentDistributionDataCount(
-            FLIGHT_LATENCY_VIEW_NAME, FLIGHT_STEP_LIST, oneMsBucketIndex);
+            STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, oneMsBucketIndex);
 
-    MetricsHelper.recordStepLatency(FAKE_FLIGHT_NAME, FAKE_STEP_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordStepLatency(FAKE_FLIGHT_NAME, FAKE_STEP_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordStepLatency(FAKE_FLIGHT_NAME, FAKE_STEP_NAME, Duration.ofMillis(0));
+    MetricsHelper.recordStepLatency(
+        FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME, Duration.ofMillis(1));
+    MetricsHelper.recordStepLatency(
+        FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME, Duration.ofMillis(1));
+    MetricsHelper.recordStepLatency(
+        FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME, Duration.ofMillis(0));
 
     sleepForSpansExport();
 
     // 1 ms,
     assertLatencyCountIncremented(
-        STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_LIST, current0MsCount, 1, zeroMsBucketIndex);
+        STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, current0MsCount, 1, zeroMsBucketIndex);
     // 2ms
     assertLatencyCountIncremented(
-        STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_LIST, current1MsCount, 2, oneMsBucketIndex);
+        STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, current1MsCount, 2, oneMsBucketIndex);
+  }
+
+  @Test
+  void recordStepErrorCount() throws Exception {
+    long doCount = getCurrentCount(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_DO_LIST);
+    long undoCount = getCurrentCount(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_UNDO_LIST);
+
+    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME);
+    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME);
+    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_UNDO_NAME, FAKE_STEP_NAME);
+    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_UNDO_NAME, FAKE_STEP_NAME);
+    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_UNDO_NAME, FAKE_STEP_NAME);
+
+    sleepForSpansExport();
+
+    assertCountIncremented(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_DO_LIST, doCount, 2);
+    assertCountIncremented(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_UNDO_LIST, undoCount, 3);
   }
 }

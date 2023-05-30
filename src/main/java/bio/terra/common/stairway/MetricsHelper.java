@@ -28,7 +28,9 @@ public class MetricsHelper {
       TagMetadata.create(TagMetadata.TagTtl.UNLIMITED_PROPAGATION);
   private static final StatsRecorder statsRecorder = Stats.getStatsRecorder();
   private static final TagKey KEY_FLIGHT_NAME = TagKey.create("flight_name");
+  private static final TagKey KEY_FLIGHT_STATUS = TagKey.create("flight_status");
   private static final TagKey KEY_STEP_NAME = TagKey.create("step_name");
+  private static final TagKey KEY_STEP_DIRECTION = TagKey.create("step_direction");
   private static final TagKey KEY_ERROR = TagKey.create("error_code");
   /** Unit string for count. */
   private static final String COUNT = "1";
@@ -67,6 +69,7 @@ public class MetricsHelper {
 
   static final View.Name STEP_LATENCY_VIEW_NAME =
       View.Name.create(METRICS_PREFIX + "/stairway/step/latency");
+
   static final View.Name STEP_ERROR_VIEW_NAME =
       View.Name.create(METRICS_PREFIX + "/stairway/step/error");
   private static final View FLIGHT_LATENCY_VIEW =
@@ -75,7 +78,7 @@ public class MetricsHelper {
           "The distribution of latencies",
           FLIGHT_LATENCY,
           LATENCY_DISTRIBUTION,
-          ImmutableList.of(KEY_FLIGHT_NAME));
+          ImmutableList.of(KEY_FLIGHT_NAME, KEY_FLIGHT_STATUS));
   private static final View FLIGHT_ERROR_VIEW =
       View.create(
           FLIGHT_ERROR_VIEW_NAME,
@@ -90,9 +93,17 @@ public class MetricsHelper {
           "The distribution of latencies",
           STEP_LATENCY,
           LATENCY_DISTRIBUTION,
-          ImmutableList.of(KEY_FLIGHT_NAME, KEY_STEP_NAME));
+          ImmutableList.of(KEY_FLIGHT_NAME, KEY_STEP_DIRECTION, KEY_STEP_NAME));
+
+  private static final View STEP_ERROR_VIEW =
+      View.create(
+          STEP_ERROR_VIEW_NAME,
+          "The number of DO vs UNDO step",
+          STEP_ERROR_COUNT,
+          COUNT_AGGREGATION,
+          ImmutableList.of(KEY_FLIGHT_NAME, KEY_STEP_DIRECTION, KEY_STEP_NAME));
   private static final View[] views =
-      new View[] {FLIGHT_LATENCY_VIEW, FLIGHT_ERROR_VIEW, STEP_LATENCY_VIEW};
+      new View[] {FLIGHT_LATENCY_VIEW, FLIGHT_ERROR_VIEW, STEP_LATENCY_VIEW, STEP_ERROR_VIEW};
 
   // Register all views
   static {
@@ -102,11 +113,13 @@ public class MetricsHelper {
   }
 
   /** Record the latency for stairway flights. */
-  public static void recordFlightLatency(String flightName, Duration latency) {
+  public static void recordFlightLatency(
+      String flightName, FlightStatus flightStatus, Duration latency) {
     TagContext tctx =
         tagger
             .emptyBuilder()
             .put(KEY_FLIGHT_NAME, TagValue.create(flightName), tagMetadata)
+            .put(KEY_FLIGHT_STATUS, TagValue.create(flightStatus.name()), tagMetadata)
             .build();
     try (Scope ss = tagger.withTagContext(tctx)) {
       statsRecorder.newMeasureMap().put(FLIGHT_LATENCY, latency.toMillis()).record(tctx);
@@ -130,15 +143,31 @@ public class MetricsHelper {
   }
 
   /** Record the latency for stairway flights. */
-  public static void recordStepLatency(String flightName, String stepName, Duration latency) {
+  public static void recordStepLatency(
+      String flightName, String stepDirection, String stepName, Duration latency) {
     TagContext tctx =
         tagger
             .emptyBuilder()
             .put(KEY_FLIGHT_NAME, TagValue.create(flightName), tagMetadata)
+            .put(KEY_STEP_DIRECTION, TagValue.create(stepDirection), tagMetadata)
             .put(KEY_STEP_NAME, TagValue.create(stepName), tagMetadata)
             .build();
     try (Scope ss = tagger.withTagContext(tctx)) {
       statsRecorder.newMeasureMap().put(STEP_LATENCY, latency.toMillis()).record(tctx);
+    }
+  }
+
+  /** Records the failed flights. */
+  public static void recordStepDirection(String flightName, String stepDirection, String stepName) {
+    TagContext tctx =
+        tagger
+            .emptyBuilder()
+            .put(KEY_FLIGHT_NAME, TagValue.create(flightName), tagMetadata)
+            .put(KEY_STEP_DIRECTION, TagValue.create(stepDirection), tagMetadata)
+            .put(KEY_STEP_NAME, TagValue.create(stepName), tagMetadata)
+            .build();
+    try (Scope ss = tagger.withTagContext(tctx)) {
+      statsRecorder.newMeasureMap().put(STEP_ERROR_COUNT, 1).record(tctx);
     }
   }
 

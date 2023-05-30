@@ -132,7 +132,10 @@ public class MonitoringHook implements StairwayHook {
           AttributeValue.stringAttributeValue(flightContext.getFlightStatus().toString()));
       flightScope.close();
       if (stopwatch != null) {
-        MetricsHelper.recordFlightLatency(flightContext.getFlightClassName(), stopwatch.elapsed());
+        MetricsHelper.recordFlightLatency(
+            flightContext.getFlightClassName(),
+            flightContext.getFlightStatus(),
+            stopwatch.elapsed());
         stopwatch = null;
       }
       MetricsHelper.recordFlightError(
@@ -182,10 +185,15 @@ public class MonitoringHook implements StairwayHook {
       if (stopwatch != null) {
         MetricsHelper.recordStepLatency(
             flightContext.getFlightClassName(),
+            flightContext.getDirection().name(),
             flightContext.getStepClassName(),
             stopwatch.elapsed());
         stopwatch = null;
       }
+      MetricsHelper.recordStepDirection(
+          flightContext.getFlightClassName(),
+          flightContext.getDirection().name(),
+          flightContext.getStepClassName());
       return HookAction.CONTINUE;
     }
   }
