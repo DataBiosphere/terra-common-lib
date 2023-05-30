@@ -1,5 +1,6 @@
 package bio.terra.common.flagsmith;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flagsmith.FlagsmithClient;
 import com.flagsmith.config.FlagsmithCacheConfig;
@@ -76,8 +77,10 @@ public class FlagsmithService {
       return Optional.of(objectMapper.readValue(value.toString(), clazz));
     } catch (FlagsmithClientError e) {
       LOGGER.warn("Feature {} not found in {}", feature, flagsmithProperties.getApiUrl(), e);
+    } catch (JsonMappingException e) {
+      LOGGER.warn("Failed to deserialize value for feature {}", feature, e);
     } catch (Exception e) {
-      LOGGER.warn("Failed to fetch value for feature {}", feature, e);
+      LOGGER.warn("Something went wrong when fetching value for feature {}", feature, e);
       throw e;
     }
     return Optional.empty();
