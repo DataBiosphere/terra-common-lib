@@ -73,7 +73,10 @@ public class MonitoringHookTest {
 
   @Test
   void recordLatencyOnSuccess() throws Exception {
-    var flightsList = List.of(TagValue.create(SpanRecordingFlight.class.getName()));
+    var flightsList =
+        List.of(
+            TagValue.create(SpanRecordingFlight.class.getName()),
+            TagValue.create(FlightStatus.SUCCESS.name()));
     List<Long> previousDistribution = new ArrayList<>();
     for (int i = 0; i < 29; i++) {
       previousDistribution.add(
@@ -142,7 +145,10 @@ public class MonitoringHookTest {
 
   @Test
   void recordLatencyOnFailure() throws Exception {
-    var flightsList = List.of(TagValue.create(ErrorSpanRecordingFlight.class.getName()));
+    var flightsList =
+        List.of(
+            TagValue.create(ErrorSpanRecordingFlight.class.getName()),
+            TagValue.create(FlightStatus.ERROR.name()));
     List<Long> previousDistribution = new ArrayList<>();
     for (int i = 0; i < 29; i++) {
       previousDistribution.add(
