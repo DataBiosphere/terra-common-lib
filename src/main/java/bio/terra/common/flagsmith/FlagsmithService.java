@@ -50,8 +50,9 @@ public class FlagsmithService {
     } catch (FlagsmithClientError e) {
       LOGGER.warn("Feature {} not found in {}", feature, flagsmithProperties.getApiUrl(), e);
     } catch (Exception e) {
-      LOGGER.warn("Failed to fetch feature {}", feature, e);
-      throw e;
+      LOGGER.warn("Something went wrong when fetching value for feature {}", feature, e);
+      throw new FlagsmithFeatureFetchingException(
+          String.format("Something went wrong when fetching value for feature %s", feature), e);
     }
     return Optional.empty();
   }
@@ -81,7 +82,8 @@ public class FlagsmithService {
       LOGGER.warn("Failed to deserialize value for feature {}", feature, e);
     } catch (Exception e) {
       LOGGER.warn("Something went wrong when fetching value for feature {}", feature, e);
-      throw e;
+      throw new FlagsmithFeatureFetchingException(
+          String.format("Something went wrong when fetching value for feature %s", feature), e);
     }
     return Optional.empty();
   }
