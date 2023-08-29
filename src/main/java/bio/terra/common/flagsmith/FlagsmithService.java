@@ -8,8 +8,11 @@ import com.flagsmith.exceptions.FlagsmithClientError;
 import com.flagsmith.models.Flags;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,17 @@ public class FlagsmithService {
    * @param feature the name of the feature
    */
   public Optional<Boolean> isFeatureEnabled(String feature) {
+    return isFeatureEnabled(feature, /*userEmail=*/ null);
+  }
+
+  /**
+   * If Flagsmith is unavailable or the feature does not exist, return {@code Optional.empty()}.
+   *
+   * @param feature name of the feature
+   * @param userEmail whether the feature is enabled for this user
+   * @return true if the feature is enabled for this user.
+   */
+  public Optional<Boolean> isFeatureEnabled(String feature, @Nullable String userEmail) {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
@@ -45,7 +59,7 @@ public class FlagsmithService {
     var flagsmith = getFlagsmithClient();
 
     try {
-      Flags flags = getWithRetryOnException(flagsmith::getEnvironmentFlags);
+      Flags flags = getFlagsWithRetryOnException(flagsmith, userEmail);
       return Optional.of(flags.isFeatureEnabled(feature));
     } catch (FlagsmithClientError e) {
       LOGGER.warn("Feature {} not found in {}", feature, flagsmithProperties.getApiUrl(), e);
@@ -64,13 +78,24 @@ public class FlagsmithService {
    * return {@code Optional.empty()}.
    */
   public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) {
+    return getFeatureValueJson(feature, clazz, /*userEmail=*/ null);
+  }
+
+  /**
+   * Get feature's value formatted as JSON.
+   *
+   * <p>If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
+   * return {@code Optional.empty()}.
+   */
+  public <T> Optional<T> getFeatureValueJson(
+      String feature, Class<T> clazz, @Nullable String userEmail) {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
     }
     var flagsmith = getFlagsmithClient();
     try {
-      Flags flags = getWithRetryOnException(flagsmith::getEnvironmentFlags);
+      Flags flags = getFlagsWithRetryOnException(flagsmith, userEmail);
       Object value = flags.getFeatureValue(feature);
       if (value == null) {
         return Optional.empty();
@@ -88,6 +113,16 @@ public class FlagsmithService {
     return Optional.empty();
   }
 
+  private static Flags getFlagsWithRetryOnException(
+      FlagsmithClient flagsmith, @Nullable String userEmail) throws Exception {
+    if (userEmail == null) {
+      return getFlagsWithRetryOnException(flagsmith::getEnvironmentFlags);
+    }
+    Map<String, Object> traits = new HashMap<>();
+    traits.put("email_address", userEmail);
+    return getFlagsWithRetryOnException(() -> flagsmith.getIdentityFlags(userEmail, traits));
+  }
+
   private FlagsmithClient getFlagsmithClient() {
     FlagsmithCacheConfig.Builder cacheConfig =
         FlagsmithCacheConfig.newBuilder().expireAfterAccess(12, TimeUnit.HOURS);
@@ -102,7 +137,8 @@ public class FlagsmithService {
         .build();
   }
 
-  private static <T> T getWithRetryOnException(SupplierWithException<T> supplier) throws Exception {
+  private static <T> T getFlagsWithRetryOnException(SupplierWithException<T> supplier)
+      throws Exception {
 
     T result;
     Instant endTime = Instant.now().plus(DEFAULT_RETRY_TOTAL_DURATION);
