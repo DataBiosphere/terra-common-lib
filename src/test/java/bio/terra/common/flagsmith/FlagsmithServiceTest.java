@@ -1,6 +1,7 @@
 package bio.terra.common.flagsmith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,11 @@ public class FlagsmithServiceTest {
   }
 
   @Test
+  public void isFeatureEnabled_userDisabled() {
+    assertFalse(flagsmithService.isFeatureEnabled("foo", "foo@bar.com").get());
+  }
+
+  @Test
   public void getFeatureValue() {
     FooValue fooValue = flagsmithService.getFeatureValueJson("foo", FooValue.class).get();
 
@@ -35,6 +41,15 @@ public class FlagsmithServiceTest {
   public void getFeatureValue_featureHasNoValue() {
     assertTrue(flagsmithService.isFeatureEnabled("foo_no_value").get());
     assertTrue(flagsmithService.getFeatureValueJson("foo_no_value", Void.class).isEmpty());
+  }
+
+  @Test
+  public void getFeatureValue_featureHasValueForUserFooBar() {
+    assertTrue(flagsmithService.isFeatureEnabled("foo_no_value").get());
+    FooValue fooValue =
+        flagsmithService.getFeatureValueJson("foo_no_value", FooValue.class, "foo@bar.com").get();
+
+    assertEquals("world", fooValue.hello);
   }
 
   @Test
