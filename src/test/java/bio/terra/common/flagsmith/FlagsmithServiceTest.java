@@ -26,6 +26,7 @@ public class FlagsmithServiceTest {
 
   @Test
   public void isFeatureEnabled_userDisabled() {
+    // even though feature foo is enabled, it is disabled for foo@bar.com user.
     assertFalse(flagsmithService.isFeatureEnabled("foo", "foo@bar.com").get());
   }
 
@@ -45,10 +46,11 @@ public class FlagsmithServiceTest {
 
   @Test
   public void getFeatureValue_featureHasValueForUserFooBar() {
-    assertTrue(flagsmithService.isFeatureEnabled("foo_no_value").get());
+    assertTrue(flagsmithService.isFeatureEnabled("foo_no_value", "foo@bar.com").get());
     FooValue fooValue =
         flagsmithService.getFeatureValueJson("foo_no_value", FooValue.class, "foo@bar.com").get();
 
+    // Though foo_no_value by default has no value, it has value for foo@bar.com user.
     assertEquals("world", fooValue.hello);
   }
 
