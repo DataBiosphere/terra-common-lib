@@ -9,7 +9,6 @@ public class FlagsmithProperties {
   private boolean enabled = false;
   private String serverSideApiKey;
   private String apiUrl;
-
   private String envCacheKey;
 
   public boolean getEnabled() {

@@ -25,6 +25,7 @@ public class FlagsmithService {
 
   private static final Duration DEFAULT_RETRY_TOTAL_DURATION = Duration.ofSeconds(60);
   private static final Duration DEFAULT_RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
+  private static final int DEFAULT_CACHE_EXPIRY_MINUTES = 10;
 
   private final FlagsmithProperties flagsmithProperties;
   private final ObjectMapper objectMapper;
@@ -36,27 +37,32 @@ public class FlagsmithService {
   }
 
   /**
-   * If Flagsmith is unavailable or the feature does not exist, return {@code Optional.empty()}
+   * Check if a feature is enabled
    *
    * @param feature the name of the feature
+   * @return {@code Optional.of(true)} if the feature is enabled for user email; {@code
+   *     Optional.of(false)} if the feature is disabled for user email; {@code Optional.empty()} if
+   *     the feature does not exist
    */
   public Optional<Boolean> isFeatureEnabled(String feature) {
     return isFeatureEnabled(feature, /*userEmail=*/ null);
   }
 
   /**
-   * If Flagsmith is unavailable or the feature does not exist, return {@code Optional.empty()}.
+   * Check if a feature is enabled
    *
-   * @param feature name of the feature
-   * @param userEmail whether the feature is enabled for this user
-   * @return true if the feature is enabled for this user.
+   * @param feature the name of the feature
+   * @param userEmail user email to check for
+   * @return {@code Optional.of(true)} if the feature is enabled for user email; {@code
+   *     Optional.of(false)} if the feature is disabled for user email; {@code Optional.empty()} if
+   *     the feature does not exist
    */
   public Optional<Boolean> isFeatureEnabled(String feature, @Nullable String userEmail) {
     if (!flagsmithProperties.getEnabled()) {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
     }
-    var flagsmith = getFlagsmithClient();
+    FlagsmithClient flagsmith = getFlagsmithClient();
 
     try {
       Flags flags = getFlagsWithRetryOnException(flagsmith, userEmail);
@@ -72,20 +78,25 @@ public class FlagsmithService {
   }
 
   /**
-   * Get feature's value formatted as JSON.
+   * Get feature value formatted as JSON
    *
-   * <p>If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
-   * return {@code Optional.empty()}.
+   * @param feature the name of the feature
+   * @param clazz feature value class
+   * @return {@code Optional.of(T)} if the feature and feature's value exists; {@code
+   *     Optional.empty()} otherwise
    */
   public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) {
     return getFeatureValueJson(feature, clazz, /*userEmail=*/ null);
   }
 
   /**
-   * Get feature's value formatted as JSON.
+   * Get feature value formatted as JSON
    *
-   * <p>If Flagsmith is unavailable, feature does not exist or the feature value does not exist,
-   * return {@code Optional.empty()}.
+   * @param feature the name of the feature
+   * @param clazz feature value class
+   * @param userEmail user email to check for
+   * @return {@code Optional.of(T)} if the feature and feature's value exists; {@code
+   *     Optional.empty()} otherwise
    */
   public <T> Optional<T> getFeatureValueJson(
       String feature, Class<T> clazz, @Nullable String userEmail) {
@@ -93,7 +104,7 @@ public class FlagsmithService {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
     }
-    var flagsmith = getFlagsmithClient();
+    FlagsmithClient flagsmith = getFlagsmithClient();
     try {
       Flags flags = getFlagsWithRetryOnException(flagsmith, userEmail);
       Object value = flags.getFeatureValue(feature);
@@ -125,7 +136,8 @@ public class FlagsmithService {
 
   private FlagsmithClient getFlagsmithClient() {
     FlagsmithCacheConfig.Builder cacheConfig =
-        FlagsmithCacheConfig.newBuilder().expireAfterAccess(12, TimeUnit.HOURS);
+        FlagsmithCacheConfig.newBuilder()
+            .expireAfterAccess(DEFAULT_CACHE_EXPIRY_MINUTES, TimeUnit.MINUTES);
     if (StringUtils.isNotEmpty(flagsmithProperties.getEnvCacheKey())) {
       cacheConfig.enableEnvLevelCaching(flagsmithProperties.getEnvCacheKey());
     }
@@ -139,7 +151,6 @@ public class FlagsmithService {
 
   private static <T> T getFlagsWithRetryOnException(SupplierWithException<T> supplier)
       throws Exception {
-
     T result;
     Instant endTime = Instant.now().plus(DEFAULT_RETRY_TOTAL_DURATION);
 
