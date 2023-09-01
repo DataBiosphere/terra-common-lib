@@ -1,0 +1,26 @@
+package bio.terra.common.flagsmith;
+
+import bio.terra.common.exception.NotImplementedException;
+import java.util.List;
+
+public class FeatureNotSupportedException extends NotImplementedException {
+  public FeatureNotSupportedException(String message) {
+    super(message);
+  }
+
+  public FeatureNotSupportedException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public FeatureNotSupportedException(Throwable cause) {
+    super(cause);
+  }
+
+  public FeatureNotSupportedException(String message, List<String> causes) {
+    super(message, causes);
+  }
+
+  public FeatureNotSupportedException(String message, Throwable cause, List<String> causes) {
+    super(message, cause, causes);
+  }
+}
