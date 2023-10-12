@@ -5,7 +5,7 @@ import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.tracing.OkHttpClientTracingInterceptor;
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.trace.Tracing;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;

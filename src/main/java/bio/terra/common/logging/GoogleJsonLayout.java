@@ -5,6 +5,7 @@ import ch.qos.logback.classic.spi.CallerData;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.jackson.JacksonJsonFormatter;
 import ch.qos.logback.contrib.json.JsonLayoutBase;
+import ch.qos.logback.core.CoreConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.ServiceOptions;
@@ -211,9 +212,9 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
       }
       sourceLocation.put("line", stackTraceElement.getLineNumber());
     } else {
-      sourceLocation.put("file", CallerData.NA);
+      sourceLocation.put("file", CoreConstants.NA);
       sourceLocation.put("line", CallerData.LINE_NA);
-      sourceLocation.put("function", CallerData.NA);
+      sourceLocation.put("function", CoreConstants.NA);
     }
     return sourceLocation;
   }

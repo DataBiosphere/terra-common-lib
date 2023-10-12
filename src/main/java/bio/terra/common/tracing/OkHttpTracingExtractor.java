@@ -1,7 +1,7 @@
 package bio.terra.common.tracing;
 
 import io.opencensus.contrib.http.HttpExtractor;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import okhttp3.Request;
 import okhttp3.Response;
 

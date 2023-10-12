@@ -1,6 +1,6 @@
 package bio.terra.common.flagsmith;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "terra.common.flagsmith")

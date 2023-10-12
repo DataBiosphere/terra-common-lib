@@ -2,7 +2,7 @@ package bio.terra.common.db;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolingDataSource;

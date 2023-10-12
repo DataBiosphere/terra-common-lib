@@ -1,9 +1,9 @@
 package bio.terra.common.tracing;
 
 import io.opencensus.contrib.http.HttpExtractor;
-import javax.annotation.Nullable;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientResponseContext;
+import jakarta.annotation.Nullable;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientResponseContext;
 
 /**
  * Extractor to populate span fields from a Request object
