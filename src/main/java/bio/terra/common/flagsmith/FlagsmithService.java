@@ -93,13 +93,13 @@ public class FlagsmithService {
       LOGGER.info("Flagsmith is not enabled, use default value");
       return Optional.empty();
     }
-    if (!isFeatureEnabled(feature, userEmail).orElse(false)) {
-      LOGGER.info(String.format("feature %s is not enabled for user %s", feature, userEmail));
-      return Optional.empty();
-    }
     var flagsmith = getFlagsmithClient();
     try {
       Flags flags = getFlagsWithRetryOnException(flagsmith, userEmail);
+      if (!flags.isFeatureEnabled(feature)) {
+        LOGGER.info(String.format("feature %s is not enabled for user %s", feature, userEmail));
+        return Optional.empty();
+      }
       Object value = flags.getFeatureValue(feature);
       if (value == null) {
         return Optional.empty();
