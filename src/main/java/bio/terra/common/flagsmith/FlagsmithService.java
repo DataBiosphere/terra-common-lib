@@ -96,6 +96,10 @@ public class FlagsmithService {
     var flagsmith = getFlagsmithClient();
     try {
       Flags flags = getFlagsWithRetryOnException(flagsmith, userEmail);
+      if (!flags.isFeatureEnabled(feature)) {
+        LOGGER.info(String.format("feature %s is not enabled for user %s", feature, userEmail));
+        return Optional.empty();
+      }
       Object value = flags.getFeatureValue(feature);
       if (value == null) {
         return Optional.empty();
