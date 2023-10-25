@@ -128,6 +128,7 @@ io.opentelemetry:opentelemetry-api:1.31.0=compileClasspath,productionRuntimeClas
 io.opentelemetry:opentelemetry-bom:1.29.0=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath
 io.opentelemetry:opentelemetry-context:1.31.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 io.opentelemetry:opentelemetry-exporter-logging:1.31.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+io.opentelemetry:opentelemetry-exporter-prometheus:1.31.0-alpha=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 io.opentelemetry:opentelemetry-extension-incubator:1.31.0-alpha=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath
 io.opentelemetry:opentelemetry-sdk-common:1.31.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:1.31.0=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath

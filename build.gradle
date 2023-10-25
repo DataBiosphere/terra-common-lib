@@ -100,6 +100,7 @@ dependencies {
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:1.31.0-alpha'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.31.0'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot:1.31.0-alpha'
+    implementation 'io.opentelemetry:opentelemetry-exporter-prometheus:1.31.0-alpha'
     implementation 'com.google.cloud.opentelemetry:exporter-trace:0.25.2'
 
 
