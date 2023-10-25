@@ -92,16 +92,17 @@ dependencies {
     implementation group: 'com.flagsmith', name: 'flagsmith-java-client', version: '6.1.0'
 
     // OpenTelemetry
-    implementation 'io.opentelemetry:opentelemetry-api:1.31.0'
-    implementation 'io.opentelemetry:opentelemetry-sdk:1.31.0'
-    implementation 'io.opentelemetry:opentelemetry-sdk-metrics:1.31.0'
-    implementation 'io.opentelemetry:opentelemetry-exporter-logging:1.31.0'
-    implementation 'io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha'
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:1.31.0-alpha'
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.31.0'
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot:1.31.0-alpha'
-    implementation 'io.opentelemetry:opentelemetry-exporter-prometheus:1.31.0-alpha'
-    implementation 'com.google.cloud.opentelemetry:exporter-trace:0.25.2'
+    var openTelemetryVersion = '1.31.0'
+    implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging:${openTelemetryVersion}"
+    implementation "io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:${openTelemetryVersion}-alpha"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:${openTelemetryVersion}"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot:${openTelemetryVersion}-alpha"
+    implementation "io.opentelemetry:opentelemetry-exporter-prometheus:${openTelemetryVersion}-alpha"
+    implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2"
 
 
     // Spotbugs
