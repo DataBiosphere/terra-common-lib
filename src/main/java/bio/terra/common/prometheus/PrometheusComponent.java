@@ -5,11 +5,11 @@ import io.opentelemetry.instrumentation.spring.autoconfigure.EnableOpenTelemetry
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.exporter.HTTPServer;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /** Spring Beans that exposes any OpenTelemetry metrics via a Prometheus {@link HTTPServer}. */
 @Configuration
@@ -25,8 +25,9 @@ public class PrometheusComponent {
   }
 
   @Bean
+  @Primary
   @ConditionalOnBean(PrometheusHttpServer.class)
-  public SdkMeterProvider sdkMeterProvider(
+  public SdkMeterProvider prometheusMeterProvider(
       Resource otelResource, PrometheusHttpServer prometheusHttpServer) {
     return SdkMeterProvider.builder()
         .addResource(otelResource)

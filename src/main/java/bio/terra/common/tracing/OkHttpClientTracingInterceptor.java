@@ -45,8 +45,8 @@ public class OkHttpClientTracingInterceptor implements Interceptor {
     Span requestSpan =
         tracer
             .spanBuilder(
-                "Sent.%s %s".formatted(originalRequest.method(), originalRequest.url().toString()))
-            .setSpanKind(SpanKind.SERVER)
+                "%s %s".formatted(originalRequest.method(), originalRequest.url().toString()))
+            .setSpanKind(SpanKind.CLIENT)
             .startSpan();
 
     try (Scope ignored = requestSpan.makeCurrent()) {
