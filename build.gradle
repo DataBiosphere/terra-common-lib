@@ -91,19 +91,16 @@ dependencies {
     // Flagsmith
     implementation group: 'com.flagsmith', name: 'flagsmith-java-client', version: '6.1.0'
 
-    // Metrics & Tracing
-    ext {
-        opencensus = '0.31.1'
-    }
-    implementation group: 'io.opencensus', name: 'opencensus-exporter-stats-prometheus', version: opencensus
-    implementation group: 'io.opencensus', name: 'opencensus-exporter-trace-stackdriver', version: opencensus
-    implementation group: 'io.opencensus', name: 'opencensus-impl', version: opencensus
-    api group: 'io.opencensus', name: 'opencensus-api', version: opencensus
-    api group: 'io.opencensus', name: 'opencensus-contrib-spring', version: opencensus
-
     // OpenTelemetry
-    implementation("io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:1.30.0")
-    implementation("io.opentelemetry:opentelemetry-exporter-logging:1.30.0")
+    implementation 'io.opentelemetry:opentelemetry-api:1.31.0'
+    implementation 'io.opentelemetry:opentelemetry-sdk:1.31.0'
+    implementation 'io.opentelemetry:opentelemetry-sdk-metrics:1.31.0'
+    implementation 'io.opentelemetry:opentelemetry-exporter-logging:1.31.0'
+    implementation 'io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:1.31.0-alpha'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.31.0'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot:1.31.0-alpha'
+    implementation 'com.google.cloud.opentelemetry:exporter-trace:0.25.2'
 
 
     // Spotbugs

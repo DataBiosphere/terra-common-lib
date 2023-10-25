@@ -3,8 +3,6 @@ package bio.terra.common.logging;
 import static org.apache.commons.lang3.ObjectUtils.getFirstNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.io.IOException;
-import java.util.concurrent.ThreadLocalRandom;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -13,6 +11,8 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 import org.hashids.Hashids;
 import org.slf4j.MDC;
 
