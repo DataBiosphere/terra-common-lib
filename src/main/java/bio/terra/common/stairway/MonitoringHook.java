@@ -144,11 +144,12 @@ public class MonitoringHook implements StairwayHook {
               .setAttribute("stairway/flightId", flightContext.getFlightId())
               .setAttribute("stairway/flightClass", flightContext.getFlightClassName())
               .startSpan();
-      flightScope = flightSpan.makeCurrent();
-
       // Start the Scope of the Flight Span's execution. We rely on implicit Span propagation to get
       // the scope for the step's execution. We must remember to close the Scope at the end of the
       // Flight.
+      flightScope = flightSpan.makeCurrent();
+
+      stopwatch = Stopwatch.createStarted();
       return HookAction.CONTINUE;
     }
 
@@ -173,7 +174,6 @@ public class MonitoringHook implements StairwayHook {
   /** A {@link DynamicHook} for creating Spans for each Step execution. */
   private class TraceStepHook implements DynamicHook {
     private Scope stepScope;
-
     private Stopwatch stopwatch;
 
     @Override
