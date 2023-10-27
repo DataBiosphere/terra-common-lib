@@ -50,8 +50,8 @@ dependencies {
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
 
     // Spring
-    implementation group: 'org.springframework', name: 'spring-context', version: '5.3.25'
-    implementation group: 'org.springframework', name: 'spring-core', version: '5.3.25'
+    implementation group: 'org.springframework', name: 'spring-context', version: '6.0.11'
+    implementation group: 'org.springframework', name: 'spring-core', version: '6.0.11'
     implementation group: 'org.springframework.retry', name: 'spring-retry', version: '1.3.3'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.1.2'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.1.2'
@@ -104,6 +104,10 @@ dependencies {
     implementation "io.opentelemetry:opentelemetry-exporter-prometheus:${openTelemetryVersion}-alpha"
     implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2"
 
+    // these are required for tracing in tests
+    testImplementation 'org.springframework:spring-aop:6.0.11'
+    testImplementation 'org.springframework:spring-aspects:6.0.11'
+
 
     // Spotbugs
     implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'
@@ -117,6 +121,7 @@ dependencies {
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.8.0'
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.3'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
 
     // Transitive dependency constraints due to security vulnerabilities in prior versions.
     // These are not directly included, they are just constrained if they are pulled in as

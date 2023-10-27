@@ -10,7 +10,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
       // We don't make use of DataSource in this application, so exclude it from scanning.
       DataSourceAutoConfiguration.class,
     },
-    scanBasePackages = {"bio.terra.common.logging"})
+    scanBasePackages = {"bio.terra.common.logging", "bio.terra.common.tracing"})
 public class LoggingTestApplication {
 
   // N.B. this main method isn't called by the test! This is a demonstration of how a Terra

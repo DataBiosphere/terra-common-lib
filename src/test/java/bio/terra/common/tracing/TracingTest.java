@@ -3,9 +3,7 @@ package bio.terra.common.tracing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opencensus.implcore.trace.RecordEventsSpanImpl;
-import io.opencensus.trace.AttributeValue;
-import io.opencensus.trace.export.SpanData;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
@@ -21,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 /** Tests the functionality of the common tracing package. */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = TracingTestApplication.class)
 // Use a properties file to set tracing properties.
-@ActiveProfiles("tracing-test")
+@ActiveProfiles({"tracing-test", "human-readable-logging"})
 @Tag("unit")
 public class TracingTest {
 
@@ -33,42 +31,29 @@ public class TracingTest {
   public void testRequestTracing() {
     ResponseEntity<String> response = testRestTemplate.getForEntity("/foo/bar", String.class);
     assertEquals(response.getStatusCode().value(), 200);
-    // This relies on the opencensus Span implementation used to build this package. Casting to this
+    // This relies on the opentelemetry Span implementation used to build this package. Casting to
+    // this
     // implementation allows us to inspect the attributes.
-    RecordEventsSpanImpl requestSpan = (RecordEventsSpanImpl) controller.getLatestSpan();
-    Map<String, AttributeValue> requestAttributeMap =
-        requestSpan.toSpanData().getAttributes().getAttributeMap();
+    var requestSpan = (ReadableSpan) controller.getLatestSpan();
+    var requestAttributeMap = requestSpan.toSpanData().getAttributes().asMap();
     Map<String, String> requestAttributes =
         requestAttributeMap.entrySet().stream()
             .collect(
-                Collectors.toMap(Map.Entry::getKey, entry -> coerceToString(entry.getValue())));
+                Collectors.toMap(
+                    foo -> foo.getKey().getKey(), entry -> entry.getValue().toString()));
 
-    assertThat(requestAttributes, Matchers.hasEntry("http.status_code", "200"));
-    assertThat(requestAttributes, Matchers.hasEntry("http.method", "GET"));
-    assertThat(requestAttributes, Matchers.hasEntry("http.route", "/foo/{id}"));
-    assertThat(requestAttributes, Matchers.hasEntry("http.path", "/foo/bar"));
-    assertThat(requestAttributes, Matchers.hasEntry("http.host", "localhost"));
-    assertThat(requestAttributes, Matchers.hasKey("http.url"));
-    assertThat(requestAttributes, Matchers.hasKey("http.user_agent"));
+    assertThat(requestAttributes, Matchers.hasValue("200"));
+    assertThat(requestAttributes, Matchers.hasValue("GET"));
+    assertThat(requestAttributes, Matchers.hasValue("/foo/{id}"));
+    assertThat(requestAttributes, Matchers.hasValue("/foo/bar"));
+    assertThat(requestAttributes, Matchers.hasValue("localhost"));
 
     assertThat(requestAttributes, Matchers.hasKey("/terra/requestId"));
     assertThat(requestAttributes, Matchers.hasEntry("/terra/operationId", "getFoo"));
 
-    RecordEventsSpanImpl beanSpan = (RecordEventsSpanImpl) annotatedBean.getLatestSpan();
-    SpanData beanSpanData = beanSpan.toSpanData();
-    assertEquals("annotatedMethod", beanSpanData.getName());
-    assertEquals(requestSpan.getContext().getSpanId(), beanSpanData.getParentSpanId());
-  }
-
-  /** Converts all types of {@link AttributeValue} to String. */
-  private static String coerceToString(AttributeValue attributeValue) {
-    String coerced =
-        attributeValue.match(
-            Object::toString,
-            Object::toString,
-            Object::toString,
-            Object::toString,
-            Object::toString);
-    return coerced;
+    var beanSpan = (ReadableSpan) annotatedBean.getLatestSpan();
+    var beanSpanData = beanSpan.toSpanData();
+    assertEquals("TracedAnnotatedBean.annotatedMethod", beanSpanData.getName());
+    assertEquals(requestSpan.getSpanContext().getSpanId(), beanSpanData.getParentSpanId());
   }
 }

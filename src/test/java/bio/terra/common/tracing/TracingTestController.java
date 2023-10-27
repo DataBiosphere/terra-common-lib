@@ -1,7 +1,6 @@
 package bio.terra.common.tracing;
 
-import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.trace.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ class TracingTestController {
   @GetMapping(value = "/foo/{id}")
   public void getFoo(@PathVariable("id") String id) {
     annotatedBean.annotatedMethod();
-    latestSpan = Tracing.getTracer().getCurrentSpan();
+    latestSpan = Span.current();
   }
 
   public Span getLatestSpan() {

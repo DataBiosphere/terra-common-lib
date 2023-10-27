@@ -2,14 +2,18 @@ package bio.terra.common.prometheus;
 
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.instrumentation.spring.autoconfigure.EnableOpenTelemetry;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.exporter.HTTPServer;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import java.util.Optional;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.util.Pair;
 
 /** Spring Beans that exposes any OpenTelemetry metrics via a Prometheus {@link HTTPServer}. */
 @Configuration
@@ -26,12 +30,14 @@ public class PrometheusComponent {
 
   @Bean
   @Primary
-  @ConditionalOnBean(PrometheusHttpServer.class)
   public SdkMeterProvider prometheusMeterProvider(
-      Resource otelResource, PrometheusHttpServer prometheusHttpServer) {
-    return SdkMeterProvider.builder()
-        .addResource(otelResource)
-        .registerMetricReader(prometheusHttpServer)
-        .build();
+      Resource otelResource,
+      Optional<PrometheusHttpServer> prometheusHttpServer,
+      ObjectProvider<Pair<InstrumentSelector, View>> views) {
+    var sdkMeterProviderBuilder = SdkMeterProvider.builder().addResource(otelResource);
+    prometheusHttpServer.ifPresent(sdkMeterProviderBuilder::registerMetricReader);
+    views.stream()
+        .forEach(pair -> sdkMeterProviderBuilder.registerView(pair.getFirst(), pair.getSecond()));
+    return sdkMeterProviderBuilder.build();
   }
 }

@@ -10,10 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.ServiceOptions;
 import com.google.gson.JsonObject;
-import io.opencensus.trace.SpanId;
-import io.opencensus.trace.TraceId;
-import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -67,7 +66,6 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
   private ObjectMapper objectMapper;
   // A Logback utility class to assist with handling stack traces.
   private ThrowableProxyConverter throwableProxyConverter;
-  private Tracer tracer = Tracing.getTracer();
 
   GoogleJsonLayout(ConfigurableApplicationContext applicationContext) {
     this.applicationContext = applicationContext;
@@ -234,11 +232,11 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
 
   /**
    * Adds a Cloud Logging traceId attribute to the input map. An entry is added only if the current
-   * OpenCensus tracing context has a valid trace ID.
+   * OpenTelemetry tracing context has a valid trace ID.
    */
   private void addTraceId(Map<String, Object> map) {
-    TraceId traceId = tracer.getCurrentSpan().getContext().getTraceId();
-    if (traceId.equals(TraceId.INVALID)) {
+    var traceId = Span.current().getSpanContext().getTraceId();
+    if (traceId.equals(TraceId.getInvalid())) {
       return;
     }
 
@@ -247,9 +245,7 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
       return;
     }
 
-    map.put(
-        "logging.googleapis.com/trace",
-        "projects/" + projectId + "/traces/" + traceId.toLowerBase16());
+    map.put("logging.googleapis.com/trace", "projects/" + projectId + "/traces/" + traceId);
   }
 
   /**
@@ -257,12 +253,12 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
    * span ID.
    */
   private void addSpanId(Map<String, Object> map) {
-    SpanId spanId = tracer.getCurrentSpan().getContext().getSpanId();
-    if (spanId.equals(SpanId.INVALID)) {
+    var spanId = Span.current().getSpanContext().getSpanId();
+    if (spanId.equals(SpanId.getInvalid())) {
       return;
     }
 
-    map.put("logging.googleapis.com/spanId", spanId.toLowerBase16());
+    map.put("logging.googleapis.com/spanId", spanId);
   }
 
   /**
@@ -270,13 +266,13 @@ class GoogleJsonLayout extends JsonLayoutBase<ILoggingEvent> {
    * has a valid span ID.
    */
   private void addTraceSampled(Map<String, Object> map) {
-    SpanId spanId = tracer.getCurrentSpan().getContext().getSpanId();
-    if (spanId.equals(SpanId.INVALID)) {
+    var spanId = Span.current().getSpanContext().getSpanId();
+    if (spanId.equals(SpanId.getInvalid())) {
       return;
     }
 
     map.put(
         "logging.googleapis.com/trace_sampled",
-        tracer.getCurrentSpan().getContext().getTraceOptions().isSampled());
+        Span.current().getSpanContext().getTraceFlags().isSampled());
   }
 }
