@@ -1,7 +1,6 @@
 package bio.terra.common.tracing;
 
 import com.google.cloud.opentelemetry.trace.TraceExporter;
-import io.opentelemetry.instrumentation.spring.autoconfigure.EnableOpenTelemetry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -14,7 +13,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /** Spring Configuration for Terra common tracing setup. */
 @Configuration
-@EnableOpenTelemetry
 public class TracingConfig implements WebMvcConfigurer {
   @Bean
   @Primary

@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 /** Tests the functionality of the common tracing package. */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = TracingTestApplication.class)
 // Use a properties file to set tracing properties.
-@ActiveProfiles({"tracing-test", "human-readable-logging"})
+@ActiveProfiles("tracing-test")
 @Tag("unit")
 public class TracingTest {
 
@@ -42,6 +42,8 @@ public class TracingTest {
                 Collectors.toMap(
                     foo -> foo.getKey().getKey(), entry -> entry.getValue().toString()));
 
+    // which keys these are is dependent on whatever open telemetry does, we just care the values
+    // exist and are right
     assertThat(requestAttributes, Matchers.hasValue("200"));
     assertThat(requestAttributes, Matchers.hasValue("GET"));
     assertThat(requestAttributes, Matchers.hasValue("/foo/{id}"));
