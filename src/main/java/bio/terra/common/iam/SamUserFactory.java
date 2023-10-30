@@ -36,8 +36,9 @@ public class SamUserFactory {
       BearerTokenFactory bearerTokenFactory, Optional<OpenTelemetry> openTelemetry) {
     this.bearerTokenFactory = bearerTokenFactory;
     var apiClientBuilder = new ApiClient().getHttpClient().newBuilder();
-    openTelemetry.ifPresent(
-        ot -> apiClientBuilder.addInterceptor(new OkHttpClientTracingInterceptor(ot)));
+    openTelemetry
+        .map(OkHttpClientTracingInterceptor::new)
+        .ifPresent(apiClientBuilder::addInterceptor);
     this.httpClient = apiClientBuilder.build();
   }
 

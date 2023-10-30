@@ -34,7 +34,7 @@ public class JerseyTracingFilter implements ClientRequestFilter, ClientResponseF
             .spanBuilder(
                 "Sent.%s %s"
                     .formatted(requestContext.getMethod(), requestContext.getUri().toString()))
-            .setSpanKind(SpanKind.SERVER)
+            .setSpanKind(SpanKind.CLIENT)
             .startSpan();
 
     requestSpan.setAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, requestContext.getMethod());

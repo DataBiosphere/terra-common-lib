@@ -5,9 +5,8 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 /** A test metric exporter that stores the last metrics it received. */
 public class TestMetricExporter implements MetricExporter {
@@ -15,7 +14,7 @@ public class TestMetricExporter implements MetricExporter {
 
   @Override
   public synchronized CompletableResultCode export(Collection<MetricData> metrics) {
-    lastMetrics = Collections.unmodifiableCollection(new ArrayList<>(metrics));
+    lastMetrics = List.copyOf(lastMetrics);
     return CompletableResultCode.ofSuccess();
   }
 

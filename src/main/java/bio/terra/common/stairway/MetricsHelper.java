@@ -40,37 +40,37 @@ public class MetricsHelper {
   public static final Aggregation COUNT_AGGREGATION = Aggregation.sum();
 
   /** Gauge for flight latency in milliseconds. */
-  private final LongHistogram FLIGHT_LATENCY;
+  private final LongHistogram flightLatencyHistogram;
   /** Counter for number of errors from stairway flights. */
-  private final LongCounter FLIGHT_ERROR_COUNT;
+  private final LongCounter flightErrorCounter;
   /** Gauge for step latency in milliseconds. */
-  private final LongHistogram STEP_LATENCY;
+  private final LongHistogram stepLatencyHistogram;
   /** Counter for number of errors from stairway steps. */
-  private final LongCounter STEP_ERROR_COUNT;
+  private final LongCounter stepErrorCounter;
 
   public MetricsHelper(OpenTelemetry openTelemetry) {
     var meter = openTelemetry.getMeter(MetricsHelper.class.getName());
-    FLIGHT_LATENCY =
+    flightLatencyHistogram =
         meter
             .histogramBuilder(FLIGHT_LATENCY_METER_NAME)
             .setDescription("Latency for stairway flight")
             .setUnit(MILLISECOND)
             .ofLongs()
             .build();
-    FLIGHT_ERROR_COUNT =
+    flightErrorCounter =
         meter
             .counterBuilder(FLIGHT_ERROR_METER_NAME)
             .setDescription("Number of stairway errors")
             .setUnit(COUNT)
             .build();
-    STEP_LATENCY =
+    stepLatencyHistogram =
         meter
             .histogramBuilder(STEP_LATENCY_METER_NAME)
             .setDescription("Latency for stairway step")
             .setUnit(MILLISECOND)
             .ofLongs()
             .build();
-    STEP_ERROR_COUNT =
+    stepErrorCounter =
         meter
             .counterBuilder(STEP_ERROR_METER_NAME)
             .setDescription("Number of stairway step errors")
@@ -83,14 +83,14 @@ public class MetricsHelper {
     Attributes attributes =
         Attributes.of(KEY_FLIGHT_NAME, flightName, KEY_FLIGHT_STATUS, flightStatus.name());
 
-    FLIGHT_LATENCY.record(latency.toMillis(), attributes);
+    flightLatencyHistogram.record(latency.toMillis(), attributes);
   }
 
   /** Records the failed flights. */
   public void recordFlightError(String flightName, FlightStatus flightStatus) {
     Attributes attributes =
         Attributes.of(KEY_ERROR, flightStatus.name(), KEY_FLIGHT_NAME, flightName);
-    FLIGHT_ERROR_COUNT.add(1, attributes);
+    flightErrorCounter.add(1, attributes);
   }
 
   /** Record the latency for stairway flights. */
@@ -102,7 +102,7 @@ public class MetricsHelper {
             KEY_STEP_DIRECTION, stepDirection.name(),
             KEY_STEP_NAME, stepName);
 
-    STEP_LATENCY.record(latency.toMillis(), attributes);
+    stepLatencyHistogram.record(latency.toMillis(), attributes);
   }
 
   /** Records the failed flights. */
@@ -113,6 +113,6 @@ public class MetricsHelper {
             KEY_STEP_DIRECTION, stepDirection.name(),
             KEY_STEP_NAME, stepName);
 
-    STEP_ERROR_COUNT.add(1, attributes);
+    stepErrorCounter.add(1, attributes);
   }
 }
