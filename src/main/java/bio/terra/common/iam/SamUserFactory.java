@@ -31,7 +31,7 @@ public class SamUserFactory {
   final BearerTokenFactory bearerTokenFactory;
   final OkHttpClient httpClient;
 
-  @Autowired(required = false)
+  @Autowired
   public SamUserFactory(
       BearerTokenFactory bearerTokenFactory, Optional<OpenTelemetry> openTelemetry) {
     this.bearerTokenFactory = bearerTokenFactory;
