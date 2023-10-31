@@ -2,7 +2,7 @@ package bio.terra.common.iam;
 
 import bio.terra.common.exception.UnauthorizedException;
 import com.google.common.annotations.VisibleForTesting;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 /**

@@ -1,141 +1,108 @@
 package bio.terra.common.stairway;
 
-import static bio.terra.common.stairway.MetricsHelper.FLIGHT_ERROR_VIEW_NAME;
-import static bio.terra.common.stairway.MetricsHelper.FLIGHT_LATENCY_VIEW_NAME;
-import static bio.terra.common.stairway.MetricsHelper.STEP_ERROR_VIEW_NAME;
-import static bio.terra.common.stairway.MetricsHelper.STEP_LATENCY_VIEW_NAME;
-import static bio.terra.common.stairway.test.MetricsTestUtil.ERROR_COUNT;
-import static bio.terra.common.stairway.test.MetricsTestUtil.FATAL_COUNT;
-import static bio.terra.common.stairway.test.MetricsTestUtil.assertCountIncremented;
-import static bio.terra.common.stairway.test.MetricsTestUtil.assertLatencyCountIncremented;
-import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentCount;
-import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentDistributionDataCount;
-import static bio.terra.common.stairway.test.MetricsTestUtil.sleepForSpansExport;
+import static bio.terra.common.stairway.MetricsHelper.FLIGHT_ERROR_METER_NAME;
+import static bio.terra.common.stairway.MetricsHelper.FLIGHT_LATENCY_METER_NAME;
+import static bio.terra.common.stairway.MetricsHelper.STEP_ERROR_METER_NAME;
+import static bio.terra.common.stairway.MetricsHelper.STEP_LATENCY_METER_NAME;
+import static bio.terra.common.stairway.MetricsTestUtils.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import bio.terra.stairway.Direction;
 import bio.terra.stairway.FlightStatus;
-import io.opencensus.tags.TagValue;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
-import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("unit")
 class MetricsHelperTest {
+  private static final Duration METRICS_COLLECTION_INTERVAL = Duration.ofMillis(10);
   private static final String FAKE_FLIGHT_NAME = "fakeFlight";
   private static final FlightStatus FAKE_FLIGHT_STATUS_NAME = FlightStatus.SUCCESS;
   private static final String FAKE_STEP_NAME = "fakeStep";
 
-  private static final String FAKE_STEP_DO_NAME = Direction.DO.name();
+  private MetricsHelper metricsHelper;
+  private TestMetricExporter testMetricExporter;
 
-  private static final String FAKE_STEP_UNDO_NAME = Direction.UNDO.name();
-
-  private static final List<TagValue> FLIGHTS_LIST =
-      List.of(TagValue.create(FAKE_FLIGHT_NAME), TagValue.create(FAKE_FLIGHT_STATUS_NAME.name()));
-
-  private static final List<TagValue> FLIGHT_STEP_DO_LIST =
-      List.of(
-          TagValue.create(FAKE_FLIGHT_NAME),
-          TagValue.create(FAKE_STEP_DO_NAME),
-          TagValue.create(FAKE_STEP_NAME));
-
-  private static final List<TagValue> FLIGHT_STEP_UNDO_LIST =
-      List.of(
-          TagValue.create(FAKE_FLIGHT_NAME),
-          TagValue.create(FAKE_STEP_UNDO_NAME),
-          TagValue.create(FAKE_STEP_NAME));
-
-  @Test
-  void recordErrorCount() throws Exception {
-    long fatalCount = getCurrentCount(FLIGHT_ERROR_VIEW_NAME, FATAL_COUNT);
-    long errorCount = getCurrentCount(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT);
-
-    MetricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
-    MetricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
-    MetricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
-    MetricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.FATAL);
-    MetricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.SUCCESS);
-
-    sleepForSpansExport();
-
-    assertCountIncremented(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT, errorCount, 3);
-    assertCountIncremented(FLIGHT_ERROR_VIEW_NAME, FATAL_COUNT, fatalCount, 1);
+  @BeforeEach
+  void setup() {
+    testMetricExporter = new TestMetricExporter();
+    metricsHelper = new MetricsHelper(openTelemetry(testMetricExporter));
   }
 
   @Test
-  void RecordFlightLatency() throws Exception {
-    // this is mapped to the Distribution defined in MetricsHelper, i.e.
-    // 0ms being within the first bucket & 1 ms in the 2nd.
-    var zeroMsBucketIndex = 0;
-    var oneMsBucketIndex = 1;
+  void recordErrorCount() {
+    metricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
+    metricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
+    metricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.ERROR);
+    metricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.FATAL);
+    metricsHelper.recordFlightError(FAKE_FLIGHT_NAME, FlightStatus.SUCCESS);
 
-    long current0MsCount =
-        getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, FLIGHTS_LIST, zeroMsBucketIndex);
-    long current1MsCount =
-        getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, FLIGHTS_LIST, oneMsBucketIndex);
+    var metric = waitForMetrics(testMetricExporter, METRICS_COLLECTION_INTERVAL);
 
-    MetricsHelper.recordFlightLatency(
+    assertEquals(FLIGHT_ERROR_METER_NAME, metric.getName());
+    assertFlightErrorMeterValues(
+        metric, Map.of(FlightStatus.ERROR, 3L, FlightStatus.FATAL, 1L, FlightStatus.SUCCESS, 1L));
+  }
+
+  @Test
+  void recordFlightLatency() {
+    metricsHelper.recordFlightLatency(
         FAKE_FLIGHT_NAME, FAKE_FLIGHT_STATUS_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordFlightLatency(
+    metricsHelper.recordFlightLatency(
         FAKE_FLIGHT_NAME, FAKE_FLIGHT_STATUS_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordFlightLatency(
+    metricsHelper.recordFlightLatency(
         FAKE_FLIGHT_NAME, FAKE_FLIGHT_STATUS_NAME, Duration.ofMillis(0));
 
-    sleepForSpansExport();
+    var metric = waitForMetrics(testMetricExporter, METRICS_COLLECTION_INTERVAL);
 
-    // 1 ms,
-    assertLatencyCountIncremented(
-        FLIGHT_LATENCY_VIEW_NAME, FLIGHTS_LIST, current0MsCount, 1, zeroMsBucketIndex);
-    // 2ms
-    assertLatencyCountIncremented(
-        FLIGHT_LATENCY_VIEW_NAME, FLIGHTS_LIST, current1MsCount, 2, oneMsBucketIndex);
+    assertEquals(FLIGHT_LATENCY_METER_NAME, metric.getName());
+    assertLatencyBucketCounts(metric, Map.of(0, 1L, 1, 2L));
   }
 
   @Test
-  void recordStepLatency() throws Exception {
-    // this is mapped to the Distribution defined in MetricsHelper, i.e.
-    // 0ms being within the first bucket & 1 ms in the 2nd.
-    var zeroMsBucketIndex = 0;
-    var oneMsBucketIndex = 1;
+  void recordStepLatency() {
+    metricsHelper.recordStepLatency(
+        FAKE_FLIGHT_NAME, Direction.DO, FAKE_STEP_NAME, Duration.ofMillis(1));
+    metricsHelper.recordStepLatency(
+        FAKE_FLIGHT_NAME, Direction.DO, FAKE_STEP_NAME, Duration.ofMillis(1));
+    metricsHelper.recordStepLatency(
+        FAKE_FLIGHT_NAME, Direction.DO, FAKE_STEP_NAME, Duration.ofMillis(0));
 
-    long current0MsCount =
-        getCurrentDistributionDataCount(
-            STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, zeroMsBucketIndex);
-    long current1MsCount =
-        getCurrentDistributionDataCount(
-            STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, oneMsBucketIndex);
+    var metric = waitForMetrics(testMetricExporter, METRICS_COLLECTION_INTERVAL);
 
-    MetricsHelper.recordStepLatency(
-        FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordStepLatency(
-        FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME, Duration.ofMillis(1));
-    MetricsHelper.recordStepLatency(
-        FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME, Duration.ofMillis(0));
-
-    sleepForSpansExport();
-
-    // 1 ms,
-    assertLatencyCountIncremented(
-        STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, current0MsCount, 1, zeroMsBucketIndex);
-    // 2ms
-    assertLatencyCountIncremented(
-        STEP_LATENCY_VIEW_NAME, FLIGHT_STEP_DO_LIST, current1MsCount, 2, oneMsBucketIndex);
+    assertEquals(STEP_LATENCY_METER_NAME, metric.getName());
+    assertLatencyBucketCounts(metric, Map.of(0, 1L, 1, 2L));
   }
 
   @Test
-  void recordStepErrorCount() throws Exception {
-    long doCount = getCurrentCount(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_DO_LIST);
-    long undoCount = getCurrentCount(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_UNDO_LIST);
+  void recordStepErrorCount() {
+    metricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, Direction.DO, FAKE_STEP_NAME);
+    metricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, Direction.DO, FAKE_STEP_NAME);
+    metricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, Direction.UNDO, FAKE_STEP_NAME);
+    metricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, Direction.UNDO, FAKE_STEP_NAME);
+    metricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, Direction.UNDO, FAKE_STEP_NAME);
 
-    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME);
-    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_DO_NAME, FAKE_STEP_NAME);
-    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_UNDO_NAME, FAKE_STEP_NAME);
-    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_UNDO_NAME, FAKE_STEP_NAME);
-    MetricsHelper.recordStepDirection(FAKE_FLIGHT_NAME, FAKE_STEP_UNDO_NAME, FAKE_STEP_NAME);
+    var metric = waitForMetrics(testMetricExporter, METRICS_COLLECTION_INTERVAL);
 
-    sleepForSpansExport();
+    assertEquals(STEP_ERROR_METER_NAME, metric.getName());
+    assertStepErrorMeterValues(
+        metric, FAKE_STEP_NAME, Map.of(Direction.DO, 2L, Direction.UNDO, 3L));
+  }
 
-    assertCountIncremented(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_DO_LIST, doCount, 2);
-    assertCountIncremented(STEP_ERROR_VIEW_NAME, FLIGHT_STEP_UNDO_LIST, undoCount, 3);
+  public OpenTelemetry openTelemetry(TestMetricExporter testMetricExporter) {
+    var sdkMeterProviderBuilder =
+        SdkMeterProvider.builder()
+            .registerMetricReader(
+                PeriodicMetricReader.builder(testMetricExporter)
+                    .setInterval(METRICS_COLLECTION_INTERVAL)
+                    .build());
+
+    return OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderBuilder.build()).build();
   }
 }

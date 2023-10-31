@@ -1,15 +1,15 @@
 package bio.terra.common.stairway;
 
-import static bio.terra.common.stairway.MetricsHelper.FLIGHT_ERROR_VIEW_NAME;
-import static bio.terra.common.stairway.MetricsHelper.FLIGHT_LATENCY_VIEW_NAME;
-import static bio.terra.common.stairway.test.MetricsTestUtil.assertCountIncremented;
-import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentCount;
-import static bio.terra.common.stairway.test.MetricsTestUtil.getCurrentDistributionDataCount;
-import static bio.terra.common.stairway.test.MetricsTestUtil.sleepForSpansExport;
+import static bio.terra.common.stairway.MetricsHelper.FLIGHT_ERROR_METER_NAME;
+import static bio.terra.common.stairway.MetricsHelper.FLIGHT_LATENCY_METER_NAME;
+import static bio.terra.common.stairway.MetricsHelper.STEP_ERROR_METER_NAME;
+import static bio.terra.common.stairway.MetricsHelper.STEP_LATENCY_METER_NAME;
+import static bio.terra.common.stairway.MetricsTestUtils.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import bio.terra.common.stairway.test.StairwayTestUtils;
+import bio.terra.stairway.Direction;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.FlightMap;
@@ -20,23 +20,53 @@ import bio.terra.stairway.StairwayBuilder;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
-import io.opencensus.tags.TagValue;
-import io.opencensus.trace.SpanContext;
-import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("unit")
 public class MonitoringHookTest {
+  private static final Duration METRICS_COLLECTION_INTERVAL = Duration.ofMillis(10);
+  private OpenTelemetry openTelemetry;
+  private TestMetricExporter testMetricExporter;
 
-  private static final List<TagValue> ERROR_COUNT_TAGS =
-      List.of(
-          TagValue.create(FlightStatus.ERROR.name()),
-          TagValue.create(ErrorSpanRecordingFlight.class.getName()));
+  @BeforeEach
+  void setup() {
+    testMetricExporter = new TestMetricExporter();
+    openTelemetry = openTelemetry(testMetricExporter);
+  }
+
+  public OpenTelemetry openTelemetry(TestMetricExporter testMetricExporter) {
+    var sdkMeterProviderBuilder =
+        SdkMeterProvider.builder()
+            .registerMetricReader(
+                PeriodicMetricReader.builder(testMetricExporter)
+                    .setInterval(METRICS_COLLECTION_INTERVAL)
+                    .build());
+
+    var propagators = ContextPropagators.create(W3CTraceContextPropagator.getInstance());
+    return OpenTelemetrySdk.builder()
+        .setPropagators(propagators)
+        .setMeterProvider(sdkMeterProviderBuilder.build())
+        .build();
+  }
 
   @Test
   public void spansConnected() throws Exception {
@@ -44,7 +74,8 @@ public class MonitoringHookTest {
     RecordContextStep.setRecord(contextRecord);
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
+        StairwayTestUtils.setupStairway(
+            new StairwayBuilder().stairwayHook(new MonitoringHook(openTelemetry)));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
@@ -57,49 +88,35 @@ public class MonitoringHookTest {
   }
 
   @Test
-  void recordNoErrorOnSuccess() throws Exception {
-    long errorCount = getCurrentCount(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
-
+  void recordMetricsOnSuccess() throws Exception {
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
+        StairwayTestUtils.setupStairway(
+            new StairwayBuilder().stairwayHook(new MonitoringHook(openTelemetry)));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
 
-    assertEquals(FlightStatus.SUCCESS, flightState.getFlightStatus());
-    sleepForSpansExport();
-    assertCountIncremented(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS, errorCount, 0);
-  }
-
-  @Test
-  void recordLatencyOnSuccess() throws Exception {
-    var flightsList =
-        List.of(
-            TagValue.create(SpanRecordingFlight.class.getName()),
-            TagValue.create(FlightStatus.SUCCESS.name()));
-    List<Long> previousDistribution = new ArrayList<>();
-    for (int i = 0; i < 29; i++) {
-      previousDistribution.add(
-          getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i));
-    }
-
-    Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
-    FlightState flightState =
-        StairwayTestUtils.blockUntilFlightCompletes(
-            stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
+    var metricsByName =
+        waitForMetrics(testMetricExporter, METRICS_COLLECTION_INTERVAL, 4).stream()
+            .collect(Collectors.toMap(MetricData::getName, Function.identity()));
 
     assertEquals(FlightStatus.SUCCESS, flightState.getFlightStatus());
-    sleepForSpansExport();
-    int changedBucketCount = 0;
-    for (int i = 0; i < 29; i++) {
-      if (previousDistribution
-          .get(i)
-          .equals(getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i) - 1)) {
-        changedBucketCount++;
-      }
-    }
-    assertEquals(1, changedBucketCount);
+    assertEquals(
+        Set.of(
+            FLIGHT_LATENCY_METER_NAME,
+            FLIGHT_ERROR_METER_NAME,
+            STEP_ERROR_METER_NAME,
+            STEP_LATENCY_METER_NAME),
+        metricsByName.keySet());
+
+    assertFlightErrorMeterValues(
+        metricsByName.get(FLIGHT_ERROR_METER_NAME), Map.of(FlightStatus.SUCCESS, 1L));
+    assertStepErrorMeterValues(
+        metricsByName.get(STEP_ERROR_METER_NAME),
+        RecordContextStep.class.getName(),
+        Map.of(Direction.DO, 2L));
+    assertLatencyTotalCount(metricsByName.get(FLIGHT_LATENCY_METER_NAME), 1L);
+    assertLatencyTotalCount(metricsByName.get(STEP_LATENCY_METER_NAME), 2L);
   }
 
   /** A {@link Flight} with two steps for recording the span context. */
@@ -117,7 +134,8 @@ public class MonitoringHookTest {
     RecordContextStep.setRecord(contextRecord);
 
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
+        StairwayTestUtils.setupStairway(
+            new StairwayBuilder().stairwayHook(new MonitoringHook(openTelemetry)));
     FlightState flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, ErrorSpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
@@ -129,49 +147,58 @@ public class MonitoringHookTest {
   }
 
   @Test
-  void recordErrorOnFailure() throws Exception {
-    long errorCount = getCurrentCount(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS);
+  void recordMetricsOnError() throws Exception {
     Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
+        StairwayTestUtils.setupStairway(
+            new StairwayBuilder().stairwayHook(new MonitoringHook(openTelemetry)));
 
     var flightState =
         StairwayTestUtils.blockUntilFlightCompletes(
             stairway, ErrorSpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
 
     assertEquals(FlightStatus.ERROR, flightState.getFlightStatus());
-    sleepForSpansExport();
-    assertCountIncremented(FLIGHT_ERROR_VIEW_NAME, ERROR_COUNT_TAGS, errorCount, 1);
-  }
 
-  @Test
-  void recordLatencyOnFailure() throws Exception {
-    var flightsList =
-        List.of(
-            TagValue.create(ErrorSpanRecordingFlight.class.getName()),
-            TagValue.create(FlightStatus.ERROR.name()));
-    List<Long> previousDistribution = new ArrayList<>();
-    for (int i = 0; i < 29; i++) {
-      previousDistribution.add(
-          getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i));
-    }
-    Stairway stairway =
-        StairwayTestUtils.setupStairway(new StairwayBuilder().stairwayHook(new MonitoringHook()));
+    var metricsByName =
+        waitForMetrics(testMetricExporter, METRICS_COLLECTION_INTERVAL, 4).stream()
+            .collect(Collectors.toMap(MetricData::getName, Function.identity()));
 
-    var flightState =
-        StairwayTestUtils.blockUntilFlightCompletes(
-            stairway, ErrorSpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
+    assertEquals(
+        Set.of(
+            FLIGHT_LATENCY_METER_NAME,
+            FLIGHT_ERROR_METER_NAME,
+            STEP_ERROR_METER_NAME,
+            STEP_LATENCY_METER_NAME),
+        metricsByName.keySet());
 
-    assertEquals(FlightStatus.ERROR, flightState.getFlightStatus());
-    sleepForSpansExport();
-    int changedBucketCount = 0;
-    for (int i = 0; i < 29; i++) {
-      if (previousDistribution
-          .get(i)
-          .equals(getCurrentDistributionDataCount(FLIGHT_LATENCY_VIEW_NAME, flightsList, i) - 1)) {
-        changedBucketCount++;
-      }
-    }
-    assertEquals(1, changedBucketCount);
+    assertFlightErrorMeterValues(
+        metricsByName.get(FLIGHT_ERROR_METER_NAME), Map.of(FlightStatus.ERROR, 1L));
+
+    assertStepErrorMeterValues(
+        metricsByName.get(STEP_ERROR_METER_NAME),
+        RecordContextStep.class.getName(),
+        Map.of(Direction.DO, 2L, Direction.UNDO, 2L));
+    assertStepErrorMeterValues(
+        metricsByName.get(STEP_ERROR_METER_NAME),
+        FailureStep.class.getName(),
+        Map.of(Direction.DO, 1L, Direction.SWITCH, 1L));
+    assertLatencyTotalCount(metricsByName.get(FLIGHT_LATENCY_METER_NAME), 1L);
+    assertStepLatencyTotalCount(
+        metricsByName.get(STEP_LATENCY_METER_NAME),
+        RecordContextStep.class.getName(),
+        Direction.DO,
+        2L);
+    assertStepLatencyTotalCount(
+        metricsByName.get(STEP_LATENCY_METER_NAME),
+        RecordContextStep.class.getName(),
+        Direction.UNDO,
+        2L);
+    assertStepLatencyTotalCount(
+        metricsByName.get(STEP_LATENCY_METER_NAME), FailureStep.class.getName(), Direction.DO, 1L);
+    assertStepLatencyTotalCount(
+        metricsByName.get(STEP_LATENCY_METER_NAME),
+        FailureStep.class.getName(),
+        Direction.SWITCH,
+        1L);
   }
 
   private static void assertSharedTraceId(List<SpanContext> contextRecord) {
@@ -206,13 +233,13 @@ public class MonitoringHookTest {
 
     @Override
     public StepResult doStep(FlightContext flightContext) {
-      record(Tracing.getTracer().getCurrentSpan().getContext());
+      record(Span.current().getSpanContext());
       return StepResult.getStepResultSuccess();
     }
 
     @Override
     public StepResult undoStep(FlightContext flightContext) {
-      record(Tracing.getTracer().getCurrentSpan().getContext());
+      record(Span.current().getSpanContext());
       return StepResult.getStepResultSuccess();
     }
 

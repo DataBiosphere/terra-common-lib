@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import bio.terra.common.exception.UnauthorizedException;
+import java.util.Optional;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
 import org.broadinstitute.dsde.workbench.client.sam.model.UserStatusInfo;
@@ -20,7 +21,7 @@ public class SamUserFactoryTest {
 
   @Test
   public void enabledUser() throws ApiException {
-    SamUserFactory factory = spy(new SamUserFactory(new BearerTokenFactory()));
+    SamUserFactory factory = spy(new SamUserFactory(new BearerTokenFactory(), Optional.empty()));
     UsersApi usersApi = mock(UsersApi.class);
     when(factory.createUsersApi(SAM_USER.getBearerToken(), SAM_BASE_PATH)).thenReturn(usersApi);
     when(usersApi.getUserStatusInfo())
@@ -36,7 +37,7 @@ public class SamUserFactoryTest {
 
   @Test
   public void disabledUser() throws ApiException {
-    SamUserFactory factory = spy(new SamUserFactory(new BearerTokenFactory()));
+    SamUserFactory factory = spy(new SamUserFactory(new BearerTokenFactory(), Optional.empty()));
     UsersApi usersApi = mock(UsersApi.class);
     when(factory.createUsersApi(SAM_USER.getBearerToken(), SAM_BASE_PATH)).thenReturn(usersApi);
     when(usersApi.getUserStatusInfo())
@@ -52,7 +53,7 @@ public class SamUserFactoryTest {
 
   @Test
   public void notFoundUser() throws ApiException {
-    SamUserFactory factory = spy(new SamUserFactory(new BearerTokenFactory()));
+    SamUserFactory factory = spy(new SamUserFactory(new BearerTokenFactory(), Optional.empty()));
     UsersApi usersApi = mock(UsersApi.class);
     when(factory.createUsersApi(SAM_USER.getBearerToken(), SAM_BASE_PATH)).thenReturn(usersApi);
     when(usersApi.getUserStatusInfo())

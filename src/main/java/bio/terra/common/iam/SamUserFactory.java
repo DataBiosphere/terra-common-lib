@@ -4,8 +4,9 @@ import bio.terra.common.exception.InternalServerErrorException;
 import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.tracing.OkHttpClientTracingInterceptor;
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.Tracing;
-import javax.servlet.http.HttpServletRequest;
+import io.opentelemetry.api.OpenTelemetry;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
@@ -28,16 +29,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class SamUserFactory {
   final BearerTokenFactory bearerTokenFactory;
-  final OkHttpClient httpClient =
-      new ApiClient()
-          .getHttpClient()
-          .newBuilder()
-          .addInterceptor(new OkHttpClientTracingInterceptor(Tracing.getTracer()))
-          .build();
+  final OkHttpClient httpClient;
 
   @Autowired
-  public SamUserFactory(BearerTokenFactory bearerTokenFactory) {
+  public SamUserFactory(
+      BearerTokenFactory bearerTokenFactory, Optional<OpenTelemetry> openTelemetry) {
     this.bearerTokenFactory = bearerTokenFactory;
+    var apiClientBuilder = new ApiClient().getHttpClient().newBuilder();
+    openTelemetry
+        .map(OkHttpClientTracingInterceptor::new)
+        .ifPresent(apiClientBuilder::addInterceptor);
+    this.httpClient = apiClientBuilder.build();
   }
 
   public SamUser from(HttpServletRequest servletRequest, String samBasePath) {

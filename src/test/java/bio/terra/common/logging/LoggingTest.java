@@ -3,24 +3,15 @@ package bio.terra.common.logging;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 
-import bio.terra.common.logging.LoggingTest.FilterTestConfiguration;
 import bio.terra.common.logging.LoggingTestController.StructuredDataPojo;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import io.opencensus.trace.SpanContext;
-import io.opencensus.trace.Tracing;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Arrays;
-import javax.annotation.Nullable;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -28,15 +19,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -58,11 +45,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
     // This is the simplest way to trigger LoggingInitializer from within this test. See
     // LoggingTestApplication for an example of how a real-world application would initialize the
     // logging flow.
-    initializers = LoggingInitializer.class,
-    // This line is required to cause Spring to attach the MockSpanFilter to the HttpServlet. Real
-    // applications would presumably have some logic to autogeneate spans on HTTP requests, e.g.
-    // io.opencensus.contrib.spring.instrument.web.HttpServletFilter.
-    classes = FilterTestConfiguration.class)
+    initializers = LoggingInitializer.class)
 // Refer to an external properties file to define a Spring application name and version, which is
 // included in the JSON output if available.
 @ActiveProfiles("logging-test")
@@ -73,39 +56,6 @@ public class LoggingTest {
   @Autowired private TestRestTemplate testRestTemplate;
   // Spy bean to allow us to mock out the RequestIdFilter ID generator.
   @SpyBean private RequestIdFilter requestIdFilter;
-
-  private static SpanContext requestSpanContext;
-
-  // A servlet filter to create an OpenCensus span at the beginning of each request
-  @Component
-  public static class MockSpanFilter implements Filter {
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-      Tracing.getTracer().spanBuilderWithExplicitParent("test-span", null).startScopedSpan();
-      requestSpanContext = Tracing.getTracer().getCurrentSpan().getContext();
-      chain.doFilter(request, response);
-      // Note: we purposefully don't close the scope here. For some reason, it doesn't seem possible
-      // to inject this filter into the servlet at high enough precedence to ensure it covers the
-      // entire RequestLoggingFilter lifetime. By not closing the scope here, we can ensure that the
-      // tracing span is available as context when an inbound request ultimately gets logged.
-    }
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {}
-
-    @Override
-    public void destroy() {}
-  }
-
-  @TestConfiguration
-  static class FilterTestConfiguration {
-    @Bean
-    @Order(LOWEST_PRECEDENCE)
-    MockSpanFilter getMockSpanFilter() {
-      return new MockSpanFilter();
-    }
-  }
 
   @BeforeEach
   public void setUp() throws IOException, ServletException {
@@ -149,10 +99,8 @@ public class LoggingTest {
 
     // Tracing-related fields
     assertThat((String) readJson(line, "$.['logging.googleapis.com/trace']"))
-        .isEqualTo(
-            "projects/my-project-1234/traces/" + requestSpanContext.getTraceId().toLowerBase16());
-    assertThat((String) readJson(line, "$.['logging.googleapis.com/spanId']"))
-        .isEqualTo(requestSpanContext.getSpanId().toLowerBase16());
+        .startsWith("projects/my-project-1234/traces/");
+    assertThat((String) readJson(line, "$.['logging.googleapis.com/spanId']")).isNotBlank();
     // The JSON format will also output the trace_sampled value if that value exists in the context
     // span. Due to the way we're creating a span from scratch, there wasn't an easy way to set it
     // to true within this test.
