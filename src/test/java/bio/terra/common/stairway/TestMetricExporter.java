@@ -14,7 +14,7 @@ public class TestMetricExporter implements MetricExporter {
 
   @Override
   public synchronized CompletableResultCode export(Collection<MetricData> metrics) {
-    lastMetrics = List.copyOf(lastMetrics);
+    lastMetrics = List.copyOf(metrics);
     return CompletableResultCode.ofSuccess();
   }
 
