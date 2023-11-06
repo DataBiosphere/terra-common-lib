@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class GcpMetricsConfig {
   private final Logger logger = LoggerFactory.getLogger(GcpMetricsConfig.class);
 
+  /** Creates OpenTelemetry MetricReader that exports metrics to Google Cloud Monitoring */
   @Bean(destroyMethod = "close")
   @ConditionalOnProperty(
       name = "terra.common.google.metrics.enabled",

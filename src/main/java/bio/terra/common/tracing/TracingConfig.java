@@ -18,6 +18,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class TracingConfig implements WebMvcConfigurer {
   private final Logger logger = LoggerFactory.getLogger(TracingConfig.class);
 
+  /** Creates OpenTelemetry SpanProcessor that exports spans to Google Cloud Trace */
   @Bean
   @ConditionalOnProperty(
       name = "terra.common.google.tracing.enabled",
