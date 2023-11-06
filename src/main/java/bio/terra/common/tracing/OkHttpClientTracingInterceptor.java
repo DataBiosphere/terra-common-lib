@@ -15,11 +15,7 @@ import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * An interceptor to add tracing headers to outgoing requests.
- *
- * <p>OkHttp interceptors are called before and after network requests, and can modify the request
- * and response objects. In this case, we're adding headers for the current traceId and span, which
- * the remote service can read to link traces across services.
+ * An interceptor to add tracing span around and headers to outgoing requests.
  *
  * <p>see <a
  * href="https://opentelemetry.io/docs/instrumentation/java/manual/#context-propagation">context-propagation</a>

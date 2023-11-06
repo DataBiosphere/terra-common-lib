@@ -102,7 +102,11 @@ dependencies {
     implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:${openTelemetryVersion}"
     implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot:${openTelemetryVersion}-alpha"
     implementation "io.opentelemetry:opentelemetry-exporter-prometheus:${openTelemetryVersion}-alpha"
-    implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2"
+
+    // Google cloud open telemetry exporters
+    var gcpOpenTelemetryExporterVersion = '0.25.2'
+    implementation "com.google.cloud.opentelemetry:exporter-trace:${gcpOpenTelemetryExporterVersion}"
+    implementation "com.google.cloud.opentelemetry:exporter-metrics:${gcpOpenTelemetryExporterVersion}"
 
     // these are required for tracing in tests
     testImplementation 'org.springframework:spring-aop:6.0.11'
