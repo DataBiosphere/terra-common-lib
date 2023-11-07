@@ -1,32 +1,33 @@
 package bio.terra.common.tracing;
 
 import com.google.cloud.opentelemetry.trace.TraceExporter;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /** Spring Configuration for Terra common tracing setup. */
 @Configuration
+@ComponentScan(basePackages = "bio.terra.common.opentelemetry")
 public class TracingConfig implements WebMvcConfigurer {
+  private final Logger logger = LoggerFactory.getLogger(TracingConfig.class);
+
+  /** Creates OpenTelemetry SpanProcessor that exports spans to Google Cloud Trace */
   @Bean
-  @Primary
   @ConditionalOnProperty(
-      name = "terra.common.tracing.stackdriverExportEnabled",
+      name = "terra.common.google.tracing.enabled",
       havingValue = "true",
       matchIfMissing = true)
-  public SdkTracerProvider googleTracerProvider(Resource resource) {
+  public SpanProcessor googleTracerProvider() {
+    logger.info("GCP tracing enabled.");
     var traceExporter = TraceExporter.createWithDefaultConfiguration();
-
-    return SdkTracerProvider.builder()
-        .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-        .setResource(resource)
-        .build();
+    return BatchSpanProcessor.builder(traceExporter).build();
   }
 
   @Override

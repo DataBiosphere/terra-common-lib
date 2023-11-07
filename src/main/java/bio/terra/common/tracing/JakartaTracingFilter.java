@@ -14,15 +14,22 @@ import jakarta.ws.rs.client.ClientResponseFilter;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 
+/**
+ * A filter to add tracing span around and headers to outgoing requests.
+ *
+ * <p>see <a
+ * href="https://opentelemetry.io/docs/instrumentation/java/manual/#context-propagation">context-propagation</a>
+ * for the basis of this
+ */
 @Provider
-public class JerseyTracingFilter implements ClientRequestFilter, ClientResponseFilter {
+public class JakartaTracingFilter implements ClientRequestFilter, ClientResponseFilter {
   private static final TextMapSetter<ClientRequestContext> SETTER =
       (carrier, key, value) -> carrier.getHeaders().add(key, value);
   private final OpenTelemetry openTelemetry;
   private final Tracer tracer;
   private Span requestSpan;
 
-  public JerseyTracingFilter(OpenTelemetry openTelemetry) {
+  public JakartaTracingFilter(OpenTelemetry openTelemetry) {
     this.openTelemetry = openTelemetry;
     this.tracer = openTelemetry.getTracer(getClass().getName());
   }
@@ -32,8 +39,7 @@ public class JerseyTracingFilter implements ClientRequestFilter, ClientResponseF
     this.requestSpan =
         tracer
             .spanBuilder(
-                "Sent.%s %s"
-                    .formatted(requestContext.getMethod(), requestContext.getUri().toString()))
+                "%s %s".formatted(requestContext.getMethod(), requestContext.getUri().toString()))
             .setSpanKind(SpanKind.CLIENT)
             .startSpan();
 
