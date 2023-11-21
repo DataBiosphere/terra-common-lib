@@ -3,13 +3,13 @@ package bio.terra.common.stairway;
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
 import bio.terra.stairway.QueueInterface;
-import bio.terra.stairway.Stairway;
 import bio.terra.stairway.azure.AzureServiceBusQueue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,8 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class StairwayComponentTest {
     @InjectMocks
     private StairwayComponent stairwayComponent;
-    @Mock
-    private Stairway stairway;
+
     @Mock
     private KubeProperties kubeProperties;
     private StairwayProperties stairwayProperties;
@@ -33,7 +32,7 @@ class StairwayComponentTest {
         setProperties(connectionString, "topicName", "subscriptionName");
 
         stairwayComponent =
-                new StairwayComponent(kubeService, kubeProperties, stairwayProperties, stairway);
+                new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
         QueueInterface queue = stairwayComponent.setupAzureWorkQueue();
         assertTrue(queue instanceof AzureServiceBusQueue);
     }
@@ -43,7 +42,7 @@ class StairwayComponentTest {
        setProperties("", "topicName", "subscriptionName");
 
         stairwayComponent =
-                new StairwayComponent(kubeService, kubeProperties, stairwayProperties, stairway);
+                new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
         assertThrows(IllegalArgumentException.class, () -> stairwayComponent.setupAzureWorkQueue());
     }
 
@@ -53,7 +52,7 @@ class StairwayComponentTest {
         setProperties(connectionString, "", "subscriptionName");
 
         stairwayComponent =
-                new StairwayComponent(kubeService, kubeProperties, stairwayProperties, stairway);
+                new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
         assertThrows(IllegalArgumentException.class, () -> stairwayComponent.setupAzureWorkQueue());
     }
 
@@ -64,14 +63,14 @@ class StairwayComponentTest {
         setProperties(connectionString, "topicName", "");
 
         stairwayComponent =
-                new StairwayComponent(kubeService, kubeProperties, stairwayProperties, stairway);
+                new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
         assertThrows(IllegalArgumentException.class, () -> stairwayComponent.setupAzureWorkQueue());
     }
 
     @Test
     public void setupAzureWorkQueueTestThrowsNPE() {
         stairwayComponent =
-                new StairwayComponent(kubeService, kubeProperties, stairwayProperties, stairway);
+                new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
         assertThrows(NullPointerException.class, () -> stairwayComponent.setupAzureWorkQueue());
     }
 

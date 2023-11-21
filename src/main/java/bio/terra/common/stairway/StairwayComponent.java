@@ -44,18 +44,6 @@ public class StairwayComponent {
     logger.info("Creating Stairway: name: [{}]", kubeService.getPodName());
   }
 
-  @Autowired
-  public StairwayComponent(
-          KubeService kubeService,
-          KubeProperties kubeProperties,
-          StairwayProperties stairwayProperties,
-          Stairway stairway) {
-    this.kubeService = kubeService;
-    this.kubeProperties = kubeProperties;
-    this.stairwayProperties = stairwayProperties;
-   this.stairway = stairway;
-  }
-
   /**
    * Set up the Stairway work queue. There are two ways we get a work queue. If both the gcp topicId
    * and subscriptionId are passed as parameters, then we use those. Otherwise, if the
