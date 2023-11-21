@@ -26,7 +26,7 @@ class StairwayComponentTest {
     private KubeService kubeService;
 
     @Test
-    public void setupAzureWorkQueueTest() {
+    protected void setupAzureWorkQueueTest() {
 
         String connectionString = "Endpoint=sb://azure-xxxx.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxxxx";
         setProperties(connectionString, "topicName", "subscriptionName");
@@ -38,7 +38,7 @@ class StairwayComponentTest {
     }
 
     @Test
-    public void setupAzureWorkQueueTestConnectionStringRequired() {
+    protected void setupAzureWorkQueueTestConnectionStringRequired() {
        setProperties("", "topicName", "subscriptionName");
 
         stairwayComponent =
@@ -47,7 +47,7 @@ class StairwayComponentTest {
     }
 
     @Test
-    public void setupAzureWorkQueueTestTopicNameRequired() {
+    protected void setupAzureWorkQueueTestTopicNameRequired() {
         String connectionString = "Endpoint=sb://azure-xxxx.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxxxx";
         setProperties(connectionString, "", "subscriptionName");
 
@@ -58,7 +58,7 @@ class StairwayComponentTest {
 
 
     @Test
-    public void setupAzureWorkQueueTestSubscriptionNameRequired() {
+    protected void setupAzureWorkQueueTestSubscriptionNameRequired() {
         String connectionString = "Endpoint=sb://azure-xxxx.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxxxx";
         setProperties(connectionString, "topicName", "");
 
@@ -68,7 +68,7 @@ class StairwayComponentTest {
     }
 
     @Test
-    public void setupAzureWorkQueueTestThrowsNPE() {
+    protected void setupAzureWorkQueueTestThrowsNPE() {
         stairwayComponent =
                 new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
         assertThrows(NullPointerException.class, () -> stairwayComponent.setupAzureWorkQueue());
