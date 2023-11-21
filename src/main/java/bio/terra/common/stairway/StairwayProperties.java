@@ -1,7 +1,8 @@
 package bio.terra.common.stairway;
 
-import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.time.Duration;
 
 /**
  * Properties for configuring a Stairway instance.
@@ -46,6 +47,49 @@ public class StairwayProperties {
    * It must be null if clusterNameSuffix is provided.
    */
   private String gcpPubSubSubscriptionId;
+
+  /**
+   * azureServiceBusMaxAutoLockRenewDuration represents the maximum duration for which the lock on a message will be automatically renewed.
+   * This helps in extending the lock duration to ensure that the message is not released to other competing consumers while it is being processed.
+   */
+  private long azureServiceBusMaxAutoLockRenewDuration;
+
+  /**
+   * azureServiceBusConnectionString is a string that contains the information required to connect to a Service Bus namespace.
+   * It typically includes details such as the endpoint URL, the shared access key name, and the shared access key.
+   */
+  private String  azureServiceBusConnectionString;
+
+  /**
+   * useManagedIdentity  with Azure Service Bus allows applications running on Azure services, such as Azure Virtual Machines or Azure App Service,
+   * to authenticate with Service Bus without the need for explicit credential management.
+   * Managed Identity eliminates the need to store credentials in code or configuration files.
+   */
+  private boolean useManagedIdentity;
+
+
+  /**
+   * azureServiceBusNamespace is a container for messaging entities, including queues, topics, and subscriptions.
+   */
+  private String azureServiceBusNamespace;
+
+  /**
+   * Azure Service Bus TopicName
+   */
+  private String azureServiceBusTopicName;
+
+  /**
+   * Azure Service Bus subscription name
+   */
+  private String azureServiceBusSubscriptionName;
+
+  /**
+   * azureQueueEnabled need to set to true to use Azure Service Bus as a Work Queue
+   * azureQueueEnabled = true, Azure Service Bus will be the work queue
+   * azureQueueEnabled = false, Gcp PubSub will be the work queue
+   */
+
+  private boolean azureQueueEnabled;
 
   public boolean isForceCleanStart() {
     return forceCleanStart;
@@ -133,5 +177,61 @@ public class StairwayProperties {
 
   public void setGcpPubSubSubscriptionId(String gcpPubSubSubscriptionId) {
     this.gcpPubSubSubscriptionId = gcpPubSubSubscriptionId;
+  }
+
+  public long getAzureServiceBusMaxAutoLockRenewDuration() {
+    return azureServiceBusMaxAutoLockRenewDuration;
+  }
+
+  public void setAzureServiceBusMaxAutoLockRenewDuration(long azureServiceBusMaxAutoLockRenewDuration) {
+    this.azureServiceBusMaxAutoLockRenewDuration = azureServiceBusMaxAutoLockRenewDuration;
+  }
+
+  public String getAzureServiceBusConnectionString() {
+    return azureServiceBusConnectionString;
+  }
+
+  public void setAzureServiceBusConnectionString(String azureServiceBusConnectionString) {
+    this.azureServiceBusConnectionString = azureServiceBusConnectionString;
+  }
+
+  public boolean isUseManagedIdentity() {
+    return useManagedIdentity;
+  }
+
+  public void setUseManagedIdentity(boolean useManagedIdentity) {
+    this.useManagedIdentity = useManagedIdentity;
+  }
+
+  public String getAzureServiceBusNamespace() {
+    return azureServiceBusNamespace;
+  }
+
+  public void setAzureServiceBusNamespace(String azureServiceBusNamespace) {
+    this.azureServiceBusNamespace = azureServiceBusNamespace;
+  }
+
+  public String getAzureServiceBusTopicName() {
+    return azureServiceBusTopicName;
+  }
+
+  public void setAzureServiceBusTopicName(String azureServiceBusTopicName) {
+    this.azureServiceBusTopicName = azureServiceBusTopicName;
+  }
+
+  public String getAzureServiceBusSubscriptionName() {
+    return azureServiceBusSubscriptionName;
+  }
+
+  public void setAzureServiceBusSubscriptionName(String azureServiceBusSubscriptionName) {
+    this.azureServiceBusSubscriptionName = azureServiceBusSubscriptionName;
+  }
+
+  public boolean isAzureQueueEnabled() {
+    return azureQueueEnabled;
+  }
+
+  public void setAzureQueueEnabled(boolean azureQueueEnabled) {
+    this.azureQueueEnabled = azureQueueEnabled;
   }
 }

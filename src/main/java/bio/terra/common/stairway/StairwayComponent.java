@@ -1,30 +1,26 @@
 package bio.terra.common.stairway;
 
-import static com.google.cloud.ServiceOptions.getDefaultProjectId;
-
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
-import bio.terra.stairway.ExceptionSerializer;
-import bio.terra.stairway.QueueInterface;
-import bio.terra.stairway.Stairway;
-import bio.terra.stairway.StairwayBuilder;
-import bio.terra.stairway.StairwayHook;
+import bio.terra.stairway.*;
+import bio.terra.stairway.azure.AzureServiceBusQueue;
 import bio.terra.stairway.exception.StairwayException;
 import bio.terra.stairway.exception.StairwayExecutionException;
 import bio.terra.stairway.gcp.GcpPubSubQueue;
 import bio.terra.stairway.gcp.GcpQueueUtils;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.google.cloud.ServiceOptions.getDefaultProjectId;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
 @Component
@@ -48,13 +44,25 @@ public class StairwayComponent {
     logger.info("Creating Stairway: name: [{}]", kubeService.getPodName());
   }
 
+  @Autowired
+  public StairwayComponent(
+          KubeService kubeService,
+          KubeProperties kubeProperties,
+          StairwayProperties stairwayProperties,
+          Stairway stairway) {
+    this.kubeService = kubeService;
+    this.kubeProperties = kubeProperties;
+    this.stairwayProperties = stairwayProperties;
+   this.stairway = stairway;
+  }
+
   /**
    * Set up the Stairway work queue. There are two ways we get a work queue. If both the gcp topicId
    * and subscriptionId are passed as parameters, then we use those. Otherwise, if the
    * clusterNameSuffix is present, then we create the queue. It is an error to try to run in
    * Kubernetes without a work queue.
    */
-  private GcpPubSubQueue setupWorkQueue() {
+  private QueueInterface setupWorkQueue() {
     try {
       String topicId = stairwayProperties.getGcpPubSubTopicId();
       String subscriptionId = stairwayProperties.getGcpPubSubSubscriptionId();
@@ -91,6 +99,21 @@ public class StairwayComponent {
     }
   }
 
+
+  /**
+   * Set up the Stairway Azure work queue.
+   */
+  public QueueInterface setupAzureWorkQueue() {
+    return AzureServiceBusQueue.newBuilder()
+              .connectionString(stairwayProperties.getAzureServiceBusConnectionString())
+              .subscriptionName(stairwayProperties.getAzureServiceBusSubscriptionName())
+              .topicName(stairwayProperties.getAzureServiceBusTopicName())
+              .maxAutoLockRenewDuration(Duration.ofMinutes(stairwayProperties.getAzureServiceBusMaxAutoLockRenewDuration()))
+              .namespace(stairwayProperties.getAzureServiceBusNamespace())
+              .useManagedIdentity(stairwayProperties.isUseManagedIdentity())
+              .build();
+  }
+
   /** convenience for getting a builder for initialize input */
   public StairwayOptionsBuilder newStairwayOptionsBuilder() {
     return new StairwayOptionsBuilder();
@@ -113,7 +136,13 @@ public class StairwayComponent {
    * @param initializeBuilder collection of Stairway initialization parameters
    */
   public void initialize(StairwayOptionsBuilder initializeBuilder) {
-    QueueInterface queue = (kubeProperties.isInKubernetes()) ? setupWorkQueue() : null;
+    QueueInterface queue;
+    //Using Azure WorkQueue if azureQueueEnabled set to true
+    if(stairwayProperties.isAzureQueueEnabled()) {
+      queue = setupAzureWorkQueue();
+    } else {
+      queue = (kubeProperties.isInKubernetes()) ? setupWorkQueue() : null;
+    }
 
     logger.info("Initializing Stairway...");
     final StairwayBuilder builder =

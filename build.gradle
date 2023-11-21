@@ -81,6 +81,7 @@ dependencies {
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-f554115'
     api group: 'bio.terra', name: 'stairway-gcp', version: '0.0.76-SNAPSHOT'
+    implementation group: 'bio.terra', name: 'stairway-azure', version: '0.0.78-SNAPSHOT'
 
     // Logging
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
