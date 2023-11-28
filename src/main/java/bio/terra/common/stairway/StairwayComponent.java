@@ -2,16 +2,13 @@ package bio.terra.common.stairway;
 
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
-import bio.terra.stairway.ExceptionSerializer;
-import bio.terra.stairway.Stairway;
-import bio.terra.stairway.StairwayBuilder;
-import bio.terra.stairway.StairwayHook;
+import bio.terra.stairway.*;
 import bio.terra.stairway.azure.AzureServiceBusQueue;
 import bio.terra.stairway.exception.StairwayException;
 import bio.terra.stairway.exception.StairwayExecutionException;
 import bio.terra.stairway.gcp.GcpPubSubQueue;
 import bio.terra.stairway.gcp.GcpQueueUtils;
-import bio.terra.stairway.QueueInterface;
+import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +95,8 @@ public class StairwayComponent {
   /**
    * Set up the Stairway Azure work queue.
    */
-  public QueueInterface setupAzureWorkQueue() {
+  @VisibleForTesting
+  QueueInterface setupAzureWorkQueue() {
     return AzureServiceBusQueue.newBuilder()
               .connectionString(stairwayProperties.getAzureServiceBusConnectionString())
               .subscriptionName(stairwayProperties.getAzureServiceBusSubscriptionName())
