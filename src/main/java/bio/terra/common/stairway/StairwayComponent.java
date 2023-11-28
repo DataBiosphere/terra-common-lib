@@ -57,7 +57,7 @@ public class StairwayComponent {
    * clusterNameSuffix is present, then we create the queue. It is an error to try to run in
    * Kubernetes without a work queue.
    */
-  private QueueInterface setupWorkQueue() {
+  private QueueInterface setupGcpWorkQueue() {
     try {
       String topicId = stairwayProperties.getGcpPubSubTopicId();
       String subscriptionId = stairwayProperties.getGcpPubSubSubscriptionId();
@@ -136,7 +136,7 @@ public class StairwayComponent {
     if(stairwayProperties.isAzureQueueEnabled()) {
       queue = setupAzureWorkQueue();
     } else {
-      queue = (kubeProperties.isInKubernetes()) ? setupWorkQueue() : null;
+      queue = (kubeProperties.isInKubernetes()) ? setupGcpWorkQueue() : null;
     }
 
     logger.info("Initializing Stairway...");
