@@ -25,6 +25,11 @@ class TracingTestController {
     latestSpan = Span.current();
   }
 
+  @GetMapping(value = "/dropme")
+  public void dropme() {
+    latestSpan = Span.current();
+  }
+
   public Span getLatestSpan() {
     return latestSpan;
   }
