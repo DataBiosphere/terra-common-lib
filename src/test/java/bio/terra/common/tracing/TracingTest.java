@@ -58,4 +58,11 @@ public class TracingTest {
     assertEquals("TracedAnnotatedBean.annotatedMethod", beanSpanData.getName());
     assertEquals(requestSpan.getSpanContext().getSpanId(), beanSpanData.getParentSpanId());
   }
+
+  @Test
+  public void testExcludedUrl() {
+    ResponseEntity<String> response = testRestTemplate.getForEntity("/dropme", String.class);
+    assertEquals(response.getStatusCode().value(), 200);
+    assertThat(controller.getLatestSpan().isRecording(), Matchers.is(false));
+  }
 }

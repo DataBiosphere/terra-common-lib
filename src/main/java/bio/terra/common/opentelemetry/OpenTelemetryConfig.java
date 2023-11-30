@@ -1,5 +1,6 @@
 package bio.terra.common.opentelemetry;
 
+import bio.terra.common.tracing.ExcludingUrlSampler;
 import io.opentelemetry.instrumentation.spring.autoconfigure.EnableOpenTelemetry;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -8,7 +9,9 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -16,6 +19,7 @@ import org.springframework.data.util.Pair;
 
 @Configuration
 @EnableOpenTelemetry
+@EnableConfigurationProperties(value = {TracingProperties.class})
 public class OpenTelemetryConfig {
   /**
    * Creates an OpenTelemetry {@link SdkMeterProvider} with all metrics readers and views in the
@@ -41,9 +45,15 @@ public class OpenTelemetryConfig {
   @Bean
   @Primary
   public SdkTracerProvider terraTraceProvider(
-      Resource resource, ObjectProvider<SpanProcessor> spanProcessors) {
+      Resource resource,
+      ObjectProvider<SpanProcessor> spanProcessors,
+      TracingProperties tracingProperties) {
     var tracerProviderBuilder = SdkTracerProvider.builder().setResource(resource);
     spanProcessors.stream().forEach(tracerProviderBuilder::addSpanProcessor);
+    tracerProviderBuilder.setSampler(
+        new ExcludingUrlSampler(
+            tracingProperties.excludedUrls(),
+            Sampler.parentBased(Sampler.traceIdRatioBased(tracingProperties.samplingRatio()))));
     return tracerProviderBuilder.build();
   }
 }
