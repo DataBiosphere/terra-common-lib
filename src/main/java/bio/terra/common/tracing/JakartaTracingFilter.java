@@ -14,19 +14,17 @@ import jakarta.ws.rs.client.ClientResponseFilter;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * A filter to add tracing span around and headers to outgoing requests. A new instance must be used
- * for each request.
- */
+/** A filter to add tracing span around and headers to outgoing requests. */
 @Provider
 public class JakartaTracingFilter implements ClientRequestFilter, ClientResponseFilter {
+  private static final String OPENTELEMETRY_CONTEXT = "opentelemetry.context";
+  private static final String OPENTELEMETRY_SCOPE = "opentelemetry.scope";
   private static final TextMapSetter<ClientRequestContext> SETTER =
       (carrier, key, value) -> carrier.getHeaders().add(key, value);
   private final Instrumenter<ClientRequestContext, ClientResponseContext> instrumenter;
-  private Context requestContext = null;
-  private Scope requestScope;
 
   public JakartaTracingFilter(OpenTelemetry openTelemetry) {
     this.instrumenter =
@@ -42,18 +40,21 @@ public class JakartaTracingFilter implements ClientRequestFilter, ClientResponse
   @Override
   public void filter(ClientRequestContext requestContext) throws IOException {
     if (instrumenter.shouldStart(Context.current(), requestContext)) {
-      this.requestContext = instrumenter.start(Context.current(), requestContext);
-      this.requestScope = this.requestContext.makeCurrent();
+      var otelContext = instrumenter.start(Context.current(), requestContext);
+      requestContext.setProperty(OPENTELEMETRY_CONTEXT, otelContext);
+      requestContext.setProperty(OPENTELEMETRY_SCOPE, otelContext.makeCurrent());
     }
   }
 
   @Override
   public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext)
       throws IOException {
-    if (this.requestContext != null) {
-      this.requestScope.close();
-      instrumenter.end(this.requestContext, requestContext, responseContext, null);
-    }
+    Optional.ofNullable(requestContext.getProperty(OPENTELEMETRY_SCOPE))
+        .ifPresent(scope -> ((Scope) scope).close());
+    Optional.ofNullable(requestContext.getProperty(OPENTELEMETRY_CONTEXT))
+        .ifPresent(
+            otelContext ->
+                instrumenter.end((Context) otelContext, requestContext, responseContext, null));
   }
 
   private static class ClientAttributesExtractor
