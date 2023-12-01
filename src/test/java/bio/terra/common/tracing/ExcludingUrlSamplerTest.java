@@ -51,7 +51,11 @@ public class ExcludingUrlSamplerTest {
 
   @Test
   public void testShouldNotSampleByUrlPath() {
-    var sampler = new ExcludingUrlSampler(Set.of("/foo", "/bar"), Sampler.alwaysOn());
+    // note that the internal implementation of ExcludingUrlSampler has slightly different behavior
+    // when the size of the excludedUrls is smaller than the size of the urlCandidates. So this test
+    // has only one excludedUrl to make sure the scenario works. The different behavior comes from
+    // the implementation of Set.removeAll
+    var sampler = new ExcludingUrlSampler(Set.of("/bar"), Sampler.alwaysOn());
     assertThat(
         sampler
             .shouldSample(
