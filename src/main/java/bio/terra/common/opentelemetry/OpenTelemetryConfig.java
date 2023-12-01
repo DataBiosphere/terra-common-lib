@@ -17,10 +17,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.util.Pair;
 
+import java.util.Optional;
+import java.util.Set;
+
 @Configuration
 @EnableOpenTelemetry
 @EnableConfigurationProperties(value = {TracingProperties.class})
 public class OpenTelemetryConfig {
+
+  public static final Set<String> DEFAULT_EXCLUDED_URLS = Set.of("/status", "/version");
+
   /**
    * Creates an OpenTelemetry {@link SdkMeterProvider} with all metrics readers and views in the
    * spring context
@@ -52,7 +58,7 @@ public class OpenTelemetryConfig {
     spanProcessors.stream().forEach(tracerProviderBuilder::addSpanProcessor);
     tracerProviderBuilder.setSampler(
         new ExcludingUrlSampler(
-            tracingProperties.excludedUrls(),
+            Optional.ofNullable(tracingProperties.excludedUrls()).orElse(DEFAULT_EXCLUDED_URLS),
             Sampler.parentBased(Sampler.traceIdRatioBased(tracingProperties.samplingRatio()))));
     return tracerProviderBuilder.build();
   }
