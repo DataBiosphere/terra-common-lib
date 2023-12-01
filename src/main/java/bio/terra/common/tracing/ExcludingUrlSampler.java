@@ -41,6 +41,8 @@ public class ExcludingUrlSampler implements Sampler {
     urlCandidates.add(attributes.get(SemanticAttributes.URL_PATH));
     urlCandidates.add(attributes.get(SemanticAttributes.HTTP_TARGET));
     urlCandidates.add(name);
+    // removeAll below does not like nulls so remove any if they exist
+    urlCandidates.remove(null);
 
     // removeAll returns true if urlCandidates was changed meaning it contained one of the urls to
     // be excluded
