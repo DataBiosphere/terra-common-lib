@@ -14,6 +14,7 @@ import jakarta.ws.rs.client.ClientResponseFilter;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
@@ -87,7 +88,7 @@ public class JakartaTracingFilter implements ClientRequestFilter, ClientResponse
     @Override
     public List<String> getHttpRequestHeader(
         ClientRequestContext clientRequestContext, String name) {
-      return clientRequestContext.getStringHeaders().get(name);
+      return Objects.requireNonNullElse(clientRequestContext.getStringHeaders().get(name), List.of());
     }
 
     @Nullable
@@ -104,7 +105,7 @@ public class JakartaTracingFilter implements ClientRequestFilter, ClientResponse
         ClientRequestContext clientRequestContext,
         ClientResponseContext clientResponseContext,
         String name) {
-      return clientResponseContext.getHeaders().get(name);
+      return Objects.requireNonNullElse(clientResponseContext.getHeaders().get(name), List.of());
     }
   }
 }
