@@ -7,9 +7,9 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.SemanticAttributes;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Sampler that delegates to another sampler, but excludes certain urls from sampling. See
@@ -18,10 +18,10 @@ import java.util.Set;
  * it ourselves.
  */
 public class ExcludingUrlSampler implements Sampler {
-  private final Set<String> excludedUrls;
+  private final Collection<String> excludedUrls;
   private final Sampler delegate;
 
-  public ExcludingUrlSampler(Set<String> excludedUrls, Sampler delegate) {
+  public ExcludingUrlSampler(Collection<String> excludedUrls, Sampler delegate) {
     this.excludedUrls = excludedUrls;
     this.delegate = delegate;
   }
@@ -41,6 +41,8 @@ public class ExcludingUrlSampler implements Sampler {
     urlCandidates.add(attributes.get(SemanticAttributes.URL_PATH));
     urlCandidates.add(attributes.get(SemanticAttributes.HTTP_TARGET));
     urlCandidates.add(name);
+    // removeAll below does not like nulls so remove any if they exist
+    urlCandidates.remove(null);
 
     // removeAll returns true if urlCandidates was changed meaning it contained one of the urls to
     // be excluded
