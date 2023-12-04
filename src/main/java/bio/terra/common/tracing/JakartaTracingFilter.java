@@ -88,7 +88,8 @@ public class JakartaTracingFilter implements ClientRequestFilter, ClientResponse
     @Override
     public List<String> getHttpRequestHeader(
         ClientRequestContext clientRequestContext, String name) {
-      return Objects.requireNonNullElse(clientRequestContext.getStringHeaders().get(name), List.of());
+      return Objects.requireNonNullElse(
+          clientRequestContext.getStringHeaders().get(name), List.of());
     }
 
     @Nullable
