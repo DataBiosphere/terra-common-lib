@@ -25,7 +25,7 @@ project.ext {
 }
 
 // If true, search local repository (~/.m2/repository/) first for dependencies.
-def useMavenLocal = false
+def useMavenLocal = true
 repositories {
     if (useMavenLocal) {
         mavenLocal() // must be listed first to take effect
