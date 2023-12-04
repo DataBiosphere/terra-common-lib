@@ -87,6 +87,8 @@ dependencies {
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20220714-1.32.1'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.4.14'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'
 
     // Flagsmith
     implementation group: 'com.flagsmith', name: 'flagsmith-java-client', version: '6.1.0'

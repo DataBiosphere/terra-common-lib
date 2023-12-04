@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Logging utility methods intended for use by service / app developers. These are generally aimed
@@ -119,8 +118,7 @@ public final class LoggingUtils {
         // seems to work. But if we encounter future issues in human-readable logging control, this
         // is a reasonable place to look more closely.
         logbackLogger.detachAndStopAllAppenders();
-        new ContextInitializer(logbackLogger.getLoggerContext())
-            .configureByResource(ResourceUtils.getURL("classpath:logback.xml"));
+        new ContextInitializer(logbackLogger.getLoggerContext()).autoConfig();
       } catch (Exception e) {
         throw new RuntimeException("Error loading human-readable logging", e);
       }
