@@ -49,46 +49,44 @@ public class StairwayProperties {
   private String gcpPubSubSubscriptionId;
 
   /**
-   * azureServiceBusMaxAutoLockRenewDuration represents the maximum duration for which the lock on a message will be automatically renewed.
-   * This helps in extending the lock duration to ensure that the message is not released to other competing consumers while it is being processed.
+   * azureServiceBusMaxAutoLockRenewDuration represents the maximum duration for which the lock on a
+   * message will be automatically renewed. This helps in extending the lock duration to ensure that
+   * the message is not released to other competing consumers while it is being processed.
    */
   private long azureServiceBusMaxAutoLockRenewDuration;
 
   /**
-   * azureServiceBusConnectionString is a string that contains the information required to connect to a Service Bus namespace.
-   * It typically includes details such as the endpoint URL, the shared access key name, and the shared access key.
+   * azureServiceBusConnectionString is a string that contains the information required to connect
+   * to a Service Bus namespace. It typically includes details such as the endpoint URL, the shared
+   * access key name, and the shared access key.
    */
-  private String  azureServiceBusConnectionString;
+  private String azureServiceBusConnectionString;
 
   /**
-   * useManagedIdentity  with Azure Service Bus allows applications running on Azure services, such as Azure Virtual Machines or Azure App Service,
-   * to authenticate with Service Bus without the need for explicit credential management.
-   * Managed Identity eliminates the need to store credentials in code or configuration files.
+   * useManagedIdentity with Azure Service Bus allows applications running on Azure services, such
+   * as Azure Virtual Machines or Azure App Service, to authenticate with Service Bus without the
+   * need for explicit credential management. Managed Identity eliminates the need to store
+   * credentials in code or configuration files.
    */
   private boolean useManagedIdentity;
 
-
   /**
-   * azureServiceBusNamespace is a container for messaging entities, including queues, topics, and subscriptions.
+   * azureServiceBusNamespace is a container for messaging entities, including queues, topics, and
+   * subscriptions.
    */
   private String azureServiceBusNamespace;
 
-  /**
-   * Azure Service Bus TopicName
-   */
+  /** Azure Service Bus TopicName */
   private String azureServiceBusTopicName;
 
-  /**
-   * Azure Service Bus subscription name
-   */
+  /** Azure Service Bus subscription name */
   private String azureServiceBusSubscriptionName;
 
   /**
    * azureQueueEnabled need to set to true to use Azure Service Bus as a Work Queue
-   * azureQueueEnabled = true, Azure Service Bus will be the work queue
-   * azureQueueEnabled = false, Gcp PubSub will be the work queue
+   * azureQueueEnabled = true Azure Service Bus will be the work queue, azureQueueEnabled = false
+   * Gcp PubSub will be the work queue
    */
-
   private boolean azureQueueEnabled;
 
   public boolean isForceCleanStart() {
@@ -183,7 +181,8 @@ public class StairwayProperties {
     return azureServiceBusMaxAutoLockRenewDuration;
   }
 
-  public void setAzureServiceBusMaxAutoLockRenewDuration(long azureServiceBusMaxAutoLockRenewDuration) {
+  public void setAzureServiceBusMaxAutoLockRenewDuration(
+      long azureServiceBusMaxAutoLockRenewDuration) {
     this.azureServiceBusMaxAutoLockRenewDuration = azureServiceBusMaxAutoLockRenewDuration;
   }
 
