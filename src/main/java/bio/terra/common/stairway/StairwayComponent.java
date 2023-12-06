@@ -4,16 +4,15 @@ import static com.google.cloud.ServiceOptions.getDefaultProjectId;
 
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
-import bio.terra.stairway.ExceptionSerializer;
-import bio.terra.stairway.QueueInterface;
-import bio.terra.stairway.Stairway;
-import bio.terra.stairway.StairwayBuilder;
-import bio.terra.stairway.StairwayHook;
+import bio.terra.stairway.*;
+import bio.terra.stairway.azure.AzureServiceBusQueue;
 import bio.terra.stairway.exception.StairwayException;
 import bio.terra.stairway.exception.StairwayExecutionException;
 import bio.terra.stairway.gcp.GcpPubSubQueue;
 import bio.terra.stairway.gcp.GcpQueueUtils;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,7 +53,7 @@ public class StairwayComponent {
    * clusterNameSuffix is present, then we create the queue. It is an error to try to run in
    * Kubernetes without a work queue.
    */
-  private GcpPubSubQueue setupWorkQueue() {
+  private QueueInterface setupGcpWorkQueue() {
     try {
       String topicId = stairwayProperties.getGcpPubSubTopicId();
       String subscriptionId = stairwayProperties.getGcpPubSubSubscriptionId();
@@ -91,6 +90,20 @@ public class StairwayComponent {
     }
   }
 
+  /** Set up the Stairway Azure work queue. */
+  @VisibleForTesting
+  QueueInterface setupAzureWorkQueue() {
+    return AzureServiceBusQueue.newBuilder()
+        .connectionString(stairwayProperties.getAzureServiceBusConnectionString())
+        .subscriptionName(stairwayProperties.getAzureServiceBusSubscriptionName())
+        .topicName(stairwayProperties.getAzureServiceBusTopicName())
+        .maxAutoLockRenewDuration(
+            Duration.ofMinutes(stairwayProperties.getAzureServiceBusMaxAutoLockRenewDuration()))
+        .namespace(stairwayProperties.getAzureServiceBusNamespace())
+        .useManagedIdentity(stairwayProperties.isUseManagedIdentity())
+        .build();
+  }
+
   /** convenience for getting a builder for initialize input */
   public StairwayOptionsBuilder newStairwayOptionsBuilder() {
     return new StairwayOptionsBuilder();
@@ -113,7 +126,13 @@ public class StairwayComponent {
    * @param initializeBuilder collection of Stairway initialization parameters
    */
   public void initialize(StairwayOptionsBuilder initializeBuilder) {
-    QueueInterface queue = (kubeProperties.isInKubernetes()) ? setupWorkQueue() : null;
+    QueueInterface queue;
+    // Using Azure WorkQueue if azureQueueEnabled set to true
+    if (stairwayProperties.isAzureQueueEnabled()) {
+      queue = setupAzureWorkQueue();
+    } else {
+      queue = (kubeProperties.isInKubernetes()) ? setupGcpWorkQueue() : null;
+    }
 
     logger.info("Initializing Stairway...");
     final StairwayBuilder builder =
