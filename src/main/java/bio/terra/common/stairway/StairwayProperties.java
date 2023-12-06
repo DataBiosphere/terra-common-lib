@@ -1,8 +1,7 @@
 package bio.terra.common.stairway;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Properties for configuring a Stairway instance.

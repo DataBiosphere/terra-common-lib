@@ -1,5 +1,7 @@
 package bio.terra.common.stairway;
 
+import static com.google.cloud.ServiceOptions.getDefaultProjectId;
+
 import bio.terra.common.kubernetes.KubeProperties;
 import bio.terra.common.kubernetes.KubeService;
 import bio.terra.stairway.*;
@@ -9,12 +11,6 @@ import bio.terra.stairway.exception.StairwayExecutionException;
 import bio.terra.stairway.gcp.GcpPubSubQueue;
 import bio.terra.stairway.gcp.GcpQueueUtils;
 import com.google.common.annotations.VisibleForTesting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -23,8 +19,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.google.cloud.ServiceOptions.getDefaultProjectId;
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
 @Component
