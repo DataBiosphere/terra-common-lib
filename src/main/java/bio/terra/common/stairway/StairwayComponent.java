@@ -91,20 +91,18 @@ public class StairwayComponent {
     }
   }
 
-
-  /**
-   * Set up the Stairway Azure work queue.
-   */
+  /** Set up the Stairway Azure work queue. */
   @VisibleForTesting
   QueueInterface setupAzureWorkQueue() {
     return AzureServiceBusQueue.newBuilder()
-              .connectionString(stairwayProperties.getAzureServiceBusConnectionString())
-              .subscriptionName(stairwayProperties.getAzureServiceBusSubscriptionName())
-              .topicName(stairwayProperties.getAzureServiceBusTopicName())
-              .maxAutoLockRenewDuration(Duration.ofMinutes(stairwayProperties.getAzureServiceBusMaxAutoLockRenewDuration()))
-              .namespace(stairwayProperties.getAzureServiceBusNamespace())
-              .useManagedIdentity(stairwayProperties.isUseManagedIdentity())
-              .build();
+        .connectionString(stairwayProperties.getAzureServiceBusConnectionString())
+        .subscriptionName(stairwayProperties.getAzureServiceBusSubscriptionName())
+        .topicName(stairwayProperties.getAzureServiceBusTopicName())
+        .maxAutoLockRenewDuration(
+            Duration.ofMinutes(stairwayProperties.getAzureServiceBusMaxAutoLockRenewDuration()))
+        .namespace(stairwayProperties.getAzureServiceBusNamespace())
+        .useManagedIdentity(stairwayProperties.isUseManagedIdentity())
+        .build();
   }
 
   /** convenience for getting a builder for initialize input */
@@ -130,8 +128,8 @@ public class StairwayComponent {
    */
   public void initialize(StairwayOptionsBuilder initializeBuilder) {
     QueueInterface queue;
-    //Using Azure WorkQueue if azureQueueEnabled set to true
-    if(stairwayProperties.isAzureQueueEnabled()) {
+    // Using Azure WorkQueue if azureQueueEnabled set to true
+    if (stairwayProperties.isAzureQueueEnabled()) {
       queue = setupAzureWorkQueue();
     } else {
       queue = (kubeProperties.isInKubernetes()) ? setupGcpWorkQueue() : null;
