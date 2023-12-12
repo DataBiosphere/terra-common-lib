@@ -157,6 +157,7 @@ public class MonitoringHook implements StairwayHook {
     public HookAction end(FlightContext flightContext) {
       Span flightSpan = Span.current();
       flightSpan.setAttribute("flightStatus", flightContext.getFlightStatus().toString());
+      flightSpan.end();
       flightScope.close();
       if (stopwatch != null) {
         metricsHelper.recordFlightLatency(
@@ -199,6 +200,7 @@ public class MonitoringHook implements StairwayHook {
 
     @Override
     public HookAction end(FlightContext flightContext) {
+      Span.current().end();
       stepScope.close();
       if (stopwatch != null) {
         metricsHelper.recordStepLatency(
