@@ -24,7 +24,9 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -70,19 +72,32 @@ public class MonitoringHookTest {
 
   @Test
   public void spansConnected() throws Exception {
+    var instrumenter =
+        Instrumenter.<String, Object>builder(openTelemetry, "test", name -> name)
+            .buildInstrumenter();
+    var parentContext = instrumenter.start(Context.current(), "parent");
+
     List<SpanContext> contextRecord = new ArrayList<>();
     RecordContextStep.setRecord(contextRecord);
 
-    Stairway stairway =
-        StairwayTestUtils.setupStairway(
-            new StairwayBuilder().stairwayHook(new MonitoringHook(openTelemetry)));
-    FlightState flightState =
-        StairwayTestUtils.blockUntilFlightCompletes(
-            stairway, SpanRecordingFlight.class, new FlightMap(), Duration.ofSeconds(5));
-    assertEquals(FlightStatus.SUCCESS, flightState.getFlightStatus());
+    try (var ignored = parentContext.makeCurrent()) {
+      contextRecord.add(Span.current().getSpanContext());
+      var inputMap = new FlightMap();
+      MonitoringHook.storeCurrentContextAsSubmission(inputMap, openTelemetry);
 
-    // There should be 2 recorded Spans, one for each of the 2 steps.
-    assertThat(contextRecord, Matchers.hasSize(2));
+      Stairway stairway =
+          StairwayTestUtils.setupStairway(
+              new StairwayBuilder().stairwayHook(new MonitoringHook(openTelemetry)));
+      FlightState flightState =
+          StairwayTestUtils.blockUntilFlightCompletes(
+              stairway, SpanRecordingFlight.class, inputMap, Duration.ofSeconds(5));
+      assertEquals(FlightStatus.SUCCESS, flightState.getFlightStatus());
+    } finally {
+      instrumenter.end(parentContext, "parent", null, null);
+    }
+
+    // There should be 3 recorded Spans, one for each of the 2 steps and 1 parent.
+    assertThat(contextRecord, Matchers.hasSize(3));
     assertSharedTraceId(contextRecord);
     assertAllDifferentSpanIds(contextRecord);
   }
