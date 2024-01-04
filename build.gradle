@@ -14,7 +14,7 @@ plugins {
     // removed this plugin and filled in specific version numbers. I also removed all
     // version numbers with `+` in them. Was:
     //     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'org.springframework.boot' version '3.1.2'
+    id 'org.springframework.boot' version '3.2.1'
     id 'ru.vyarus.quality' version '4.8.0'
 }
 
@@ -53,9 +53,9 @@ dependencies {
     implementation group: 'org.springframework', name: 'spring-context', version: '6.0.11'
     implementation group: 'org.springframework', name: 'spring-core', version: '6.0.11'
     implementation group: 'org.springframework.retry', name: 'spring-retry', version: '1.3.3'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.1.2'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.1.2'
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.1.2'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.2.1'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.2.1'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.2.1'
 
     // Misc. Services
     implementation group: 'io.kubernetes', name: 'client-java', version: '16.0.0'
@@ -89,14 +89,12 @@ dependencies {
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20220714-1.32.1'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.4.14'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'
 
     // Flagsmith
     implementation group: 'com.flagsmith', name: 'flagsmith-java-client', version: '6.1.0'
 
     // OpenTelemetry
-    var openTelemetryVersion = '1.31.0'
+    var openTelemetryVersion = '1.32.0'
     implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
     implementation "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}"
     implementation "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}"
@@ -121,7 +119,7 @@ dependencies {
     implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'
 
     // Testing
-    testImplementation('org.springframework.boot:spring-boot-starter-test:3.1.2') {
+    testImplementation('org.springframework.boot:spring-boot-starter-test:3.2.1') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.9.0'
