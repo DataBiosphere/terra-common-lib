@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    open-pull-requests-limit: 20
+    groups:
+      minor-patch-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    schedule:
+      interval: "monthly"
+      time: "06:00"
+      timezone: "America/New_York"
+    target-branch: "main"
+    reviewers:
+      - "@DataBiosphere/platform-foundation-codeowners"
+    labels:
+      - "dependency"
+      - "gradle"
+    commit-message:
+      prefix: "[PF-2983]"
+    ignore:
+      - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
