@@ -46,8 +46,8 @@ public class SamExceptionFactoryTest {
             new ApiException(
                 "testing",
                 new SocketTimeoutException(),
-                /*statusCode=*/ 0,
-                /*responseHeaders=*/ null));
+                /* statusCode= */ 0,
+                /* responseHeaders= */ null));
     assertTrue(errorReportException instanceof SamTimeoutException);
   }
 

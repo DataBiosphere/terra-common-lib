@@ -97,8 +97,8 @@ public class SamRetryTest {
           throw new ApiException(
               "testing",
               new SocketTimeoutException(),
-              /*statusCode=*/ 0,
-              /*responseHeaders=*/ null);
+              /* statusCode= */ 0,
+              /* responseHeaders= */ null);
         case 1:
           throw new ApiException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "testing");
         case 2:

@@ -41,7 +41,7 @@ public class FlagsmithService {
    * @param feature the name of the feature
    */
   public Optional<Boolean> isFeatureEnabled(String feature) {
-    return isFeatureEnabled(feature, /*userEmail=*/ null);
+    return isFeatureEnabled(feature, /* userEmail= */ null);
   }
 
   /**
@@ -78,7 +78,7 @@ public class FlagsmithService {
    * return {@code Optional.empty()}.
    */
   public <T> Optional<T> getFeatureValueJson(String feature, Class<T> clazz) {
-    return getFeatureValueJson(feature, clazz, /*userEmail=*/ null);
+    return getFeatureValueJson(feature, clazz, /* userEmail= */ null);
   }
 
   /**
