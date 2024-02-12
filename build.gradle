@@ -138,7 +138,7 @@ dependencies {
     // transitive dependencies.
     constraints {
         implementation('org.scala-lang:scala-library:2.13.10')
-        implementation('org.json:json:20230227')
+        implementation('org.json:json:20240205')
         implementation('org.bitbucket.b_c:jose4j:0.9.3')
         implementation('io.grpc:grpc-xds:1.53.0')
     }
