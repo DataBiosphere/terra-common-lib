@@ -160,7 +160,6 @@ if (hasProperty('buildScan')) {
 
 def gradleIncDir = "$rootDir/gradle"
 apply from: "$gradleIncDir/application.gradle"
-apply from: "$gradleIncDir/dependency-locking.gradle"
 apply from: "$gradleIncDir/jacoco.gradle"
 apply from: "$gradleIncDir/javadoc.gradle"
 apply from: "$gradleIncDir/publishing.gradle"

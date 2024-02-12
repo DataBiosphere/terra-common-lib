@@ -10,16 +10,6 @@ The publishing procedure is:
  
 ## Development 
 
-### Dependencies
-We use [Gradle's dependency locking](https://docs.gradle.org/current/userguide/dependency_locking.html)
-to ensure that builds use the same transitive dependencies, so they're reproducible. This means that
-adding or updating a dependency requires telling Gradle to save the change. If you're getting errors
-that mention "dependency lock state" after changing a dep, you need to do this step.
-
-```
-./gradlew dependencies --write-locks
-```
-
 ### Database Configuration
 Terra Common Lib includes functionality using [Stairway](https://github.com/DataBiosphere/stairway).
 Some of the TCL unit tests therefore rely on a running SQL instance to run Stairway. There are two
