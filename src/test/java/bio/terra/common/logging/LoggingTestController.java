@@ -2,7 +2,6 @@ package bio.terra.common.logging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
  * LoggingTest} for its use and assertions.
  */
 @RestController
-@SuppressFBWarnings(value = "UrF", justification = "Pojo fields are unread but serialized to JSON")
 public class LoggingTestController {
 
   private static final Logger LOG = LoggerFactory.getLogger(LoggingTestController.class);
