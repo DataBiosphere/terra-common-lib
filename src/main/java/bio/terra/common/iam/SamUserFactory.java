@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
+import org.broadinstitute.dsde.workbench.client.sam.model.SamUserResponse;
 import org.broadinstitute.dsde.workbench.client.sam.model.UserStatusInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,12 +51,17 @@ public class SamUserFactory {
     UsersApi usersApi = createUsersApi(bearerToken, samBasePath);
 
     try {
-      UserStatusInfo userStatusInfo = usersApi.getUserStatusInfo();
-      if (!userStatusInfo.getEnabled()) {
-        throw new UnauthorizedException("User is disabled, please contact Terra support");
+      SamUserResponse samUserResponse = usersApi.getSamUserSelf();
+      if (!samUserResponse.getAllowed()) {
+        var userAllowanceDetails = usersApi.getSamUserSelfAllowances().getDetails();
+        if (!userAllowanceDetails.getEnabled()) {
+          throw new UnauthorizedException("User is disabled, please contact Terra support");
+        }
+        if (!userAllowanceDetails.getTermsOfService()) {
+          throw new UnauthorizedException("User has not accepted the terms of service");
+        }
       }
-      return new SamUser(
-          userStatusInfo.getUserEmail(), userStatusInfo.getUserSubjectId(), bearerToken);
+      return new SamUser(samUserResponse.getEmail(), samUserResponse.getId(), bearerToken);
     } catch (final NullPointerException e) {
       throw new UnauthorizedException(e.getMessage(), e);
     } catch (final ApiException e) {
