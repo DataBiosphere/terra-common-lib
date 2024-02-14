@@ -78,7 +78,7 @@ dependencies {
     runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
 
     // Terra libraries
-    implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-6a84247'
+    implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
     var stairwayVersion= '0.0.80-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
