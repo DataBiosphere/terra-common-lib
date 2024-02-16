@@ -125,7 +125,7 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.10.0'
-    testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.6'
+    testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.3'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
     // Transitive dependency constraints due to security vulnerabilities in prior versions.
@@ -134,7 +134,7 @@ dependencies {
     constraints {
         implementation('org.scala-lang:scala-library:2.13.10')
         implementation('org.json:json:20230227')
-        implementation('org.bitbucket.b_c:jose4j:0.9.3')
+        implementation('org.bitbucket.b_c:jose4j:0.9.4')
         implementation('io.grpc:grpc-xds:1.53.0')
     }
 }
