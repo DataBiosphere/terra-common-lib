@@ -4,10 +4,10 @@ plugins {
     id 'java-library'
     id 'maven-publish'
 
-    id 'com.diffplug.spotless' version '6.16.0'
+    id 'com.diffplug.spotless' version '6.25.0'
     id 'com.github.ben-manes.versions' version '0.42.0'
     id 'com.jfrog.artifactory' version '5.1.14'
-    id 'org.sonarqube' version '4.0.0.2929'
+    id 'org.sonarqube' version '4.4.1.3373'
     // [dd 2021-05-17] Use of Spring dependency management generates invalid POM, making
     // it impossible to publish to mavenLocal. In order to make TCL testable, I have
     // removed this plugin and filled in specific version numbers. I also removed all
@@ -121,11 +121,11 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test:3.1.2') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.9.0'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.10.2'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.2'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.10.0'
-    testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.3'
+    testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.6'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
     // Transitive dependency constraints due to security vulnerabilities in prior versions.
