@@ -13,7 +13,7 @@ plugins {
     // removed this plugin and filled in specific version numbers. I also removed all
     // version numbers with `+` in them. Was:
     //     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'org.springframework.boot' version '3.1.2'
+    id 'org.springframework.boot' version '3.2.2'
     id 'ru.vyarus.quality' version '4.8.0'
 }
 
@@ -49,12 +49,12 @@ dependencies {
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
 
     // Spring
-    implementation group: 'org.springframework', name: 'spring-context', version: '6.0.11'
-    implementation group: 'org.springframework', name: 'spring-core', version: '6.0.11'
+    implementation group: 'org.springframework', name: 'spring-context', version: '6.1.3'
+    implementation group: 'org.springframework', name: 'spring-core', version: '6.1.3'
     implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.5'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.1.2'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.1.2'
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.1.2'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.2.2'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.2.2'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.2.2'
 
     // Misc. Services
     implementation group: 'io.kubernetes', name: 'client-java', version: '16.0.0'
@@ -114,11 +114,11 @@ dependencies {
     implementation "com.google.cloud.opentelemetry:exporter-metrics:${gcpOpenTelemetryExporterVersion}"
 
     // these are required for tracing in tests
-    testImplementation 'org.springframework:spring-aop:6.0.11'
-    testImplementation 'org.springframework:spring-aspects:6.0.11'
+    testImplementation 'org.springframework:spring-aop:6.1.3'
+    testImplementation 'org.springframework:spring-aspects:6.1.3'
 
     // Testing
-    testImplementation('org.springframework.boot:spring-boot-starter-test:3.1.2') {
+    testImplementation('org.springframework.boot:spring-boot-starter-test:3.2.2') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.9.0'
