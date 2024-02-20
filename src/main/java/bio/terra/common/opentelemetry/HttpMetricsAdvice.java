@@ -21,9 +21,11 @@ import java.util.stream.DoubleStream;
  */
 final class HttpMetricsAdvice {
 
-  // every 10ms up to 100ms, then every 190ms up to 2s (190 ends neatly at 2s), then every 2s up to 10s, then every 30s up to 3m
+  // every 10ms up to 100ms, then every 190ms up to 2s (190 ends neatly at 2s), then every 2s up to
+  // 10s, then every 30s up to 3m
   static final List<Double> DURATION_SECONDS_BUCKETS =
-      // does all the math in terms of milliseconds, then converts to seconds, otherwise the precision is wonky
+      // does all the math in terms of milliseconds, then converts to seconds, otherwise the
+      // precision is wonky
       DoubleStream.iterate(
               10,
               d -> d < 60000 * 3,
