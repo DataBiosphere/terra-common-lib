@@ -78,7 +78,7 @@ dependencies {
     runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
 
     // Terra libraries
-    implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-5281c21'
+    implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
     var stairwayVersion= '0.0.80-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
@@ -133,7 +133,7 @@ dependencies {
     // transitive dependencies.
     constraints {
         implementation('org.scala-lang:scala-library:2.13.10')
-        implementation('org.json:json:20230227')
+        implementation('org.json:json:20240205')
         implementation('org.bitbucket.b_c:jose4j:0.9.3')
         implementation('io.grpc:grpc-xds:1.53.0')
     }
