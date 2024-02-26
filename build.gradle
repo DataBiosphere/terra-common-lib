@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
 
     id 'com.diffplug.spotless' version '6.25.0'
-    id 'com.github.ben-manes.versions' version '0.42.0'
+    id 'com.github.ben-manes.versions' version '0.51.0'
     id 'com.jfrog.artifactory' version '5.1.14'
     id 'org.sonarqube' version '4.4.1.3373'
     // [dd 2021-05-17] Use of Spring dependency management generates invalid POM, making
@@ -13,7 +13,7 @@ plugins {
     // removed this plugin and filled in specific version numbers. I also removed all
     // version numbers with `+` in them. Was:
     //     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'org.springframework.boot' version '3.1.2'
+    id 'org.springframework.boot' version '3.2.2'
     id 'ru.vyarus.quality' version '4.8.0'
 }
 
@@ -40,26 +40,26 @@ repositories {
 
 dependencies {
     // Common utils
-    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.9.0'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.11.1'
+    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.11.0'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
+    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.12.0'
     implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
 
     // JSON processing
-    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.7.0'
+    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.9.0'
 
     // Spring
-    implementation group: 'org.springframework', name: 'spring-context', version: '6.0.11'
-    implementation group: 'org.springframework', name: 'spring-core', version: '6.0.11'
+    implementation group: 'org.springframework', name: 'spring-context', version: '6.1.3'
+    implementation group: 'org.springframework', name: 'spring-core', version: '6.1.3'
     implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.5'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.1.2'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.1.2'
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.1.2'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.2.2'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.2.2'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.2.2'
 
     // Misc. Services
     implementation group: 'io.kubernetes', name: 'client-java', version: '16.0.0'
     implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.16.0'
-    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.0.0'
+    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
 
     // Google dependencies
     constraints {
@@ -67,15 +67,15 @@ dependencies {
         implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
     }
     // use common bom
-    implementation platform('com.google.cloud:libraries-bom:26.0.0')
+    implementation platform('com.google.cloud:libraries-bom:26.31.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
-    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.21.10'
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.25.2'
     api group: 'com.google.guava', name: 'guava'
 
     // Database
-    implementation group: 'org.liquibase', name: 'liquibase-core', version: '4.16.0'
-    runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
+    implementation group: 'org.liquibase', name: 'liquibase-core', version: '4.26.0'
+    runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.7.1'
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
@@ -114,11 +114,11 @@ dependencies {
     implementation "com.google.cloud.opentelemetry:exporter-metrics:${gcpOpenTelemetryExporterVersion}"
 
     // these are required for tracing in tests
-    testImplementation 'org.springframework:spring-aop:6.0.11'
-    testImplementation 'org.springframework:spring-aspects:6.0.11'
+    testImplementation 'org.springframework:spring-aop:6.1.3'
+    testImplementation 'org.springframework:spring-aspects:6.1.3'
 
     // Testing
-    testImplementation('org.springframework.boot:spring-boot-starter-test:3.1.2') {
+    testImplementation('org.springframework.boot:spring-boot-starter-test:3.2.2') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.10.2'
@@ -132,10 +132,10 @@ dependencies {
     // These are not directly included, they are just constrained if they are pulled in as
     // transitive dependencies.
     constraints {
-        implementation('org.scala-lang:scala-library:2.13.10')
+        implementation('org.scala-lang:scala-library:2.13.12')
         implementation('org.json:json:20240205')
-        implementation('org.bitbucket.b_c:jose4j:0.9.3')
-        implementation('io.grpc:grpc-xds:1.53.0')
+        implementation('org.bitbucket.b_c:jose4j:0.9.4')
+        implementation('io.grpc:grpc-xds:1.61.1')
     }
 }
 
