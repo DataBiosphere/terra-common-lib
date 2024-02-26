@@ -4,7 +4,6 @@ import bio.terra.stairway.Stairway;
 import bio.terra.stairway.exception.DatabaseOperationException;
 import bio.terra.stairway.exception.StairwayExecutionException;
 import com.google.common.reflect.TypeToken;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
@@ -37,9 +36,6 @@ import org.slf4j.LoggerFactory;
  * recreated in a retry loop. Happily, recreating the watch causes Kubernetes to reiterate all of
  * the current pods, so the listener does not miss state changes.
  */
-@SuppressFBWarnings(
-    value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-    justification = "Spotbugs doesn't understand resource try construct")
 class KubePodListener implements Runnable {
 
   enum PodState {

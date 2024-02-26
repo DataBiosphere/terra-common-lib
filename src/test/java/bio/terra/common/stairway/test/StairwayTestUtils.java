@@ -21,8 +21,8 @@ public class StairwayTestUtils {
     try {
       Stairway stairway = builder.build();
       stairway.initialize(
-          makeDataSource(), /* forceCleanStart =*/ true, /* migrateUpgrade =*/ true);
-      stairway.recoverAndStart(/* obsoleteStairways =*/ null);
+          makeDataSource(), /* forceCleanStart= */ true, /* migrateUpgrade= */ true);
+      stairway.recoverAndStart(/* obsoleteStairways= */ null);
       return stairway;
     } catch (StairwayException | InterruptedException e) {
       throw new RuntimeException(

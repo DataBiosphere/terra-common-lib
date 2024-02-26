@@ -25,8 +25,10 @@ public class MetricsHelper {
   public static final AttributeKey<String> KEY_STEP_DIRECTION =
       AttributeKey.stringKey("step_direction");
   public static final AttributeKey<String> KEY_ERROR = AttributeKey.stringKey("error_code");
+
   /** Unit string for count. */
   private static final String COUNT = "1";
+
   /** Unit string for millisecond. */
   private static final String MILLISECOND = "ms";
 
@@ -41,10 +43,13 @@ public class MetricsHelper {
 
   /** Gauge for flight latency in milliseconds. */
   private final LongHistogram flightLatencyHistogram;
+
   /** Counter for number of errors from stairway flights. */
   private final LongCounter flightErrorCounter;
+
   /** Gauge for step latency in milliseconds. */
   private final LongHistogram stepLatencyHistogram;
+
   /** Counter for number of errors from stairway steps. */
   private final LongCounter stepErrorCounter;
 

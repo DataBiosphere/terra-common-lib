@@ -2,7 +2,6 @@ package bio.terra.common.kubernetes;
 
 import bio.terra.common.kubernetes.exception.KubeApiException;
 import bio.terra.stairway.Stairway;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
@@ -31,9 +30,6 @@ import org.slf4j.LoggerFactory;
  * name. Then the service can compare the list of stairways it thinks should be running, compare
  * with list of active pods, and recover anything that is no longer active.
  */
-@SuppressFBWarnings(
-    value = "DMI_HARDCODED_ABSOLUTE_FILENAME",
-    justification = "The K8s namespace file is a valid absolute filename")
 public class KubeService {
   // The maximum retry when calling Kubernetes.
   private static final int MAX_RETRY = 10;
