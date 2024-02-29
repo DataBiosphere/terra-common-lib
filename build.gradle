@@ -79,7 +79,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
-    var stairwayVersion= '0.0.80-SNAPSHOT'
+    var stairwayVersion= '0.0.82-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
@@ -130,7 +130,7 @@ dependencies {
         implementation('org.scala-lang:scala-library:2.13.13')
         implementation('org.json:json:20240205')
         implementation('org.bitbucket.b_c:jose4j:0.9.5')
-        implementation('io.grpc:grpc-xds:1.61.1')
+        implementation('io.grpc:grpc-xds:1.62.2')
         // commons-compress comes from io.kubernetes:client-java, which doesn't yet have a version
         // that pulls in the non-vulnerable version of commons-compress.
         implementation('org.apache.commons:commons-compress:1.26.0')
