@@ -131,6 +131,7 @@ dependencies {
         implementation('org.json:json:20240205')
         implementation('org.bitbucket.b_c:jose4j:0.9.5')
         implementation('io.grpc:grpc-xds:1.61.1')
+        implementation('org.apache.commons:commons-compress:1.26.0')
     }
 }
 
