@@ -79,7 +79,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
-    var stairwayVersion= '0.0.82-SNAPSHOT'
+    var stairwayVersion= '0.0.85-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
@@ -119,7 +119,7 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.10.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.2'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.10.0'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.6'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
