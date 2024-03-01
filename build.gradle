@@ -64,7 +64,7 @@ dependencies {
     // Google dependencies
     constraints {
         // "-jre" for Java 8 or higher
-        implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+        implementation group: 'com.google.guava', name: 'guava', version: '33.0.0-jre'
     }
     // use common bom
     implementation platform('com.google.cloud:libraries-bom:26.33.0')
