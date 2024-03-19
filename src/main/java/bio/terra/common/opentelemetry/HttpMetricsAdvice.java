@@ -9,14 +9,13 @@ import static java.util.Arrays.asList;
 
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
-import io.opentelemetry.instrumentation.api.semconv.http.internal.HttpAttributes;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.List;
 import java.util.stream.DoubleStream;
 
 /**
  * copied from <a
- * href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/release/v2.0.x/instrumentation-api/src/main/java/io/opentelemetry/instrumentation/api/semconv/http/HttpMetricsAdvice.java">HttpMetricsAdvice</a>
+ * href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/release/v2.2.x/instrumentation-api/src/main/java/io/opentelemetry/instrumentation/api/semconv/http/HttpMetricsAdvice.java">HttpMetricsAdvice</a>
  * for the only purpose of overriding the DURATION_SECONDS_BUCKETS
  */
 final class HttpMetricsAdvice {
@@ -54,7 +53,7 @@ final class HttpMetricsAdvice {
             asList(
                 SemanticAttributes.HTTP_REQUEST_METHOD,
                 SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
-                HttpAttributes.ERROR_TYPE,
+                SemanticAttributes.ERROR_TYPE,
                 SemanticAttributes.NETWORK_PROTOCOL_NAME,
                 SemanticAttributes.NETWORK_PROTOCOL_VERSION,
                 SemanticAttributes.SERVER_ADDRESS,
@@ -71,7 +70,7 @@ final class HttpMetricsAdvice {
                 SemanticAttributes.HTTP_ROUTE,
                 SemanticAttributes.HTTP_REQUEST_METHOD,
                 SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
-                HttpAttributes.ERROR_TYPE,
+                SemanticAttributes.ERROR_TYPE,
                 SemanticAttributes.NETWORK_PROTOCOL_NAME,
                 SemanticAttributes.NETWORK_PROTOCOL_VERSION,
                 SemanticAttributes.URL_SCHEME));
