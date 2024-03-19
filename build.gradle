@@ -90,10 +90,10 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
     // OpenTelemetry BOMs
-    implementation platform('io.opentelemetry:opentelemetry-bom:1.36.0')
-    implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.36.0-alpha')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.2.0')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.2.0-alpha')
+    implementation platform('io.opentelemetry:opentelemetry-bom:1.34.1')
+    implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.34.1-alpha')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.0.0')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.0.0-alpha')
     // OpenTelemetry dependencies versioned by BOMs
     api 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
