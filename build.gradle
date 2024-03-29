@@ -87,7 +87,7 @@ dependencies {
 
     // Logging
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.12'
-    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20240223-2.0.0'
+    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20240311-2.0.0'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
