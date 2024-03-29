@@ -8,11 +8,7 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.51.0'
     id 'com.jfrog.artifactory' version '5.2.0'
     id 'org.sonarqube' version '4.4.1.3373'
-    // [dd 2021-05-17] Use of Spring dependency management generates invalid POM, making
-    // it impossible to publish to mavenLocal. In order to make TCL testable, I have
-    // removed this plugin and filled in specific version numbers. I also removed all
-    // version numbers with `+` in them. Was:
-    //     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'org.springframework.boot' version '3.2.3'
     id 'ru.vyarus.quality' version '5.0.0'
     id 'com.srcclr.gradle' version '3.1.12'
@@ -23,6 +19,10 @@ group = gradle.projectGroup
 project.ext {
     isCiServer = System.getenv().containsKey("CI")
 }
+
+// Spring Boot 3.2.3 pulls in opentelemetry-bom 1.31.0.
+// We need >= 1.32.0 so that our HttpServerMetrics can use Meter.setExplicitBucketBoundariesAdvice:
+ext['opentelemetry.version'] = '1.34.1'
 
 // If true, search local repository (~/.m2/repository/) first for dependencies.
 def useMavenLocal = false
@@ -40,28 +40,23 @@ repositories {
 }
 
 dependencies {
-    // Common utils
-    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.11.0'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
-    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.12.0'
+    // Common utils (unversioned are versioned by Spring dependency manager)
+    implementation group: 'org.apache.commons', name: 'commons-dbcp2'
+    implementation group: 'org.apache.commons', name: 'commons-lang3'
+    implementation group: 'org.apache.commons', name: 'commons-pool2'
     implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
 
-    // JSON processing
-    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.9.0'
-
-    // Spring
-    implementation group: 'org.springframework', name: 'spring-context', version: '6.1.4'
-    implementation group: 'org.springframework', name: 'spring-core', version: '6.1.4'
-    implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.5'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc', version: '3.2.3'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '3.2.3'
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.2.3'
+    // Spring (versioned by Spring dependency manager)
+    implementation group: 'org.springframework.retry', name: 'spring-retry'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
 
     // Misc. Services
     // PF-3000: k8s client versions 20.0.0 onward without '-legacy' suffix include breaking changes
     implementation group: 'io.kubernetes', name: 'client-java', version: '20.0.1-legacy' // keep legacy suffix
     implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.16.0'
-    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
+    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api' // versioned by Spring dependency manager
 
     // Google dependencies
     constraints {
@@ -75,9 +70,9 @@ dependencies {
     implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.25.3'
     api group: 'com.google.guava', name: 'guava'
 
-    // Database
-    implementation group: 'org.liquibase', name: 'liquibase-core', version: '4.26.0'
-    runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.7.2'
+    // Database (versioned by Spring dependency manager)
+    implementation group: 'org.liquibase', name: 'liquibase-core'
+    runtimeOnly group: 'org.postgresql', name: 'postgresql'
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
@@ -86,13 +81,11 @@ dependencies {
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
     // Logging
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.12'
     implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20240223-2.0.0'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
-    // OpenTelemetry BOMs
-    implementation platform('io.opentelemetry:opentelemetry-bom:1.34.1')
+    // OpenTelemetry BOMs (opentelemetry-bom versioned by Spring dependency manager)
     implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.34.1-alpha')
     implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.0.0')
     implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.0.0-alpha')
@@ -112,20 +105,12 @@ dependencies {
     implementation 'com.google.cloud.opentelemetry:exporter-trace:0.27.0'
     implementation 'com.google.cloud.opentelemetry:exporter-metrics:0.27.0'
 
-    // these are required for tracing in tests
-    testImplementation 'org.springframework:spring-aop:6.1.4'
-    testImplementation 'org.springframework:spring-aspects:6.1.4'
-
-    // Testing
-    testImplementation('org.springframework.boot:spring-boot-starter-test:3.2.3') {
+    // Testing (unversioned are versioned by Spring dependency manager)
+    testImplementation 'org.springframework:spring-aspects' // for tracing in tests
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.10.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.2'
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.6'
-    testImplementation 'org.awaitility:awaitility:4.2.0'
 
     // Transitive dependency constraints due to security vulnerabilities in prior versions.
     // These are not directly included, they are just constrained if they are pulled in as
