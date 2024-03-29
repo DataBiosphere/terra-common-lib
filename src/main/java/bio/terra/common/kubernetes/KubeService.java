@@ -101,7 +101,7 @@ public class KubeService {
         CoreV1Api api = makeCoreApi();
         V1PodList list =
             api.listNamespacedPod(
-                namespace, null, null, null, null, null, null, null, null, null, null);
+                namespace, null, null, null, null, null, null, null, null, null, null, null);
         for (V1Pod item : list.getItems()) {
           if (item.getMetadata() != null) {
             String podName = item.getMetadata().getName();
