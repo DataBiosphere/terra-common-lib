@@ -159,7 +159,8 @@ class KubePodListener implements Runnable {
   private Watch<V1Namespace> makeWatch(ApiClient apiClient, CoreV1Api kubeApi) throws ApiException {
     return Watch.createWatch(
         apiClient,
-        kubeApi.listNamespacedPod(namespace).limit(5).watch(true).buildCall(null),
+        kubeApi.listNamespacedPodCall(
+            namespace, null, null, null, null, null, 5, null, null, null, null, Boolean.TRUE, null),
         new TypeToken<Watch.Response<V1Namespace>>() {}.getType());
   }
 
