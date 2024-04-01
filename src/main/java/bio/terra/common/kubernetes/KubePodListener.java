@@ -8,8 +8,8 @@ import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1Namespace;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
 import java.io.IOException;
@@ -97,8 +97,8 @@ class KubePodListener implements Runnable {
         final CoreV1Api kubeApi = new CoreV1Api();
 
         // Instantiate the watch and scope it.
-        try (Watch<V1Namespace> watch = makeWatch(client, kubeApi)) {
-          for (Watch.Response<V1Namespace> item : watch) {
+        try (Watch<V1Pod> watch = makeWatch(client, kubeApi)) {
+          for (Watch.Response<V1Pod> item : watch) {
             // If we are shutting down, we stop watching
             if (kubeService.isShutdown()) {
               logger.info("Kubernetes service is shutting down. Exiting.");
@@ -156,12 +156,11 @@ class KubePodListener implements Runnable {
     }
   }
 
-  private Watch<V1Namespace> makeWatch(ApiClient apiClient, CoreV1Api kubeApi) throws ApiException {
+  private Watch<V1Pod> makeWatch(ApiClient apiClient, CoreV1Api kubeApi) throws ApiException {
     return Watch.createWatch(
         apiClient,
-        kubeApi.listNamespacedPodCall(
-            namespace, null, null, null, null, null, 5, null, null, null, null, Boolean.TRUE, null),
-        new TypeToken<Watch.Response<V1Namespace>>() {}.getType());
+        kubeApi.listNamespacedPod(namespace).limit(5).watch(true).buildCall(null),
+        new TypeToken<Watch.Response<V1Pod>>() {}.getType());
   }
 
   private void handleRunningPod(String podName) {

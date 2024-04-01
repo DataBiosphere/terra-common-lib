@@ -58,8 +58,7 @@ dependencies {
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.2.3'
 
     // Misc. Services
-    // PF-3000: k8s client versions 20.0.0 onward without '-legacy' suffix include breaking changes
-    implementation group: 'io.kubernetes', name: 'client-java', version: '20.0.1-legacy' // keep legacy suffix
+    implementation group: 'io.kubernetes', name: 'client-java', version: '20.0.1'
     implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.16.0'
     implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
 
