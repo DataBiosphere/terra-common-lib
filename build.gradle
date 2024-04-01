@@ -66,7 +66,7 @@ dependencies {
         implementation group: 'com.google.guava', name: 'guava', version: '33.0.0-jre'
     }
     // use common bom
-    implementation platform('com.google.cloud:libraries-bom:26.33.0')
+    implementation platform('com.google.cloud:libraries-bom:26.35.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.25.3'
@@ -113,15 +113,6 @@ dependencies {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
     testImplementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.6'
-
-    // Transitive dependency constraints due to security vulnerabilities in prior versions.
-    // These are not directly included, they are just constrained if they are pulled in as
-    // transitive dependencies.
-    constraints {
-        implementation('org.scala-lang:scala-library:2.13.13')
-        implementation('org.json:json:20240205')
-        implementation('io.grpc:grpc-xds:1.62.2')
-    }
 }
 
 java {
