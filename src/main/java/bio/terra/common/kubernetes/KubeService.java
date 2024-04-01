@@ -99,9 +99,7 @@ public class KubeService {
     while (numAttempts <= MAX_RETRY) {
       try {
         CoreV1Api api = makeCoreApi();
-        V1PodList list =
-            api.listNamespacedPod(
-                namespace, null, null, null, null, null, null, null, null, null, null, null);
+        V1PodList list = api.listNamespacedPod(namespace).execute();
         for (V1Pod item : list.getItems()) {
           if (item.getMetadata() != null) {
             String podName = item.getMetadata().getName();
