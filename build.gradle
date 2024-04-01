@@ -81,7 +81,7 @@ dependencies {
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
     // Logging
-    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20240223-2.0.0'
+    implementation group: 'com.google.apis', name: 'google-api-services-logging', version: 'v2-rev20240311-2.0.0'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
