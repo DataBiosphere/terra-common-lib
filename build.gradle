@@ -69,7 +69,6 @@ dependencies {
     implementation platform('com.google.cloud:libraries-bom:26.33.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
-    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.25.3'
     api group: 'com.google.guava', name: 'guava'
 
     // Database
