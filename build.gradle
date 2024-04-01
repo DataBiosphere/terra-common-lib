@@ -40,13 +40,16 @@ repositories {
 }
 
 dependencies {
-    // Common utils (unversioned are versioned by Spring dependency manager)
+    // Throughout, unversioned dependencies might be versioned by Spring dependency manager
+    // and/or some other BOM (bill of materials).
+
+    // Common utils
     implementation group: 'org.apache.commons', name: 'commons-dbcp2'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
     implementation group: 'org.apache.commons', name: 'commons-pool2'
     implementation group: 'org.hashids', name: 'hashids', version: '1.0.3'
 
-    // Spring (versioned by Spring dependency manager)
+    // Spring
     implementation group: 'org.springframework.retry', name: 'spring-retry'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jdbc'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -56,7 +59,7 @@ dependencies {
     // PF-3000: k8s client versions 20.0.0 onward without '-legacy' suffix include breaking changes
     implementation group: 'io.kubernetes', name: 'client-java', version: '20.0.1-legacy' // keep legacy suffix
     implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.16.0'
-    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api' // versioned by Spring dependency manager
+    implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api'
 
     // Google dependencies
     constraints {
@@ -70,7 +73,7 @@ dependencies {
     implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.25.3'
     api group: 'com.google.guava', name: 'guava'
 
-    // Database (versioned by Spring dependency manager)
+    // Database
     implementation group: 'org.liquibase', name: 'liquibase-core'
     runtimeOnly group: 'org.postgresql', name: 'postgresql'
 
@@ -105,7 +108,7 @@ dependencies {
     implementation 'com.google.cloud.opentelemetry:exporter-trace:0.27.0'
     implementation 'com.google.cloud.opentelemetry:exporter-metrics:0.27.0'
 
-    // Testing (unversioned are versioned by Spring dependency manager)
+    // Testing
     testImplementation 'org.springframework:spring-aspects' // for tracing in tests
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
