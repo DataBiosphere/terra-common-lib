@@ -1,4 +1,4 @@
 rootProject.name = 'terra-common-lib'
 
 gradle.ext.projectGroup = 'bio.terra'
-gradle.ext.tclVersion = '1.1.9-SNAPSHOT'
+gradle.ext.tclVersion = '1.1.10-SNAPSHOT'
