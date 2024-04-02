@@ -7,7 +7,7 @@ plugins {
     id 'com.diffplug.spotless' version '6.25.0'
     id 'com.github.ben-manes.versions' version '0.51.0'
     id 'com.jfrog.artifactory' version '5.2.0'
-    id 'org.sonarqube' version '4.4.1.3373'
+    id 'org.sonarqube' version '5.0.0.4638'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'org.springframework.boot' version '3.2.3'
     id 'ru.vyarus.quality' version '5.0.0'
@@ -65,7 +65,6 @@ dependencies {
     implementation platform('com.google.cloud:libraries-bom:26.35.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
-    implementation group: 'com.google.protobuf', name: 'protobuf-java'
     api group: 'com.google.guava', name: 'guava'
 
     // Database
