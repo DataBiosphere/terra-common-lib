@@ -22,9 +22,7 @@ public class OpenTelemetryConfig {
 
   public static final Set<String> DEFAULT_EXCLUDED_URLS = Set.of("/status", "/version");
 
-  /**
-   * Customizes the OpenTelemetry SDK sampling and adds all views and span processors.
-   */
+  /** Customizes the OpenTelemetry SDK sampling and adds all views and span processors. */
   @Bean
   public AutoConfigurationCustomizerProvider otelCustomizer(
       TracingProperties tracingProperties,
