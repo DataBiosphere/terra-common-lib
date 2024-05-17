@@ -97,6 +97,9 @@ dependencies {
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot'
     implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
     implementation 'io.opentelemetry:opentelemetry-api-incubator'
+    implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
 
     // Google cloud open telemetry exporters
     implementation 'com.google.cloud.opentelemetry:exporter-trace:0.28.0'
