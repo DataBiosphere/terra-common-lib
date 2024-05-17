@@ -8,8 +8,8 @@ package bio.terra.common.opentelemetry;
 import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 import static java.util.Arrays.asList;
 
-import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.List;
 import java.util.stream.DoubleStream;
