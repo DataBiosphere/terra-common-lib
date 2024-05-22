@@ -5,11 +5,11 @@
 
 package bio.terra.common.opentelemetry;
 
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 import static java.util.Arrays.asList;
 
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
-import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
-import io.opentelemetry.instrumentation.api.semconv.http.internal.HttpAttributes;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.List;
 import java.util.stream.DoubleStream;
@@ -54,7 +54,7 @@ final class HttpMetricsAdvice {
             asList(
                 SemanticAttributes.HTTP_REQUEST_METHOD,
                 SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
-                HttpAttributes.ERROR_TYPE,
+                ERROR_TYPE,
                 SemanticAttributes.NETWORK_PROTOCOL_NAME,
                 SemanticAttributes.NETWORK_PROTOCOL_VERSION,
                 SemanticAttributes.SERVER_ADDRESS,
@@ -71,7 +71,7 @@ final class HttpMetricsAdvice {
                 SemanticAttributes.HTTP_ROUTE,
                 SemanticAttributes.HTTP_REQUEST_METHOD,
                 SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
-                HttpAttributes.ERROR_TYPE,
+                ERROR_TYPE,
                 SemanticAttributes.NETWORK_PROTOCOL_NAME,
                 SemanticAttributes.NETWORK_PROTOCOL_VERSION,
                 SemanticAttributes.URL_SCHEME));
