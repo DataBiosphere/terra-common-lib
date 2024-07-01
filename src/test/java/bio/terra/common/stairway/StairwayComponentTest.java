@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @ExtendWith(MockitoExtension.class)
 class StairwayComponentTest {
@@ -20,6 +21,7 @@ class StairwayComponentTest {
   @Mock private KubeProperties kubeProperties;
   private StairwayProperties stairwayProperties;
   @Mock private KubeService kubeService;
+  @Mock private ThreadPoolTaskExecutor executor;
 
   @Test
   void setupAzureWorkQueueTest() {
@@ -28,7 +30,8 @@ class StairwayComponentTest {
         "Endpoint=sb://azure-xxxx.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxxxx";
     setProperties(connectionString, "topicName", "subscriptionName");
 
-    stairwayComponent = new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
+    stairwayComponent =
+        new StairwayComponent(kubeService, kubeProperties, stairwayProperties, executor);
     QueueInterface queue = stairwayComponent.setupAzureWorkQueue();
     assertTrue(queue instanceof AzureServiceBusQueue);
   }
@@ -37,7 +40,8 @@ class StairwayComponentTest {
   void setupAzureWorkQueueTestConnectionStringRequired() {
     setProperties("", "topicName", "subscriptionName");
 
-    stairwayComponent = new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
+    stairwayComponent =
+        new StairwayComponent(kubeService, kubeProperties, stairwayProperties, executor);
     assertThrows(IllegalArgumentException.class, () -> stairwayComponent.setupAzureWorkQueue());
   }
 
@@ -47,7 +51,8 @@ class StairwayComponentTest {
         "Endpoint=sb://azure-xxxx.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxxxx";
     setProperties(connectionString, "", "subscriptionName");
 
-    stairwayComponent = new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
+    stairwayComponent =
+        new StairwayComponent(kubeService, kubeProperties, stairwayProperties, executor);
     assertThrows(IllegalArgumentException.class, () -> stairwayComponent.setupAzureWorkQueue());
   }
 
@@ -57,13 +62,15 @@ class StairwayComponentTest {
         "Endpoint=sb://azure-xxxx.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=xxxxx";
     setProperties(connectionString, "topicName", "");
 
-    stairwayComponent = new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
+    stairwayComponent =
+        new StairwayComponent(kubeService, kubeProperties, stairwayProperties, executor);
     assertThrows(IllegalArgumentException.class, () -> stairwayComponent.setupAzureWorkQueue());
   }
 
   @Test
   void setupAzureWorkQueueTestThrowsNPE() {
-    stairwayComponent = new StairwayComponent(kubeService, kubeProperties, stairwayProperties);
+    stairwayComponent =
+        new StairwayComponent(kubeService, kubeProperties, stairwayProperties, executor);
     assertThrows(NullPointerException.class, () -> stairwayComponent.setupAzureWorkQueue());
   }
 

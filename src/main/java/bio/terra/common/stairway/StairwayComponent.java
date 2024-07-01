@@ -23,6 +23,8 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 /** A Spring Component for exposing an initialized {@link Stairway}. */
@@ -33,6 +35,7 @@ public class StairwayComponent {
   private final KubeService kubeService;
   private final KubeProperties kubeProperties;
   private final StairwayProperties stairwayProperties;
+  private final ThreadPoolTaskExecutor executor;
   private final AtomicReference<Status> status = new AtomicReference<>(Status.INITIALIZING);
   private Stairway stairway;
 
@@ -40,10 +43,12 @@ public class StairwayComponent {
   public StairwayComponent(
       KubeService kubeService,
       KubeProperties kubeProperties,
-      StairwayProperties stairwayProperties) {
+      StairwayProperties stairwayProperties,
+      @Qualifier(StairwayProperties.STAIRWAY_EXECUTOR_BEAN_NAME) ThreadPoolTaskExecutor executor) {
     this.kubeService = kubeService;
     this.kubeProperties = kubeProperties;
     this.stairwayProperties = stairwayProperties;
+    this.executor = executor;
     logger.info("Creating Stairway: name: [{}]", kubeService.getPodName());
   }
 
@@ -144,7 +149,8 @@ public class StairwayComponent {
                 initializeBuilder.getContext()) // not necessarily a Spring ApplicationContext
             .stairwayName(kubeProperties.getPodName())
             .workQueue(queue)
-            .exceptionSerializer(initializeBuilder.getExceptionSerializer());
+            .exceptionSerializer(initializeBuilder.getExceptionSerializer())
+            .executor(executor);
     initializeBuilder.getHooks().forEach(builder::stairwayHook);
     try {
       this.stairway = builder.build();
