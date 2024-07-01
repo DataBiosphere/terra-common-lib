@@ -1,7 +1,10 @@
 package bio.terra.common.stairway;
 
+import bio.terra.stairway.DefaultThreadPoolTaskExecutor;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * Properties for configuring a Stairway instance.
@@ -231,5 +234,12 @@ public class StairwayProperties {
 
   public void setAzureQueueEnabled(boolean azureQueueEnabled) {
     this.azureQueueEnabled = azureQueueEnabled;
+  }
+
+  public static final String STAIRWAY_EXECUTOR_BEAN_NAME = "stairwayExecutor";
+
+  @Bean(STAIRWAY_EXECUTOR_BEAN_NAME)
+  public ThreadPoolTaskExecutor stairwayExecutor() {
+    return new DefaultThreadPoolTaskExecutor(maxParallelFlights);
   }
 }
