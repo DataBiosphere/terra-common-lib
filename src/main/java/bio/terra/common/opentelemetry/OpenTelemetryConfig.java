@@ -30,6 +30,10 @@ public class OpenTelemetryConfig {
       ObjectProvider<Pair<InstrumentSelector, View>> views,
       ObjectProvider<SpanProcessor> spanProcessors) {
     return customizer -> {
+      // the default exporter is the OTLP exporter, which we don't use and outputs errors like:
+      // ERROR [OkHttp http://localhost:4318/...] i.o.e.internal.http.HttpExporter: Failed to export
+      // metrics. The request could not be executed. Full error message: Failed to connect to
+      // localhost/[0:0:0:0:0:0:0:1]:4318
       customizer.addPropertiesCustomizer((unused) -> Map.of("otel.metrics.exporter", "none"));
 
       customizer.addMeterProviderCustomizer(
