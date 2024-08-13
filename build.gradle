@@ -8,8 +8,8 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.51.0'
     id 'com.jfrog.artifactory' version '5.2.3'
     id 'org.sonarqube' version '5.1.0.4882'
-    id 'io.spring.dependency-management' version '1.1.5'
-    id 'org.springframework.boot' version '3.3.1'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.springframework.boot' version '3.3.2'
     id 'ru.vyarus.quality' version '5.0.0'
     id 'com.srcclr.gradle' version '3.1.12'
 }
@@ -78,7 +78,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
-    var stairwayVersion= '1.1.10-SNAPSHOT'
+    var stairwayVersion= '1.1.12-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
@@ -88,9 +88,9 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
     // OpenTelemetry BOMs (opentelemetry-bom versioned by Spring dependency manager)
-    implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.37.0-alpha')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.3.0')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.3.0-alpha')
+    implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.41.0-alpha')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.6.0')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.6.0-alpha')
     // OpenTelemetry dependencies versioned by BOMs
     api 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
