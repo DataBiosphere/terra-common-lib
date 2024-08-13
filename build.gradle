@@ -89,8 +89,8 @@ dependencies {
 
     // OpenTelemetry BOMs (opentelemetry-bom versioned by Spring dependency manager)
     implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.37.0-alpha')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.3.0')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.3.0-alpha')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.6.0')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.6.0-alpha')
     // OpenTelemetry dependencies versioned by BOMs
     api 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
@@ -99,7 +99,7 @@ dependencies {
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-api'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations'
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-autoconfigure'
     implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
     implementation 'io.opentelemetry:opentelemetry-api-incubator'
     implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
