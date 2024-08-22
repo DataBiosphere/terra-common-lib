@@ -5,6 +5,7 @@ import io.opentelemetry.instrumentation.spring.autoconfigure.EnableOpenTelemetry
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class OpenTelemetryConfig {
   public AutoConfigurationCustomizerProvider otelCustomizer(
       TracingProperties tracingProperties,
       ObjectProvider<Pair<InstrumentSelector, View>> views,
+      ObjectProvider<MetricReader> metricReaders,
       ObjectProvider<SpanProcessor> spanProcessors) {
     return customizer -> {
       // the default exporter is the OTLP exporter, which we don't use and outputs errors like:
@@ -38,6 +40,7 @@ public class OpenTelemetryConfig {
 
       customizer.addMeterProviderCustomizer(
           (builder, unused) -> {
+            metricReaders.stream().forEach(builder::registerMetricReader);
             views.stream().forEach(pair -> builder.registerView(pair.getFirst(), pair.getSecond()));
             return builder;
           });
