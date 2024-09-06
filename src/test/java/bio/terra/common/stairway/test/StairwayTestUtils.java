@@ -1,5 +1,7 @@
 package bio.terra.common.stairway.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import bio.terra.common.db.BaseDatabaseProperties;
 import bio.terra.common.db.DataSourceInitializer;
 import bio.terra.stairway.Flight;
@@ -12,25 +14,15 @@ import bio.terra.stairway.exception.DatabaseOperationException;
 import bio.terra.stairway.exception.StairwayException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import org.openapitools.jackson.nullable.JsonNullableModule;
-
 import java.time.Duration;
 import java.time.Instant;
 import javax.sql.DataSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /** Test utilities for testing integrations with {@link Stairway}. */
 public class StairwayTestUtils {
 
-  /**
-   * Use Stairway objectmapper.
-   */
+  /** Use Stairway objectmapper. */
   private static final ObjectMapper OBJECT_MAPPER = StairwayMapper.getObjectMapper();
 
   /** Returns an initialized and started Stairway instance from the Stairway.Builder. */
