@@ -193,17 +193,15 @@ public class LoggingTest {
     // Suppress exceptions, otherwise JsonPath will throw an exception when we look for a path that
     // doesn't exist. It's better to assert a null return value in that case.
     if (clazz != null) {
-      return (T)
-          JsonPath.using(
-                  Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
-              .parse(line)
-              .read(path, clazz);
+      return JsonPath.using(
+              Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+          .parse(line)
+          .read(path, clazz);
     } else {
-      return (T)
-          JsonPath.using(
-                  Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
-              .parse(line)
-              .read(path);
+      return JsonPath.using(
+              Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+          .parse(line)
+          .read(path);
     }
   }
 
