@@ -10,7 +10,10 @@ import static java.util.Arrays.asList;
 
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.NetworkAttributes;
+import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 import java.util.List;
 import java.util.stream.DoubleStream;
 
@@ -52,13 +55,13 @@ final class HttpMetricsAdvice {
     ((ExtendedDoubleHistogramBuilder) builder)
         .setAttributesAdvice(
             asList(
-                SemanticAttributes.HTTP_REQUEST_METHOD,
-                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
+                HttpAttributes.HTTP_REQUEST_METHOD,
+                HttpAttributes.HTTP_RESPONSE_STATUS_CODE,
                 ERROR_TYPE,
-                SemanticAttributes.NETWORK_PROTOCOL_NAME,
-                SemanticAttributes.NETWORK_PROTOCOL_VERSION,
-                SemanticAttributes.SERVER_ADDRESS,
-                SemanticAttributes.SERVER_PORT));
+                NetworkAttributes.NETWORK_PROTOCOL_NAME,
+                NetworkAttributes.NETWORK_PROTOCOL_VERSION,
+                ServerAttributes.SERVER_ADDRESS,
+                ServerAttributes.SERVER_PORT));
   }
 
   static void applyServerDurationAdvice(DoubleHistogramBuilder builder) {
@@ -68,13 +71,13 @@ final class HttpMetricsAdvice {
     ((ExtendedDoubleHistogramBuilder) builder)
         .setAttributesAdvice(
             asList(
-                SemanticAttributes.HTTP_ROUTE,
-                SemanticAttributes.HTTP_REQUEST_METHOD,
-                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
+                HttpAttributes.HTTP_ROUTE,
+                HttpAttributes.HTTP_REQUEST_METHOD,
+                HttpAttributes.HTTP_RESPONSE_STATUS_CODE,
                 ERROR_TYPE,
-                SemanticAttributes.NETWORK_PROTOCOL_NAME,
-                SemanticAttributes.NETWORK_PROTOCOL_VERSION,
-                SemanticAttributes.URL_SCHEME));
+                NetworkAttributes.NETWORK_PROTOCOL_NAME,
+                NetworkAttributes.NETWORK_PROTOCOL_VERSION,
+                UrlAttributes.URL_SCHEME));
   }
 
   private HttpMetricsAdvice() {}
