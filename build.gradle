@@ -99,7 +99,7 @@ dependencies {
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-api'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations'
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-autoconfigure'
     implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
     implementation 'io.opentelemetry:opentelemetry-api-incubator'
     implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
