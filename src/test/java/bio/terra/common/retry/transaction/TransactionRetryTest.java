@@ -7,14 +7,14 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.CannotSerializeTransactionException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.CannotCreateTransactionException;
 
 @SpringBootTest(classes = TransactionRetryTestApplication.class)
 @ActiveProfiles("retry-transaction-test")
 @Tag("unit")
-public class TransactionRetryTest {
+class TransactionRetryTest {
 
   @Autowired private TransactionRetryProbe transactionRetryProbe;
 
@@ -24,26 +24,27 @@ public class TransactionRetryTest {
   }
 
   @Test
-  public void testFastRetry() {
+  void testFastRetry() {
+    var exception = new PessimisticLockingFailureException("test");
     assertThrows(
-        CannotSerializeTransactionException.class,
-        () -> transactionRetryProbe.throwMe(new CannotSerializeTransactionException("test")));
+        PessimisticLockingFailureException.class, () -> transactionRetryProbe.throwMe(exception));
 
     assertEquals(10, transactionRetryProbe.getCount());
   }
 
   @Test
-  public void testSlowRetry() {
+  void testSlowRetry() {
+    var exception = new CannotCreateTransactionException("test");
     assertThrows(
-        CannotCreateTransactionException.class,
-        () -> transactionRetryProbe.throwMe(new CannotCreateTransactionException("test")));
+        CannotCreateTransactionException.class, () -> transactionRetryProbe.throwMe(exception));
 
     assertEquals(4, transactionRetryProbe.getCount());
   }
 
   @Test
-  public void testNoRetry() {
-    assertThrows(Exception.class, () -> transactionRetryProbe.throwMe(new Exception("test")));
+  void testNoRetry() {
+    var exception = new Exception("test");
+    assertThrows(Exception.class, () -> transactionRetryProbe.throwMe(exception));
 
     assertEquals(1, transactionRetryProbe.getCount());
   }

@@ -8,9 +8,6 @@ import bio.terra.common.logging.LoggingTestController.StructuredDataPojo;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import jakarta.annotation.Nullable;
-import jakarta.servlet.ServletException;
-import java.io.IOException;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -31,14 +28,14 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  * Tests the functionality of the common logging package, including request ID generation and
  * propagation, JSON formatting, and trace / span correlation.
  *
- * <p>We use @SpringBootTest with a actual local servlet (WebEnvironment.RANDOM_PORT) to create as
+ * <p>We use @SpringBootTest with an actual local servlet (WebEnvironment.RANDOM_PORT) to create as
  * close of an approximation to a full Spring Boot application as possible. Still, some of the
  * initialization and auto-registration of Servlet filters had to be hard-coded within the
  * ContextConfiguration annotation. See the LoggingTestApplication for an example of what an actual
  * service needs to do in order to initialize logging.
  *
- * <p>Inspired by
- * https://github.com/eugenp/tutorials/blob/master/spring-boot-modules/spring-boot-testing/src/test/java/com/baeldung/testloglevel/LogbackMultiProfileTestLogLevelIntegrationTest.java
+ * <p>Inspired by <a
+ * href="https://github.com/eugenp/tutorials/blob/master/spring-boot-modules/spring-boot-testing-2/src/test/java/com/baeldung/testloglevel/LogbackMultiProfileTestLogLevelIntegrationTest.java"/>
  */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = LoggingTestApplication.class)
 @SpringJUnitConfig(
@@ -51,14 +48,14 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 @ActiveProfiles("logging-test")
 @ExtendWith(OutputCaptureExtension.class)
 @Tag("unit")
-public class LoggingTest {
+class LoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
   // Spy bean to allow us to mock out the RequestIdFilter ID generator.
   @SpyBean private RequestIdFilter requestIdFilter;
 
   @BeforeEach
-  public void setUp() throws IOException, ServletException {
+  public void setUp() {
     // Ensure the request ID is always set to a known value.
     when(requestIdFilter.generateRequestId()).thenReturn("12345");
     // Ensure the GCP project ID is always set to a known value. See
@@ -68,7 +65,7 @@ public class LoggingTest {
   }
 
   @Test
-  public void testRequestLogging(CapturedOutput capturedOutput) {
+  void testRequestLogging(CapturedOutput capturedOutput) {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testRequestLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
@@ -76,31 +73,32 @@ public class LoggingTest {
     String line = lastLoggedLine(capturedOutput);
 
     // Timestamp fields
-    assertThat((Integer) readJson(line, "$.timestampSeconds")).isNotNull();
-    assertThat((Integer) readJson(line, "$.timestampNanos")).isNotNull();
+    assertThat(readJson(line, "$.timestampSeconds", Integer.class)).isNotNull();
+    assertThat(readJson(line, "$.timestampNanos", Integer.class)).isNotNull();
 
     // Log message & source fields
-    assertThat((String) readJson(line, "$.severity")).isEqualTo("INFO");
-    assertThat((String) readJson(line, "$.message")).isEqualTo("GET /testRequestLogging 200");
-    assertThat((String) readJson(line, "$['logging.googleapis.com/sourceLocation'].file"))
+    assertThat((readJson(line, "$.severity", String.class))).isEqualTo("INFO");
+    assertThat(readJson(line, "$.message", String.class)).isEqualTo("GET /testRequestLogging 200");
+    assertThat(readJson(line, "$['logging.googleapis.com/sourceLocation'].file", String.class))
         .isNotNull();
-    assertThat((String) readJson(line, "$.serviceContext.service")).isEqualTo("loggingTest");
-    assertThat((String) readJson(line, "$.serviceContext.version")).isEqualTo("1.2.3-SNAPSHOT");
+    assertThat(readJson(line, "$.serviceContext.service", String.class)).isEqualTo("loggingTest");
+    assertThat(readJson(line, "$.serviceContext.version", String.class))
+        .isEqualTo("1.2.3-SNAPSHOT");
 
     // Request-related fields
-    assertThat((String) readJson(line, "$.requestId")).isEqualTo("12345");
-    assertThat((String) readJson(line, "$.httpRequest.requestMethod")).isEqualTo("GET");
-    assertThat((String) readJson(line, "$.httpRequest.requestUrl"))
+    assertThat(readJson(line, "$.requestId", String.class)).isEqualTo("12345");
+    assertThat(readJson(line, "$.httpRequest.requestMethod", String.class)).isEqualTo("GET");
+    assertThat(readJson(line, "$.httpRequest.requestUrl", String.class))
         .isEqualTo("/testRequestLogging");
-    assertThat((Integer) readJson(line, "$.httpRequest.status")).isEqualTo(200);
+    assertThat(readJson(line, "$.httpRequest.status", Integer.class)).isEqualTo(200);
     // We also log all HTTP request headers. These aren't directly interpreted by Google, but are
     // available via jsonPayload.requestHeaders.*
-    assertThat((Object) readJson(line, "$.requestHeaders")).isNotNull();
+    assertThat(readJson(line, "$.requestHeaders", Object.class)).isNotNull();
 
     // Tracing-related fields
-    assertThat((String) readJson(line, "$.['logging.googleapis.com/trace']"))
+    assertThat(readJson(line, "$.['logging.googleapis.com/trace']", String.class))
         .startsWith("projects/my-project-1234/traces/");
-    assertThat((String) readJson(line, "$.['logging.googleapis.com/spanId']")).isNotBlank();
+    assertThat(readJson(line, "$.['logging.googleapis.com/spanId']", String.class)).isNotBlank();
     // The JSON format will also output the trace_sampled value if that value exists in the context
     // span. Due to the way we're creating a span from scratch, there wasn't an easy way to set it
     // to true within this test.
@@ -111,7 +109,7 @@ public class LoggingTest {
    * for details on the invocation.
    */
   @Test
-  public void testStructuredLogging(CapturedOutput capturedOutput) {
+  void testStructuredLogging(CapturedOutput capturedOutput) {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testStructuredLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
@@ -125,10 +123,10 @@ public class LoggingTest {
     // The first log statement included a single key-value pair. Ensure that data is included in
     // the log output.
     assertThat(event1).isNotNull();
-    assertThat((String) readJson(event1, "$.foo")).isEqualTo("bar");
+    assertThat(readJson(event1, "$.foo", String.class)).isEqualTo("bar");
     assertThat(event2).isNotNull();
-    assertThat((Integer) readJson(event2, "$.a")).isEqualTo(1);
-    assertThat((Integer) readJson(event2, "$.b")).isEqualTo(2);
+    assertThat(readJson(event2, "$.a", Integer.class)).isEqualTo(1);
+    assertThat(readJson(event2, "$.b", Integer.class)).isEqualTo(2);
 
     assertThat(event3).isNotNull();
     StructuredDataPojo pojo = readJson(event3, "$.pojo", StructuredDataPojo.class);
@@ -137,23 +135,23 @@ public class LoggingTest {
     assertThat(pojo.id).isEqualTo(1234);
 
     assertThat(event4).isNotNull();
-    assertThat((String) readJson(event4, "$.foo.bar")).isEqualTo("baz");
+    assertThat(readJson(event4, "$.foo.bar", String.class)).isEqualTo("baz");
   }
 
   @Test
-  public void testAlertLogging(CapturedOutput capturedOutput) {
+  void testAlertLogging(CapturedOutput capturedOutput) {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testAlertLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
     String[] lines = capturedOutput.getAll().split("\n");
     String logLine = getLogContainingMessage(lines, "test alert message");
     assertThat(logLine).isNotNull();
-    assertThat((String) readJson(logLine, "$.severity")).isEqualTo("ERROR");
-    assertTrue((Boolean) readJson(logLine, "$." + LoggingUtils.ALERT_KEY));
+    assertThat(readJson(logLine, "$.severity", String.class)).isEqualTo("ERROR");
+    assertTrue(readJson(logLine, "$." + LoggingUtils.ALERT_KEY, Boolean.class));
   }
 
   @Test
-  public void testAlertLoggingWithObject(CapturedOutput capturedOutput) {
+  void testAlertLoggingWithObject(CapturedOutput capturedOutput) {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testAlertLoggingWithObject", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
@@ -164,16 +162,10 @@ public class LoggingTest {
     assertThat(pojo).isNotNull();
 
     assertThat(logLine).isNotNull();
-    assertThat((String) readJson(logLine, "$.severity")).isEqualTo("ERROR");
-    assertTrue((Boolean) readJson(logLine, "$." + LoggingUtils.ALERT_KEY));
+    assertThat(readJson(logLine, "$.severity", String.class)).isEqualTo("ERROR");
+    assertTrue(readJson(logLine, "$." + LoggingUtils.ALERT_KEY, Boolean.class));
     assertThat(pojo.name).isEqualTo("asdf");
     assertThat(pojo.id).isEqualTo(1234);
-  }
-
-  // Uses the JsonPath library to extract data from a given path within a JSON string.
-  @Nullable
-  private <T> T readJson(String line, String path) {
-    return readJson(line, path, null);
   }
 
   /**
@@ -182,29 +174,14 @@ public class LoggingTest {
    * @param line The line of text to extract from
    * @param path The JSON object path to read
    * @param clazz Class to return. If null, this is inferred by the JsonPath library.
-   * @return
    */
-  @Nullable
-  private <T> T readJson(String line, String path, @Nullable Class<T> clazz) {
-    if (line.isEmpty()) {
-      // JsonPath does not allow empty strings to be parsed.
-      return null;
-    }
+  private <T> T readJson(String line, String path, Class<T> clazz) {
     // Suppress exceptions, otherwise JsonPath will throw an exception when we look for a path that
     // doesn't exist. It's better to assert a null return value in that case.
-    if (clazz != null) {
-      return (T)
-          JsonPath.using(
-                  Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
-              .parse(line)
-              .read(path, clazz);
-    } else {
-      return (T)
-          JsonPath.using(
-                  Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
-              .parse(line)
-              .read(path);
-    }
+    return JsonPath.using(
+            Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+        .parse(line)
+        .read(path, clazz);
   }
 
   private String lastLoggedLine(CapturedOutput capturedOutput) {
