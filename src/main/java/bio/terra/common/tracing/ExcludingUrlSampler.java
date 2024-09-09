@@ -6,7 +6,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -38,8 +38,8 @@ public class ExcludingUrlSampler implements Sampler {
     // HTTP_TARGET seems to have the right information but that is deprecated
     // check URL_PATH to be forward compatible. JUST CHECK THEM ALL
     var urlCandidates = new HashSet<String>();
-    urlCandidates.add(attributes.get(SemanticAttributes.URL_PATH));
-    urlCandidates.add(attributes.get(SemanticAttributes.HTTP_TARGET));
+    urlCandidates.add(attributes.get(UrlAttributes.URL_PATH));
+    urlCandidates.add(attributes.get(UrlAttributes.URL_QUERY));
     urlCandidates.add(name);
     // removeAll below does not like nulls so remove any if they exist
     urlCandidates.remove(null);

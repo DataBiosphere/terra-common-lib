@@ -1,7 +1,6 @@
 package bio.terra.common.opentelemetry;
 
 import bio.terra.common.tracing.ExcludingUrlSampler;
-import io.opentelemetry.instrumentation.spring.autoconfigure.EnableOpenTelemetry;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.View;
@@ -18,7 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.util.Pair;
 
 @Configuration
-@EnableOpenTelemetry
 @EnableConfigurationProperties(value = {TracingProperties.class})
 public class OpenTelemetryConfig {
 

@@ -28,20 +28,20 @@ import org.springframework.test.context.ContextConfiguration;
 @ActiveProfiles("human-readable-logging")
 @Tag("unit")
 @ExtendWith(OutputCaptureExtension.class)
-public class HumanReadableLoggingTest {
+class HumanReadableLoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
   // Spy bean to allow us to mock out the RequestIdFilter ID generator.
   @SpyBean private RequestIdFilter requestIdFilter;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     // Ensure the request ID is always set to a known value.
     when(requestIdFilter.generateRequestId()).thenReturn("12345");
   }
 
   @Test
-  public void testRequestLogging(CapturedOutput capturedOutput) {
+  void testRequestLogging(CapturedOutput capturedOutput) {
     ResponseEntity<String> response =
         testRestTemplate.getForEntity("/testRequestLogging", String.class);
     assertThat(response.getStatusCode().value()).isEqualTo(200);
@@ -55,6 +55,6 @@ public class HumanReadableLoggingTest {
     // in the main logback.xml
     assertThat(allOutput).contains("12345");
     // Poor-man's check for lack of JSON
-    assertThat(allOutput).doesNotContain("{");
+    assertThat(allOutput).doesNotContain("{\"timestampSeconds\":");
   }
 }

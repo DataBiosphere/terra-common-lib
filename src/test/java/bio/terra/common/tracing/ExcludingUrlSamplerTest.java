@@ -7,7 +7,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 import java.util.List;
 import java.util.Set;
 import org.hamcrest.Matchers;
@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("unit")
-public class ExcludingUrlSamplerTest {
+class ExcludingUrlSamplerTest {
   @Test
-  public void testShouldSample() {
+  void testShouldSample() {
     var sampler = new ExcludingUrlSampler(Set.of("/foo", "/bar"), Sampler.alwaysOn());
     assertThat(
         sampler
@@ -28,7 +28,7 @@ public class ExcludingUrlSamplerTest {
   }
 
   @Test
-  public void testShouldNotSampleBecauseDelegateSaidDrop() {
+  void testShouldNotSampleBecauseDelegateSaidDrop() {
     var sampler = new ExcludingUrlSampler(Set.of("/foo", "/bar"), Sampler.alwaysOff());
     assertThat(
         sampler
@@ -39,7 +39,7 @@ public class ExcludingUrlSamplerTest {
   }
 
   @Test
-  public void testShouldNotSampleByName() {
+  void testShouldNotSampleByName() {
     var sampler = new ExcludingUrlSampler(Set.of("/foo", "/bar"), Sampler.alwaysOn());
     assertThat(
         sampler
@@ -50,7 +50,7 @@ public class ExcludingUrlSamplerTest {
   }
 
   @Test
-  public void testShouldNotSampleByUrlPath() {
+  void testShouldNotSampleByUrlPath() {
     // note that the internal implementation of ExcludingUrlSampler has slightly different behavior
     // when the size of the excludedUrls is smaller than the size of the urlCandidates. So this test
     // has only one excludedUrl to make sure the scenario works. The different behavior comes from
@@ -63,14 +63,14 @@ public class ExcludingUrlSamplerTest {
                 "",
                 "/baz",
                 SpanKind.INTERNAL,
-                Attributes.of(SemanticAttributes.URL_PATH, "/bar"),
+                Attributes.of(UrlAttributes.URL_PATH, "/bar"),
                 List.of())
             .getDecision(),
         Matchers.is(SamplingDecision.DROP));
   }
 
   @Test
-  public void testShouldNotSampleByHttpTarget() {
+  void testShouldNotSampleByUrlQuery() {
     var sampler = new ExcludingUrlSampler(Set.of("/foo", "/bar"), Sampler.alwaysOn());
     assertThat(
         sampler
@@ -79,7 +79,7 @@ public class ExcludingUrlSamplerTest {
                 "",
                 "/baz",
                 SpanKind.INTERNAL,
-                Attributes.of(SemanticAttributes.HTTP_TARGET, "/bar"),
+                Attributes.of(UrlAttributes.URL_QUERY, "/bar"),
                 List.of())
             .getDecision(),
         Matchers.is(SamplingDecision.DROP));
