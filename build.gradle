@@ -9,7 +9,7 @@ plugins {
     id 'com.jfrog.artifactory' version '5.2.5'
     id 'org.sonarqube' version '5.1.0.4882'
     id 'io.spring.dependency-management' version '1.1.6'
-    id 'org.springframework.boot' version '3.3.3'
+    id 'org.springframework.boot' version '3.3.4'
     id 'ru.vyarus.quality' version '5.0.0'
     id 'com.srcclr.gradle' version '3.1.12'
 }
@@ -67,7 +67,7 @@ dependencies {
 
     // Google dependencies
     // use common bom
-    implementation platform('com.google.cloud:libraries-bom:26.45.0')
+    implementation platform('com.google.cloud:libraries-bom:26.47.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     api group: 'com.google.guava', name: 'guava'
@@ -78,7 +78,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: '0.1-0c4b377'
-    var stairwayVersion= '1.1.12-SNAPSHOT'
+    var stairwayVersion= '1.1.13-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
@@ -88,9 +88,9 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
     // OpenTelemetry BOMs (opentelemetry-bom versioned by Spring dependency manager)
-    implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.41.0-alpha')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.7.0')
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.7.0-alpha')
+    implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.42.1-alpha')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.8.0')
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.8.0-alpha')
     // OpenTelemetry dependencies versioned by BOMs
     api 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
@@ -107,8 +107,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-autoconfigure'
 
     // Google cloud open telemetry exporters
-    implementation 'com.google.cloud.opentelemetry:exporter-trace:0.31.0'
-    implementation 'com.google.cloud.opentelemetry:exporter-metrics:0.31.0'
+    implementation 'com.google.cloud.opentelemetry:exporter-trace:0.32.0'
+    implementation 'com.google.cloud.opentelemetry:exporter-metrics:0.32.0'
 
     // Testing
     testImplementation 'org.springframework:spring-aspects' // for tracing in tests
