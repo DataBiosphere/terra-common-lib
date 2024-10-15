@@ -22,7 +22,7 @@ project.ext {
 
 // Spring Boot 3.2.3 pulls in opentelemetry-bom 1.31.0.
 // We need >= 1.32.0 so that our HttpServerMetrics can use Meter.setExplicitBucketBoundariesAdvice:
-ext['opentelemetry.version'] = '1.41.0'
+ext['opentelemetry.version'] = '1.42.1'
 
 // If true, search local repository (~/.m2/repository/) first for dependencies.
 def useMavenLocal = false
@@ -88,6 +88,7 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
     // OpenTelemetry BOMs (opentelemetry-bom versioned by Spring dependency manager)
+    // If the following versions get updated, be sure to update line 25 for ext['opentelemetry.version']
     implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.42.1-alpha')
     implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.8.0')
     implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.8.0-alpha')
