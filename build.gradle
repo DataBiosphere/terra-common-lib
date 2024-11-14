@@ -9,7 +9,7 @@ plugins {
     id 'com.jfrog.artifactory' version '5.2.5'
     id 'org.sonarqube' version '5.1.0.4882'
     id 'io.spring.dependency-management' version '1.1.6'
-    id 'org.springframework.boot' version '3.3.5'
+    id 'org.springframework.boot' version '3.3.4'
     id 'ru.vyarus.quality' version '5.0.0'
     id 'com.srcclr.gradle' version '3.1.12'
 }
