@@ -64,7 +64,7 @@ dependencies {
 
     // Google dependencies
     // use common bom
-    implementation platform('com.google.cloud:libraries-bom:26.50.0')
+    implementation platform('com.google.cloud:libraries-bom:26.51.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     api group: 'com.google.guava', name: 'guava'
@@ -75,7 +75,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: 'v0.0.329'
-    var stairwayVersion= '1.1.15-SNAPSHOT'
+    var stairwayVersion= '1.1.16-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
