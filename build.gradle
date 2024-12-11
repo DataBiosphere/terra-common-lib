@@ -64,7 +64,7 @@ dependencies {
 
     // Google dependencies
     // use common bom
-    implementation platform('com.google.cloud:libraries-bom:26.50.0')
+    implementation platform('com.google.cloud:libraries-bom:26.51.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     api group: 'com.google.guava', name: 'guava'
@@ -75,7 +75,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: 'v0.0.329'
-    var stairwayVersion= '1.1.15-SNAPSHOT'
+    var stairwayVersion= '1.1.16-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
@@ -88,7 +88,7 @@ dependencies {
     // Spring Boot 3.4.0 pulls in opentelemetry-bom 1.43.0.
     // We choose opentelemetry-instrumentation-bom-alpha:2.9.0-alpha because otel-instrumentation 2.9.0 targets otel 1.43.0.
     // When upgrading Spring Boot, re-check these versions.
-    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.9.0-alpha")
+    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.10.0-alpha")
     // ... versioned by Spring Boot
     api 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-exporter-logging'
