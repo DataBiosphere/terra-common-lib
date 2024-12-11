@@ -21,7 +21,7 @@ project.ext {
 }
 
 // Spring Boot 3.4.0 pulls in opentelemetry-bom 1.43.0.
-// We need >= 1.32.0 so that our HttpServerMetrics can use Meter.setExplicitBucketBoundariesAdvice:
+// When upgrading Spring Boot, re-check these versions.
 ext['opentelemetry.version'] = '1.43.0'
 ext['opentelemetry.instrumentation.version'] = '2.9.0' // 2.9.0 targets opentelemetry 1.43.0
 
