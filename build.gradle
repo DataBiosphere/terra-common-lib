@@ -20,11 +20,6 @@ project.ext {
     isCiServer = System.getenv().containsKey("CI")
 }
 
-// Spring Boot 3.4.0 pulls in opentelemetry-bom 1.43.0.
-// When upgrading Spring Boot, re-check these versions.
-ext['opentelemetry.version'] = '1.43.0'
-ext['opentelemetry.instrumentation.version'] = '2.9.0' // 2.9.0 targets opentelemetry 1.43.0
-
 // If true, search local repository (~/.m2/repository/) first for dependencies.
 def useMavenLocal = false
 repositories {
@@ -90,7 +85,10 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
     // OpenTelemetry dependencies:
-    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${project.ext['opentelemetry.instrumentation.version']}-alpha")
+    // Spring Boot 3.4.0 pulls in opentelemetry-bom 1.43.0.
+    // We choose opentelemetry-instrumentation-bom-alpha:2.9.0-alpha because otel-instrumentation 2.9.0 targets otel 1.43.0.
+    // When upgrading Spring Boot, re-check these versions.
+    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.9.0-alpha")
     // ... versioned by Spring Boot
     api 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-exporter-logging'
