@@ -17,6 +17,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 /**
  * A test to verify that the human-readable-logging Spring Profile will disable the configuration of
@@ -32,7 +33,7 @@ class HumanReadableLoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
   // Spy bean to allow us to mock out the RequestIdFilter ID generator.
-  @SpyBean private RequestIdFilter requestIdFilter;
+  @MockitoSpyBean private RequestIdFilter requestIdFilter;
 
   @BeforeEach
   void setUp() {

@@ -25,6 +25,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
@@ -55,7 +56,7 @@ public class LoggingTest {
 
   @Autowired private TestRestTemplate testRestTemplate;
   // Spy bean to allow us to mock out the RequestIdFilter ID generator.
-  @SpyBean private RequestIdFilter requestIdFilter;
+  @MockitoSpyBean private RequestIdFilter requestIdFilter;
 
   @BeforeEach
   public void setUp() throws IOException, ServletException {
