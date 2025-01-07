@@ -1,5 +1,7 @@
 package bio.terra.common.stairway.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import bio.terra.common.db.BaseDatabaseProperties;
 import bio.terra.common.db.DataSourceInitializer;
 import bio.terra.stairway.Flight;
@@ -7,14 +9,21 @@ import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.FlightState;
 import bio.terra.stairway.Stairway;
 import bio.terra.stairway.StairwayBuilder;
+import bio.terra.stairway.StairwayMapper;
 import bio.terra.stairway.exception.DatabaseOperationException;
 import bio.terra.stairway.exception.StairwayException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.Instant;
 import javax.sql.DataSource;
 
 /** Test utilities for testing integrations with {@link Stairway}. */
 public class StairwayTestUtils {
+
+  /** Use Stairway objectmapper. */
+  private static final ObjectMapper OBJECT_MAPPER = StairwayMapper.getObjectMapper();
 
   /** Returns an initialized and started Stairway instance from the Stairway.Builder. */
   public static Stairway setupStairway(StairwayBuilder builder) {
@@ -76,5 +85,16 @@ public class StairwayTestUtils {
     }
     throw new InterruptedException(
         String.format("Flight [%s] did not complete in the allowed wait time.", flightId));
+  }
+
+  public static <T> void validateJsonDeserialization(String json, T request)
+      throws JsonProcessingException {
+    T deserialized = OBJECT_MAPPER.readValue(json, new TypeReference<>() {});
+    assertEquals(request, deserialized);
+    assertEquals(request.hashCode(), deserialized.hashCode());
+  }
+
+  public static String serializeToJson(Object object) throws JsonProcessingException {
+    return OBJECT_MAPPER.writeValueAsString(object);
   }
 }

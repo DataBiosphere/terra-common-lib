@@ -4,47 +4,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import bio.terra.common.stairway.test.StairwayTestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Tag("unit")
-public class AuthenticatedUserRequestTest {
+class AuthenticatedUserRequestTest {
 
   private static final Logger logger = LoggerFactory.getLogger(AuthenticatedUserRequestTest.class);
-
-  /**
-   * ObjectMapper testing configuration
-   *
-   * <pre>
-   * Align ObjectMapper to <a href="https://github.com/DataBiosphere/stairway/blob/develop/src/main/java/bio/terra/
-   * stairway/StairwayMapper.java#L26">Stairway ObjectMapper configuration</a> in order to attempt to catch any
-   * serialization incompatibilities at dev time.
-   * </pre>
-   */
-  private static final ObjectMapper objectMapper =
-      new ObjectMapper()
-          .registerModule(new ParameterNamesModule())
-          .registerModule(new Jdk8Module())
-          .registerModule(new JavaTimeModule())
-          .registerModule(new JsonNullableModule())
-          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-          .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
   private static final String EMAIL_ADDRESS = "test@example.com";
   private static final String SUBJECT_ID = "Subject";
   private static final String TOKEN = "0123.456-789AbCd";
 
   @Test
-  public void builder() throws Exception {
+  void builder() throws Exception {
     AuthenticatedUserRequest.Builder builder = AuthenticatedUserRequest.builder();
 
     // Build fails due to no Email
@@ -68,7 +45,7 @@ public class AuthenticatedUserRequestTest {
   }
 
   @Test
-  public void equality() {
+  void equality() {
     AuthenticatedUserRequest req =
         AuthenticatedUserRequest.builder()
             .setEmail(EMAIL_ADDRESS)
@@ -93,26 +70,18 @@ public class AuthenticatedUserRequestTest {
     assertNotEquals(req, "test");
   }
 
-  private static void validateJsonDeserialization(String json, AuthenticatedUserRequest request)
-      throws JsonProcessingException {
-    AuthenticatedUserRequest deserialized =
-        objectMapper.readValue(json, AuthenticatedUserRequest.class);
-    assertEquals(request, deserialized);
-    assertEquals(request.hashCode(), deserialized.hashCode());
-  }
-
   private static void validateJsonSerialization(AuthenticatedUserRequest request)
       throws JsonProcessingException {
-    String asString = objectMapper.writeValueAsString(request);
+    String asString = StairwayTestUtils.serializeToJson(request);
     logger.debug(String.format("Serialized AuthenticatedUserRequest: '%s'", asString));
-    validateJsonDeserialization(asString, request);
+    StairwayTestUtils.validateJsonDeserialization(asString, request);
   }
 
   @Test
-  public void testVectors() throws JsonProcessingException {
-
-    validateJsonDeserialization(
-        "[\"bio.terra.common.iam.AuthenticatedUserRequest\",{\"email\":\"test@example.com\",\"reqId\":\"78f84562-c442-49be-951a-a0a56230c35f\",\"subjectId\":\"Subject\",\"token\":\"0123.456-789AbCd\"}]",
+  void testVectors() throws JsonProcessingException {
+    StairwayTestUtils.validateJsonDeserialization(
+        """
+                    ["bio.terra.common.iam.AuthenticatedUserRequest",{"email":"test@example.com","reqId":"78f84562-c442-49be-951a-a0a56230c35f","subjectId":"Subject","token":"0123.456-789AbCd"}]""",
         AuthenticatedUserRequest.builder()
             .setEmail("test@example.com")
             .setSubjectId("Subject")
