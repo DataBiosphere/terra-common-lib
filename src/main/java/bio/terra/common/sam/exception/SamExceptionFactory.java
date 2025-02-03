@@ -65,8 +65,8 @@ public class SamExceptionFactory {
         return new SamConflictException(message, apiException);
       case HttpStatus.SC_INTERNAL_SERVER_ERROR:
         return new SamInternalServerErrorException(message, apiException);
-        // note that SAM does not use a 501 NOT_IMPLEMENTED status code, so that case is skipped
-        // here
+      // note that SAM does not use a 501 NOT_IMPLEMENTED status code, so that case is skipped
+      // here
       default:
         logger.warn("Got an unexpected response code from Sam: " + apiException);
         return new SamInternalServerErrorException(message, apiException);
