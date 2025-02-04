@@ -9,6 +9,7 @@ plugins {
     id 'com.jfrog.artifactory' version '5.2.5'
     id 'org.sonarqube' version '6.0.1.5171'
     id 'io.spring.dependency-management' version '1.1.7'
+    // when updating spring boot version, check whether any changes are needed in the opentelemetry-bom version below
     id 'org.springframework.boot' version '3.4.2'
     id 'com.srcclr.gradle' version '3.1.12'
 }
@@ -84,8 +85,8 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
     // OpenTelemetry dependencies:
-    // Spring Boot 3.4.0 pulls in opentelemetry-bom 1.43.0.
-    // We choose opentelemetry-instrumentation-bom-alpha:2.9.0-alpha because otel-instrumentation 2.9.0 targets otel 1.43.0.
+    // Spring Boot 3.4.2 pulls in opentelemetry-bom 1.43.0.
+    // Note that opentelemetry-instrumentation-bom-alpha:2.12.0-alpha targets opentelemetry 1.46.0.
     // When upgrading Spring Boot, re-check these versions.
     implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.12.0-alpha")
     // ... versioned by Spring Boot
