@@ -64,7 +64,7 @@ public class SamUserFactory {
     } catch (final NullPointerException e) {
       throw new UnauthorizedException(e.getMessage(), e);
     } catch (final ApiException e) {
-      if (e.getCode() == HttpStatus.NOT_FOUND.value()) {
+      if (e.getCode() == HttpStatus.NOT_FOUND.value() || e.getCode() == HttpStatus.FORBIDDEN.value()) {
         throw new UnauthorizedException("User not found", e);
       } else {
         throw new InternalServerErrorException(e);
