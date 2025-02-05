@@ -72,9 +72,9 @@ public class SamUserFactoryTest {
     UsersApi usersApi = mock(UsersApi.class);
     when(factory.createUsersApi(SAM_USER.getBearerToken(), SAM_BASE_PATH)).thenReturn(usersApi);
     when(usersApi.getSamUserSelf())
-            .thenThrow(new ApiException(HttpStatus.FORBIDDEN.value(), "not found"));
+        .thenThrow(new ApiException(HttpStatus.FORBIDDEN.value(), "not found"));
 
     assertThrows(
-            UnauthorizedException.class, () -> factory.from(SAM_USER.getBearerToken(), SAM_BASE_PATH));
+        UnauthorizedException.class, () -> factory.from(SAM_USER.getBearerToken(), SAM_BASE_PATH));
   }
 }
