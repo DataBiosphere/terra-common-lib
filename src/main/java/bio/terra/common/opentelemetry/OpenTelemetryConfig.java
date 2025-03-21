@@ -35,7 +35,8 @@ public class OpenTelemetryConfig {
       // metrics. The request could not be executed. Full error message: Failed to connect to
       // localhost/[0:0:0:0:0:0:0:1]:4318.
       // The error message may also be "Failed to export spans"
-      customizer.addPropertiesCustomizer((unused) -> Map.of("otel.metrics.exporter", "none", "otel.traces.exporter", "none"));
+      customizer.addPropertiesCustomizer(
+          (unused) -> Map.of("otel.metrics.exporter", "none", "otel.traces.exporter", "none"));
 
       customizer.addMeterProviderCustomizer(
           (builder, unused) -> {
