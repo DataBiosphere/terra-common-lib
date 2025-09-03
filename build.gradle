@@ -87,12 +87,7 @@ dependencies {
     implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
 
     // OpenTelemetry dependencies:
-    // Spring Boot 3.4.3 still pulls in opentelemetry-bom 1.43.0.
-    // Note that opentelemetry-instrumentation-bom-alpha:2.12.0-alpha targets opentelemetry 1.46.0 which
-    // is still compatible, but opentelemetry-instrumentation-bom-alpha:2.13.3-alpha targets opentelemetry 1.47.0
-    // which is no longer compatible and we will need to wait until spring boot 3.5.x to be able to update that dependency further
-    // When upgrading Spring Boot, re-check these versions.
-//    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.12.0-alpha")
+    implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.14.0-alpha")
     // ... versioned by Spring Boot
     api 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-exporter-logging'
