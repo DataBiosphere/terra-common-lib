@@ -7,7 +7,7 @@ plugins {
     id 'com.diffplug.spotless' version '7.2.1'
     id 'com.github.ben-manes.versions' version '0.52.0'
     id 'com.jfrog.artifactory' version '5.2.5'
-    id 'org.sonarqube' version '6.2.0.5505'
+    id 'org.sonarqube' version '6.3.1.5724'
     id 'io.spring.dependency-management' version '1.1.7'
     // when updating spring boot version, check whether any changes are needed in the opentelemetry-bom version below
     id 'org.springframework.boot' version '3.5.4'
@@ -66,7 +66,7 @@ dependencies {
 
     // Google dependencies
     // use common bom
-    implementation platform('com.google.cloud:libraries-bom:26.65.0')
+    implementation platform('com.google.cloud:libraries-bom:26.68.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     api group: 'com.google.guava', name: 'guava'
