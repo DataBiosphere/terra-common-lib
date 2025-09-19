@@ -1,5 +1,7 @@
 name: development version bump
 on:
+  pull_request:
+    branches: [ develop ]
   push:
     branches: [ develop ]
     paths-ignore: [ '**.md' ]
@@ -28,7 +30,7 @@ jobs:
     - name: Checkout current code
       uses: actions/checkout@v4
       with:
-        ref: develop
+        ref: ${{ github.head_ref || '' }}
         token: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
 
     - name: Skip version bump merges
