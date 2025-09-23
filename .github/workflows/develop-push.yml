@@ -1,5 +1,7 @@
 name: development version bump
 on:
+  pull_request:
+    branches: [ develop ]
   push:
     branches: [ develop ]
     paths-ignore: [ '**.md' ]
@@ -7,6 +9,9 @@ on:
 
 jobs:
   publish_snapshot:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -25,7 +30,7 @@ jobs:
     - name: Checkout current code
       uses: actions/checkout@v4
       with:
-        ref: develop
+        ref: ${{ github.head_ref || '' }}
         token: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
 
     - name: Skip version bump merges
@@ -63,10 +68,16 @@ jobs:
         VERSION_LINE_MATCH: "^\\s*gradle.ext.tclVersion\\s*=\\s*'.*'"
         VERSION_SUFFIX: SNAPSHOT
 
-    - name: "Publish to Artifactory"
-      if: steps.bump-skip.outputs.is-bump == 'no'
-      run: ./gradlew artifactoryPublish
+    - name: "Authenticate to GCP"
+      uses: google-github-actions/auth@v3
+      with:
+        token_format: access_token
+        workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+        service_account: 'dsp-artifact-registry-push@dsp-artifact-registry.iam.gserviceaccount.com'
+
+    - name: "Publish client to GAR"
+      run: ./gradlew publish
       env:
-        ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-        ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-        ARTIFACTORY_REPO_KEY: "libs-snapshot-local"
+        GOOGLE_CLOUD_PROJECT: dsp-artifact-registry
+        GAR_LOCATION: us-central1
+        GAR_REPOSITORY_ID: libs-snapshot-standard

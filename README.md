@@ -1,11 +1,11 @@
 # terra-common-lib
 ## Publishing 
-MC Terra components use JFrog Artifactory to publish libraries to a central Maven [repository](https://broadinstitute.jfrog.io/ui/packages).
+MC Terra components use Google Artifact Registry to publish libraries to a central Maven [repository](https://console.cloud.google.com/artifacts/maven/dsp-artifact-registry/us-central1/libs-snapshot-standard).
 The library version number is the `version` in [build.gradle](build.gradle). We use [github actions](/.github/workflows) to bumping version and publish to repository.
 
 The publishing procedure is:
-1. After PR is merged to develop branch: github action automatically bumped the minor `version` in [build.gradle](build.gradle) then publish to [lib-snapshot-local](https://broadinstitute.jfrog.io/ui/repos/tree/General/libs-snapshot-local)
-2. After release is created(usually a manual step): github action automatically bumped the minor `version` in [build.gradle](build.gradle) then publish to [lib-snapshot-release](https://broadinstitute.jfrog.io/ui/repos/tree/General/libs-release-local).
+1. After PR is merged to develop branch: github action automatically bumped the minor `version` in [build.gradle](build.gradle) then publish to [lib-snapshot-standard](https://console.cloud.google.com/artifacts/maven/dsp-artifact-registry/us-central1/libs-snapshot-standard)
+2. After release is created(usually a manual step): github action automatically bumped the minor `version` in [build.gradle](build.gradle) then publish to [lib-release-standard](https://console.cloud.google.com/artifacts/maven/dsp-artifact-registry/us-central1/libs-release-standard?inv=1&invt=Abymcg&project=dsp-artifact-registry).
 3. To bump major version, we need manually update `version` in [build.gradle](build.gradle) value first then create the release.
  
 ## Development 
