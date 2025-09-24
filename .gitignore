@@ -39,3 +39,6 @@ out/
 
 ### Jenv directory-local version setting
 .java-version
+
+# Credentials files
+**/gha-creds-*.json
