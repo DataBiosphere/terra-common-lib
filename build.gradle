@@ -77,7 +77,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: 'v0.0.407-3bcdd55-SNAP'
-    var stairwayVersion= '1.1.43-SNAPSHOT'
+    var stairwayVersion= '1.1.46-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
