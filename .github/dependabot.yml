@@ -4,15 +4,12 @@ updates:
     directory: "/"
     open-pull-requests-limit: 10
     groups:
-      gradle-dependencies:
+      minor-patch-dependencies:
         patterns:
           - "*"
         update-types:
-          - "major"
-          - "minor"
-      gradle-patch-updates:
-        update-types:
           - "patch"
+          - "minor"
     schedule:
       interval: cron
       cronjob: "0 0 1,15 * *"
