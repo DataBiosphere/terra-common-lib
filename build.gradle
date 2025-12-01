@@ -10,7 +10,7 @@ plugins {
     id 'org.sonarqube' version '7.0.1.6134'
     id 'io.spring.dependency-management' version '1.1.7'
     // when updating spring boot version, check whether any changes are needed in the opentelemetry-bom version below
-    id 'org.springframework.boot' version '3.5.7'
+    id 'org.springframework.boot' version '4.0.0'
     id 'com.srcclr.gradle' version '3.1.12'
 }
 
