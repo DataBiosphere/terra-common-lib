@@ -7,7 +7,7 @@ plugins {
     id 'com.diffplug.spotless' version '8.0.0'
     id 'com.github.ben-manes.versions' version '0.53.0'
     id 'com.google.cloud.artifactregistry.gradle-plugin' version '2.1.5'
-    id 'org.sonarqube' version '7.1.0.6387'
+    id 'org.sonarqube' version '7.2.1.6560'
     id 'io.spring.dependency-management' version '1.1.7'
     // when updating spring boot version, check whether any changes are needed in the opentelemetry-bom version below
     id 'org.springframework.boot' version '3.5.8'
@@ -77,7 +77,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: 'v0.0.407-3bcdd55-SNAP'
-    var stairwayVersion= '1.1.53-SNAPSHOT'
+    var stairwayVersion= '1.1.55-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
