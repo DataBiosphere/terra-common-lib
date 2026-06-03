@@ -20,6 +20,9 @@ project.ext {
     isCiServer = System.getenv().containsKey("CI")
 }
 
+// Override Spring Boot's managed Netty version to stay aligned with stairway-azure.
+ext['netty.version'] = '4.2.13.Final'
+
 // If true, search local repository (~/.m2/repository/) first for dependencies.
 def useMavenLocal = false
 repositories {
