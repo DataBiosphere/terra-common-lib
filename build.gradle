@@ -7,10 +7,10 @@ plugins {
     id 'com.diffplug.spotless' version '8.0.0'
     id 'com.github.ben-manes.versions' version '0.54.0'
     id 'com.google.cloud.artifactregistry.gradle-plugin' version '2.1.5'
-    id 'org.sonarqube' version '7.3.0.8198'
+    id 'org.sonarqube' version '7.3.1.8318'
     id 'io.spring.dependency-management' version '1.1.7'
     // when updating spring boot version, check whether any changes are needed in the opentelemetry-bom version below
-    id 'org.springframework.boot' version '3.5.14'
+    id 'org.springframework.boot' version '3.5.16'
     id 'com.srcclr.gradle' version '3.1.12'
 }
 
@@ -61,7 +61,7 @@ dependencies {
     //  see https://github.com/kubernetes-client/java?tab=readme-ov-file#release
     implementation group: 'io.kubernetes', name: 'client-java', version: '26.0.0'
     constraints {
-        implementation('org.bouncycastle:bcprov-jdk18on:1.84') {
+        implementation('org.bouncycastle:bcprov-jdk18on:1.85') {
             because 'https://broadworkbench.atlassian.net/browse/DCJ-275'
         }
     }
@@ -70,7 +70,7 @@ dependencies {
 
     // Google dependencies
     // use common bom
-    implementation platform('com.google.cloud:libraries-bom:26.83.0')
+    implementation platform('com.google.cloud:libraries-bom:26.85.0')
     implementation group: 'com.google.cloud', name: 'google-cloud-core'
     implementation group: 'com.google.cloud', name: 'google-cloud-pubsub'
     api group: 'com.google.guava', name: 'guava'
@@ -81,7 +81,7 @@ dependencies {
 
     // Terra libraries
     implementation group: 'org.broadinstitute.dsde.workbench', name: 'sam-client_2.13', version: 'v0.0.407-3bcdd55-SNAP'
-    var stairwayVersion= '1.1.74-SNAPSHOT'
+    var stairwayVersion= '1.1.75-SNAPSHOT'
     api "bio.terra:stairway-gcp:${stairwayVersion}"
     implementation "bio.terra:stairway-azure:${stairwayVersion}"
 
@@ -106,8 +106,8 @@ dependencies {
     implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
 
     // Google cloud open telemetry exporters
-    implementation 'com.google.cloud.opentelemetry:exporter-trace:0.36.0'
-    implementation 'com.google.cloud.opentelemetry:exporter-metrics:0.36.0'
+    implementation 'com.google.cloud.opentelemetry:exporter-trace:0.37.0'
+    implementation 'com.google.cloud.opentelemetry:exporter-metrics:0.37.0'
 
     // Testing
     testImplementation 'org.springframework:spring-aspects' // for tracing in tests
