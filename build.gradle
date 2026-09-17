@@ -64,6 +64,12 @@ dependencies {
         implementation('org.bouncycastle:bcprov-jdk18on:1.85') {
             because 'https://broadworkbench.atlassian.net/browse/TSPS-1194'
         }
+        implementation('org.bouncycastle:bcpkix-jdk18on:1.85') {
+            because 'https://broadworkbench.atlassian.net/browse/TSPS-1194'
+        }
+        implementation('org.bouncycastle:bcutil-jdk18on:1.85') {
+            because 'https://broadworkbench.atlassian.net/browse/TSPS-1194'
+        }
     }
     implementation group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.16.0'
     implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api'
